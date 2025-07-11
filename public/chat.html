@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI Chat</title>
   <link rel="stylesheet" href="/styles.css">
+  <link rel="manifest" href="/manifest.json">
 </head>
 <body>
 
@@ -42,6 +43,11 @@
       input.value = '';
       messages.scrollTop = messages.scrollHeight;
     };
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
   </script>
 </body>
 </html>

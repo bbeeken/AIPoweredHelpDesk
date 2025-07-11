@@ -28,3 +28,8 @@
 ## [2025-07-21] Fixed CSS focus styles
 - Closed unbalanced rule in `styles.css` and removed duplicate skip link declarations.
 - Ensures focus outlines and skip link display correctly across pages.
+
+## [2025-07-22] Added offline support
+- Introduced `manifest.json` and `sw.js` to enable basic PWA capabilities.
+- Registered the service worker in `index.html` and `chat.html`.
+- Demo pages now load even when offline after the first visit.

@@ -58,8 +58,9 @@ function createApp() {
   app.listen = (port, cb) => {
     const server = http.createServer(app);
     // Allow longer keep-alive so tests don't hit the default 5s timeout
-    server.keepAliveTimeout = 30000; // 30 seconds
-    server.headersTimeout = 32000;
+    server.keepAliveTimeout = 0; // disable keep-alive timeout
+    server.headersTimeout = 0;
+    server.setTimeout(0); // disable socket timeout
     return server.listen(port, cb);
   };
   return app;
