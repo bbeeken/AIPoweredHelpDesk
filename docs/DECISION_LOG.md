@@ -134,3 +134,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Asset history entries lacked context when updating name or assignment. Adding detailed actions and user tracking improves auditing with minimal complexity.
 - **Impact:** PATCH `/assets/:id` now logs `name` and `assignee` changes with `action`, `from`, `to`, `by` and `date` fields.
+
+### Fixed asset assignedTo filter
+- **Date:** 2025-07-11
+- **Reasoning:** Filtering assets by assigned user failed when query parameter was provided as a string.
+- **Impact:** GET /assets?assignedTo=n now reliably returns assets assigned to that user.
