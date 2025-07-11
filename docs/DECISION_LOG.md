@@ -249,3 +249,8 @@
 - **Date:** 2025-07-16
 - **Reasoning:** The demo pages lacked semantic structure and ARIA attributes making screen reader navigation difficult.
 - **Impact:** Users benefit from responsive layouts and live updates that comply with basic accessibility guidelines.
+
+### Unified front-end styling
+- **Date:** 2025-07-17
+- **Reasoning:** Inline styles on each page duplicated code and limited responsive enhancements. Consolidating them into a shared stylesheet simplifies maintenance and allows mobile tweaks.
+- **Impact:** Both `index.html` and `chat.html` now load `styles.css`, providing consistent look and navigation across the demo.
