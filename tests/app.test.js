@@ -35,11 +35,18 @@ const server = app.listen(0, () => {
               const attachments = JSON.parse(a);
               assert.ok(Array.isArray(attachments));
 
-              // add and verify tag
-              const post = http.request({ port, path: `/tickets/${tid}/tags`, method: 'POST', headers: {'Content-Type':'application/json'} }, res4 => {
-                res4.resume();
-                res4.on('end', () => {
-                  http.get({ port, path: `/tickets/${tid}/tags` }, res5 => {
+              http.get({ port, path: `/tickets/${tid}/comments` }, resC => {
+                let cm = '';
+                resC.on('data', d => cm += d);
+                resC.on('end', () => {
+                  const comments = JSON.parse(cm);
+                  assert.ok(Array.isArray(comments));
+
+                  // add and verify tag
+                  const post = http.request({ port, path: `/tickets/${tid}/tags`, method: 'POST', headers: {'Content-Type':'application/json'} }, res4 => {
+                    res4.resume();
+                    res4.on('end', () => {
+                      http.get({ port, path: `/tickets/${tid}/tags` }, res5 => {
                     let tg = '';
                     res5.on('data', c => tg += c);
                     res5.on('end', () => {
@@ -90,6 +97,8 @@ const server = app.listen(0, () => {
                 });
               });
               post.end(JSON.stringify({ tag: 'urgent' }));
+                });
+              });
             });
           });
         });

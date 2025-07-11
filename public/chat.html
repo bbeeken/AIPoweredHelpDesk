@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AI Chat</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; }
+    #messages { border: 1px solid #ccc; padding: 1em; height: 300px; overflow-y: auto; margin-bottom: 1em; }
+    input, button { padding: 0.5em; }
+  </style>
+</head>
+<body>
+  <h1>AI Chat</h1>
+  <div id="messages"></div>
+  <form id="chatForm">
+    <input id="msg" placeholder="Ask a question..." size="50" />
+    <button type="submit">Send</button>
+  </form>
+  <script>
+    document.getElementById('chatForm').onsubmit = async e => {
+      e.preventDefault();
+      const input = document.getElementById('msg');
+      const text = input.value.trim();
+      if(!text) return;
+      const messages = document.getElementById('messages');
+      const userMsg = document.createElement('div');
+      userMsg.textContent = 'You: ' + text;
+      messages.appendChild(userMsg);
+      const res = await fetch('/ai', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})});
+      const data = await res.json();
+      const botMsg = document.createElement('div');
+      botMsg.textContent = 'AI: ' + (data.reply || JSON.stringify(data));
+      messages.appendChild(botMsg);
+      input.value = '';
+      messages.scrollTop = messages.scrollHeight;
+    };
+  </script>
+</body>
+</html>

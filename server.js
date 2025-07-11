@@ -1,10 +1,12 @@
 const express = require('express');
+const path = require('path');
 const bodyParser = require('body-parser');
 const n8nClient = require('./utils/n8nClient');
 const data = require('./data/mockData');
 
 const app = express();
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 // helper to track next ticket and asset ids
 let nextTicketId = data.tickets.reduce((m, t) => Math.max(m, t.id), 0) + 1;
@@ -117,6 +119,13 @@ app.post('/tickets/:id/comments', (req, res) => {
   const comment = { userId: req.user.id, text, date: new Date().toISOString() };
   ticket.comments.push(comment);
   res.status(201).json(comment);
+});
+
+// List comments for a ticket
+app.get('/tickets/:id/comments', (req, res) => {
+  const ticket = data.tickets.find(t => t.id === Number(req.params.id));
+  if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+  res.json(ticket.comments || []);
 });
 
 // List tags for a ticket
