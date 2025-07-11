@@ -10,11 +10,15 @@
 - Added mobile-friendly input sizing and navigation link from chat page back to the dashboard.
 - Clean markup and unified appearance make the demo easier to maintain and use on small screens.
 
+
+
 ## [2025-07-18] Added skip link for accessibility
 - Introduced a hidden "Skip to content" link that appears when focused.
 - Added `id="main"` to main sections and styles in `styles.css`.
 - Keyboard users can now jump directly to page content.
 
+
 ## [2025-07-19] Improved focus visibility
 - Added high-contrast outlines for links, buttons and inputs when focused.
 - Helps keyboard users track their position while navigating the demo pages.
+
