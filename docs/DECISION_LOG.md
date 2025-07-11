@@ -149,3 +149,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Depreciation and retirement actions were not tracked, limiting lifecycle auditing. Adding history entries has minimal risk.
 - **Impact:** POST `/assets/:id/depreciate` and `/assets/:id/retire` now append `depreciated` or `retired` events to asset history.
+
+### Added user summary stats endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Needed quick overview of workload and assets per user. Simple calculation built on existing data.
+- **Impact:** Clients can GET `/stats/user/:userId` to retrieve ticket counts and asset total for a user.
