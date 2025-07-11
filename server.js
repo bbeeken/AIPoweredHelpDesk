@@ -113,12 +113,18 @@ app.get('/tickets/assigned/:userId', (req, res) => {
   res.json(tickets);
 });
 
+// List tickets that are not assigned to anyone
+app.get('/tickets/unassigned', (req, res) => {
+  const tickets = data.tickets.filter(t => !t.assigneeId);
+  res.json(tickets);
+});
+
 
 // Create a new ticket
 app.post('/tickets', (req, res) => {
   const { question, assigneeId, priority, dueDate, tags } = req.body;
   if (!question) return res.status(400).json({ error: 'question required' });
-  const assignedId = assigneeId || getLeastBusyUserId();
+  const assignedId = assigneeId !== undefined ? assigneeId : getLeastBusyUserId();
   const ticket = {
     id: nextTicketId++,
     assigneeId: assignedId,

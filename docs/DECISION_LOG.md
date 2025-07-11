@@ -180,3 +180,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Allows agents to quickly mark a ticket as urgent without sending a full PATCH request. Low risk wrapper around priority update.
 - **Impact:** Clients can POST `/tickets/:id/escalate` to set priority to `high` and record the change in history.
+
+### Added unassigned tickets endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Mirror asset workflow by listing tickets without an assignee. Simple filter on in-memory data, minimal risk.
+- **Impact:** Clients can GET `/tickets/unassigned` to retrieve tickets awaiting assignment.
