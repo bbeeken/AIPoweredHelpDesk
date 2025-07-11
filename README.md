@@ -11,6 +11,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - Mock data for users, tickets and assets to simulate a database.
 - **Qdrant client script** for indexing ticket text in a vector database.
 - **Automatic Qdrant indexing** of newly created tickets when the server is running.
+- **Ticket escalation endpoint** for quickly setting priority to high.
 
 ### API Endpoints
 - `GET /health` – simple health check returning `{status:"ok"}`.
@@ -25,6 +26,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `PATCH /tickets/:id` – update ticket status, assignee, priority or `dueDate`.
 - `DELETE /tickets/:id` – remove a ticket completely.
 - `POST /tickets/:id/reassign-least-busy` – automatically assign the ticket to the agent with the fewest open tickets.
+- `POST /tickets/:id/escalate` – set ticket priority to high.
 - `POST /tickets/:id/comments` – add a comment to a ticket.
 - `PATCH /tickets/:id/comments/:commentId` – edit a comment's text.
 - `DELETE /tickets/:id/comments/:commentId` – remove a comment from a ticket.
