@@ -49,3 +49,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Needed a way to mark assets as removed from service. Reuses existing in-memory data; low risk.
 - **Impact:** Clients can POST `/assets/:id/retire` and GET `/assets/retired` to manage retired equipment.
+
+### Added assignee filter for tickets listing
+- **Date:** 2025-07-11
+- **Reasoning:** Simplifies retrieving tickets assigned to a specific user without a separate endpoint. Minimal risk query filter.
+- **Impact:** Clients can GET `/tickets?assignee=1` to list tickets for user 1.
