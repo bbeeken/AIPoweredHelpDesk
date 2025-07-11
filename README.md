@@ -13,14 +13,19 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 
 - `GET /dashboard` – show a summary of tickets assigned to the current user.
 - `GET /tickets` – list all tickets.
-- You can filter by status or priority using query parameters, e.g.
-  `GET /tickets?status=open&priority=high`.
+  You can filter by status, priority or tag using query parameters, e.g.
+  `GET /tickets?status=open&priority=high&tag=urgent`.
 - `GET /tickets/:id` – view a specific ticket.
 - `POST /tickets` – create a new ticket. Requires a `question` field in the body.
-- `PATCH /tickets/:id` – update ticket status, assignee or priority.
+- `PATCH /tickets/:id` – update ticket status, assignee, priority or `dueDate`.
 - `POST /tickets/:id/comments` – add a comment to a ticket.
 - `GET /tickets/:id/attachments` – list attachments for a ticket.
 - `POST /tickets/:id/attachments` – attach a file by providing `name` and `url`.
+- `GET /tickets/:id/tags` – list tags for a ticket.
+- `POST /tickets/:id/tags` – add a tag using `{tag:"example"}` or `{tags:[...]}`.
+- `DELETE /tickets/:id/tags/:tag` – remove a tag from a ticket.
+- `GET /tickets/search?q=text` – search tickets by question, comment or tag.
+- `GET /tickets/overdue` – list tickets past their `dueDate`.
 
 ## Getting Started
 
