@@ -28,3 +28,8 @@
 ## [2025-07-21] Fixed CSS focus styles
 - Closed unbalanced rule in `styles.css` and removed duplicate skip link declarations.
 - Ensures focus outlines and skip link display correctly across pages.
+
+## [2025-07-22] Added voice input and offline caching
+- Implemented microphone button on `chat.html` using the Web Speech API.
+- Introduced search suggestions and service worker registration in `index.html`.
+- Added `public/sw.js` to cache static files for offline use.
