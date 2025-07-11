@@ -59,6 +59,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /stats/workload` – ticket counts per user broken down by status.
 - `GET /stats/tags` – counts of tickets per tag.
 - `GET /stats/asset-tags` – counts of assets per tag.
+- `GET /stats/assets-per-user` – counts of assets assigned to each user.
 
 ## Getting Started
 

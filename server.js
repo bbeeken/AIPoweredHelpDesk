@@ -390,6 +390,15 @@ app.get('/stats/asset-tags', (req, res) => {
   res.json(counts);
 });
 
+// Asset counts per user
+app.get('/stats/assets-per-user', (req, res) => {
+  const stats = data.users.map(u => ({
+    userId: u.id,
+    count: (data.assets || []).filter(a => a.assignedTo === u.id).length
+  }));
+  res.json(stats);
+});
+
 // Asset management endpoints
 app.get('/assets', (req, res) => {
   let assets = data.assets || [];
