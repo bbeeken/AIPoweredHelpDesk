@@ -22,7 +22,8 @@
 
     <form id="searchForm">
       <label for="search" class="visually-hidden">Search tickets</label>
-      <input id="search" type="search" placeholder="Search tickets..." />
+      <input id="search" type="search" placeholder="Search tickets..." list="suggestions" autocomplete="off" />
+      <datalist id="suggestions"></datalist>
       <button type="submit">Search</button>
     </form>
 
@@ -56,6 +57,30 @@
       const tickets = await res.json();
       renderTickets(tickets);
     };
+
+    // Fetch suggestions as user types
+    let suggestTimer;
+    document.getElementById('search').addEventListener('input', e => {
+      clearTimeout(suggestTimer);
+      const q = e.target.value.trim();
+      if (q.length < 2) return;
+      suggestTimer = setTimeout(async () => {
+        const res = await fetch('/tickets/search?q=' + encodeURIComponent(q));
+        const tickets = await res.json();
+        const list = document.getElementById('suggestions');
+        list.innerHTML = '';
+        tickets.slice(0, 5).forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t.question;
+          list.appendChild(opt);
+        });
+      }, 300);
+    });
+
+    // Register service worker for offline support
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
   </script>
   <script>
     if ('serviceWorker' in navigator) {

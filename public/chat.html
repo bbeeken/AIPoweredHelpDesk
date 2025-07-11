@@ -22,6 +22,7 @@
     <form id="chatForm">
       <label for="msg" class="visually-hidden">Message</label>
       <input id="msg" placeholder="Ask a question..." size="50" />
+      <button id="voice" type="button" aria-label="Start voice input">🎤</button>
       <button type="submit">Send</button>
     </form>
   </main>
@@ -43,6 +44,31 @@
       input.value = '';
       messages.scrollTop = messages.scrollHeight;
     };
+
+    // Voice input using SpeechRecognition
+    const voiceBtn = document.getElementById('voice');
+    if (voiceBtn) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognizer = new SpeechRecognition();
+        recognizer.addEventListener('result', e => {
+          const text = Array.from(e.results)
+            .map(r => r[0].transcript)
+            .join(' ');
+          document.getElementById('msg').value = text;
+        });
+        voiceBtn.onclick = () => {
+          recognizer.start();
+        };
+      } else {
+        voiceBtn.style.display = 'none';
+      }
+    }
+
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
   </script>
   <script>
     if ('serviceWorker' in navigator) {
