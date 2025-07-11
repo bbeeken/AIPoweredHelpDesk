@@ -6,8 +6,9 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 
 - **Dashboard** route that greets the logged in user and summarizes their assigned tickets.
 - **Ticket management API** for creating, updating and commenting on tickets.
+- **Asset management API** for tracking staff equipment.
 - **AI endpoint** that forwards natural language text to an n8n workflow for processing.
-- Mock data for users and tickets to simulate a database.
+- Mock data for users, tickets and assets to simulate a database.
 
 ### API Endpoints
 
@@ -26,6 +27,10 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `DELETE /tickets/:id/tags/:tag` – remove a tag from a ticket.
 - `GET /tickets/search?q=text` – search tickets by question, comment or tag.
 - `GET /tickets/overdue` – list tickets past their `dueDate`.
+- `GET /assets` – list all assets.
+- `POST /assets` – create a new asset with `name` and optional `assignedTo`.
+- `GET /assets/:id` – view a specific asset.
+- `PATCH /assets/:id` – update asset `name` or `assignedTo`.
 
 ## Getting Started
 
