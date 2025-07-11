@@ -59,3 +59,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Reduces manual steps by pushing new ticket text to Qdrant automatically.
 - **Impact:** Tickets are indexed in the vector database as soon as they are created; failures are logged without affecting the API.
+
+### Added asset maintenance cost endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Allows staff to quickly see total spend on an asset's maintenance. Low risk calculation over existing data.
+- **Impact:** Clients can GET `/assets/:id/maintenance/total-cost` for cost summaries.
