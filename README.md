@@ -96,6 +96,19 @@ This project is a simple Node.js/Express application that demonstrates how an AI
    npm test
    ```
 
+### Database Setup
+
+To migrate the sample data into a MSSQL database you can use the provided
+migration script. Ensure your connection details are configured in a `.env`
+file based on `.env.example` and run:
+
+```bash
+npm run migrate
+```
+
+This executes `migrate.js` which creates the tables defined in
+`migrations/schema.sql` and populates them using `migrations/seed.sql`.
+
 The Qdrant client script can be used separately to index ticket text. See
 `docs/QDRANT_CLIENT.md` for details.
 
@@ -103,3 +116,19 @@ The n8n webhook URL can be configured via the `N8N_URL` environment variable.
 The Qdrant server URL can be set with the `QDRANT_URL` environment variable.
 
 After the first visit, the pages are cached for offline use via a service worker.
+
+### Authentication
+
+Use `POST /auth/login` with `username` and `password` to obtain a JWT token.
+Pass it using `Authorization: Bearer <token>` to `/auth/verify` to validate
+the session.
+
+### Frontend
+
+A minimal React application is located in the `frontend` directory. Run
+`npm install` and `npm run dev` from that folder to start it with Vite.
+
+### DevOps
+
+A `Dockerfile` is provided for containerization and a GitHub Actions workflow
+executes the test suite on each push.
