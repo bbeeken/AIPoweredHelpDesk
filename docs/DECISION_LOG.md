@@ -109,3 +109,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** History was not capturing due date updates, hindering auditing. A lightweight patch records these events. A unit test now ensures deterministic Qdrant vectors.
 - **Impact:** Ticket timelines now show due date adjustments and automated tests verify vector creation.
+
+### Recorded asset creation in history
+- **Date:** 2025-07-11
+- **Reasoning:** Asset history lacked an entry for when the asset was first created. Adding this improves lifecycle auditing with minimal risk.
+- **Impact:** POST `/assets` now includes a `created` record and history endpoints return the creation event.

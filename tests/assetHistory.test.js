@@ -20,7 +20,7 @@ const server = app.listen(0, () => {
             hres.on('end', () => {
               const arr = JSON.parse(hist);
               assert.ok(Array.isArray(arr));
-              assert.ok(arr.length === 1);
+              assert.ok(arr.length === 2);
               server.close(() => console.log('History test passed'));
             });
           });
