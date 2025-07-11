@@ -35,3 +35,6 @@
 - Introduced search suggestions and service worker registration in `index.html`.
 - Added `public/sw.js` to cache static files for offline use.
 
+## [2025-07-23] Service worker tweaks
+- Removed duplicate service worker registration scripts from HTML pages.
+- Cached `manifest.json` for offline support.
