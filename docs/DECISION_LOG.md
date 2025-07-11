@@ -34,3 +34,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Enables tracking maintenance history and costs for assets. Low risk addition using in-memory arrays.
 - **Impact:** Clients can POST to `/assets/:id/maintenance` to log work and GET `/assets/:id/maintenance` to view records.
+
+### Added depreciated assets listing
+- **Date:** 2025-07-11
+- **Reasoning:** Helps staff track which assets are no longer in active service. Low risk filter of in-memory data.
+- **Impact:** Clients can GET `/assets/depreciated` to retrieve all assets with a `depreciationDate`.

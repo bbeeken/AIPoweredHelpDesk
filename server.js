@@ -340,6 +340,12 @@ app.post('/assets/:id/depreciate', (req, res) => {
   res.json(asset);
 });
 
+// List all depreciated assets
+app.get('/assets/depreciated', (req, res) => {
+  const assets = (data.assets || []).filter(a => a.depreciationDate);
+  res.json(assets);
+});
+
 // AI endpoint for natural language commands
 app.post('/ai', async (req, res) => {
   const { text } = req.body;
