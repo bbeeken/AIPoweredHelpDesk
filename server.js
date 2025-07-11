@@ -368,6 +368,27 @@ app.get('/stats/workload', (req, res) => {
   res.json(workload);
 });
 
+// Summary stats for a specific user
+app.get('/stats/user/:userId', (req, res) => {
+  const uid = Number(req.params.userId);
+  const user = data.users.find(u => u.id === uid);
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+  const tickets = data.tickets.filter(t => t.assigneeId === uid);
+  const assets = (data.assets || []).filter(a => a.assignedTo === uid);
+  const summary = {
+    userId: uid,
+    tickets: {
+      open: tickets.filter(t => t.status === 'open').length,
+      waiting: tickets.filter(t => t.status === 'waiting').length,
+      closed: tickets.filter(t => t.status === 'closed').length
+    },
+    assets: assets.length
+  };
+  res.json(summary);
+});
+
 // Ticket counts per tag across all tickets
 app.get('/stats/tags', (req, res) => {
   const counts = {};
