@@ -139,3 +139,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Filtering assets by assigned user failed when query parameter was provided as a string.
 - **Impact:** GET /assets?assignedTo=n now reliably returns assets assigned to that user.
+
+### Added assets-per-user stats endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Provides visibility into asset distribution among staff. Low risk read-only calculation.
+- **Impact:** Clients can GET `/stats/assets-per-user` to see asset counts per user.
