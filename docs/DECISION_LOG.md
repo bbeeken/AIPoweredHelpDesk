@@ -114,3 +114,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Asset history lacked an entry for when the asset was first created. Adding this improves lifecycle auditing with minimal risk.
 - **Impact:** POST `/assets` now includes a `created` record and history endpoints return the creation event.
+
+### Added attachment deletion endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Users needed a way to remove uploaded files from tickets. Implementation mirrors other delete operations and carries minimal risk.
+- **Impact:** Clients can DELETE `/tickets/:id/attachments/:attachmentId` to remove attachments.
