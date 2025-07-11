@@ -16,6 +16,9 @@ module.exports = {
       comments: [],
       attachments: [
         { id: 1, name: 'screenshot.png', url: 'http://example.com/screenshot.png', uploaded: '2024-05-01T12:00:00Z' }
+      ],
+      history: [
+        { action: 'created', by: 2, date: '2024-05-01T12:00:00Z' }
       ]
     },
     {
@@ -28,12 +31,14 @@ module.exports = {
       dueDate: '2024-07-01T12:00:00Z',
       tags: ['configuration'],
       comments: [],
-      attachments: []
+      attachments: [],
+      history: [
+        { action: 'created', by: 2, date: '2024-05-10T12:00:00Z' }
+      ]
     }
-  ]
-  ,
+  ],
   assets: [
-    { id: 1, name: 'Laptop', assignedTo: 1 },
-    { id: 2, name: 'Headset', assignedTo: 2 }
+    { id: 1, name: 'Laptop', assignedTo: 1, history: [] },
+    { id: 2, name: 'Headset', assignedTo: 2, history: [] }
   ]
 };

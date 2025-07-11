@@ -12,6 +12,22 @@ app.use(express.static(path.join(__dirname, 'public')));
 let nextTicketId = data.tickets.reduce((m, t) => Math.max(m, t.id), 0) + 1;
 let nextAssetId = (data.assets || []).reduce((m, a) => Math.max(m, a.id), 0) + 1;
 
+// choose user with fewest open tickets
+function getLeastBusyUserId() {
+  const counts = {};
+  data.users.forEach(u => (counts[u.id] = 0));
+  data.tickets.forEach(t => {
+    if (t.status !== 'closed' && counts[t.assigneeId] !== undefined) {
+      counts[t.assigneeId]++;
+    }
+  });
+  let chosen = data.users[0];
+  data.users.forEach(u => {
+    if (counts[u.id] < counts[chosen.id]) chosen = u;
+  });
+  return chosen.id;
+}
+
 // Middleware to simulate authentication
 app.use((req, res, next) => {
   req.user = data.users[0];
@@ -48,6 +64,13 @@ app.get('/tickets', (req, res) => {
   res.json(tickets);
 });
 
+// Tickets assigned to a specific user
+app.get('/tickets/assigned/:userId', (req, res) => {
+  const uid = Number(req.params.userId);
+  const tickets = data.tickets.filter(t => t.assigneeId === uid);
+  res.json(tickets);
+});
+
 // View a single ticket
 app.get('/tickets/:id', (req, res) => {
   const ticket = data.tickets.find(t => t.id === Number(req.params.id));
@@ -59,16 +82,20 @@ app.get('/tickets/:id', (req, res) => {
 app.post('/tickets', (req, res) => {
   const { question, assigneeId, priority, dueDate, tags } = req.body;
   if (!question) return res.status(400).json({ error: 'question required' });
+  const assignedId = assigneeId || getLeastBusyUserId();
   const ticket = {
     id: nextTicketId++,
-    assigneeId: assigneeId || req.user.id,
+    assigneeId: assignedId,
     submitterId: req.user.id,
     status: 'open',
     priority: priority || 'medium',
     question,
     dueDate: dueDate || null,
     tags: Array.isArray(tags) ? tags : [],
-    comments: []
+    comments: [],
+    history: [
+      { action: 'created', by: req.user.id, date: new Date().toISOString() }
+    ]
   };
   data.tickets.push(ticket);
   res.status(201).json(ticket);
@@ -79,10 +106,25 @@ app.patch('/tickets/:id', (req, res) => {
   const ticket = data.tickets.find(t => t.id === Number(req.params.id));
   if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
   const { status, assigneeId, priority, dueDate } = req.body;
-  if (status) ticket.status = status;
-  if (assigneeId) ticket.assigneeId = assigneeId;
-  if (priority) ticket.priority = priority;
-  if (dueDate) ticket.dueDate = dueDate;
+  const now = new Date().toISOString();
+  if (status && status !== ticket.status) {
+    ticket.history = ticket.history || [];
+    ticket.history.push({ action: 'status', from: ticket.status, to: status, by: req.user.id, date: now });
+    ticket.status = status;
+  }
+  if (assigneeId && assigneeId !== ticket.assigneeId) {
+    ticket.history = ticket.history || [];
+    ticket.history.push({ action: 'assignee', from: ticket.assigneeId, to: assigneeId, by: req.user.id, date: now });
+    ticket.assigneeId = assigneeId;
+  }
+  if (priority && priority !== ticket.priority) {
+    ticket.history = ticket.history || [];
+    ticket.history.push({ action: 'priority', from: ticket.priority, to: priority, by: req.user.id, date: now });
+    ticket.priority = priority;
+  }
+  if (dueDate && dueDate !== ticket.dueDate) {
+    ticket.dueDate = dueDate;
+  }
   res.json(ticket);
 });
 
@@ -180,6 +222,21 @@ app.get('/tickets/overdue', (req, res) => {
   res.json(tickets);
 });
 
+// Simple system stats
+app.get('/stats', (req, res) => {
+  const stats = {
+    tickets: {
+      open: data.tickets.filter(t => t.status === 'open').length,
+      waiting: data.tickets.filter(t => t.status === 'waiting').length,
+      closed: data.tickets.filter(t => t.status === 'closed').length
+    },
+    assets: {
+      total: (data.assets || []).length
+    }
+  };
+  res.json(stats);
+});
+
 // Asset management endpoints
 app.get('/assets', (req, res) => {
   res.json(data.assets || []);
@@ -191,7 +248,8 @@ app.post('/assets', (req, res) => {
   const asset = {
     id: nextAssetId++,
     name,
-    assignedTo: assignedTo || null
+    assignedTo: assignedTo || null,
+    history: []
   };
   data.assets = data.assets || [];
   data.assets.push(asset);
@@ -208,8 +266,15 @@ app.patch('/assets/:id', (req, res) => {
   const asset = (data.assets || []).find(a => a.id === Number(req.params.id));
   if (!asset) return res.status(404).json({ error: 'Asset not found' });
   const { name, assignedTo } = req.body;
-  if (name) asset.name = name;
-  if (assignedTo !== undefined) asset.assignedTo = assignedTo;
+  const now = new Date().toISOString();
+  if (name && name !== asset.name) {
+    asset.name = name;
+  }
+  if (assignedTo !== undefined && assignedTo !== asset.assignedTo) {
+    asset.history = asset.history || [];
+    asset.history.push({ from: asset.assignedTo, to: assignedTo, date: now });
+    asset.assignedTo = assignedTo;
+  }
   res.json(asset);
 });
 
