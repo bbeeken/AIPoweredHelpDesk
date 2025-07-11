@@ -5,7 +5,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 ## Features
 
 - **Dashboard** route that greets the logged in user and summarizes their assigned tickets.
-- **Ticket management API** for creating, updating and commenting on tickets.
+- **Ticket management API** for creating, updating and commenting on tickets. Ticket history records status, assignee, priority and due date changes.
 - **Asset management API** for tracking staff equipment.
 - **AI endpoint** that forwards natural language text to an n8n workflow for processing.
 - Mock data for users, tickets and assets to simulate a database.

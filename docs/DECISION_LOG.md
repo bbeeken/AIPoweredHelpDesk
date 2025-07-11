@@ -104,3 +104,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Provides insight into common support topics by tallying ticket counts per tag. Simple read-only calculation.
 - **Impact:** Clients can GET `/stats/tags` to view how many tickets exist for each tag.
+
+### Record due date changes in ticket history and added Qdrant vector test
+- **Date:** 2025-07-11
+- **Reasoning:** History was not capturing due date updates, hindering auditing. A lightweight patch records these events. A unit test now ensures deterministic Qdrant vectors.
+- **Impact:** Ticket timelines now show due date adjustments and automated tests verify vector creation.
