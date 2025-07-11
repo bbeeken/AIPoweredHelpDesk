@@ -276,7 +276,8 @@ app.post('/assets', (req, res) => {
     id: nextAssetId++,
     name,
     assignedTo: assignedTo || null,
-    history: []
+    history: [],
+    maintenance: []
   };
   data.assets = data.assets || [];
   data.assets.push(asset);
@@ -310,6 +311,25 @@ app.patch('/assets/:id', (req, res) => {
     asset.assignedTo = assignedTo;
   }
   res.json(asset);
+});
+
+// View maintenance records for an asset
+app.get('/assets/:id/maintenance', (req, res) => {
+  const asset = (data.assets || []).find(a => a.id === Number(req.params.id));
+  if (!asset) return res.status(404).json({ error: 'Asset not found' });
+  res.json(asset.maintenance || []);
+});
+
+// Add a maintenance record to an asset
+app.post('/assets/:id/maintenance', (req, res) => {
+  const asset = (data.assets || []).find(a => a.id === Number(req.params.id));
+  if (!asset) return res.status(404).json({ error: 'Asset not found' });
+  const { description, cost } = req.body;
+  if (!description) return res.status(400).json({ error: 'description required' });
+  const record = { description, cost: cost || 0, date: new Date().toISOString() };
+  asset.maintenance = asset.maintenance || [];
+  asset.maintenance.push(record);
+  res.status(201).json(record);
 });
 
 // Mark an asset as depreciated by setting depreciationDate to now

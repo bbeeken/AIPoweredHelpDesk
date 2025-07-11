@@ -29,3 +29,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Allows tracking when assets are depreciated to improve lifecycle management. Minimal risk as it only sets a timestamp.
 - **Impact:** Clients can POST to `/assets/:id/depreciate` to mark an asset as depreciated.
+
+### Added asset maintenance endpoints
+- **Date:** 2025-07-11
+- **Reasoning:** Enables tracking maintenance history and costs for assets. Low risk addition using in-memory arrays.
+- **Impact:** Clients can POST to `/assets/:id/maintenance` to log work and GET `/assets/:id/maintenance` to view records.
