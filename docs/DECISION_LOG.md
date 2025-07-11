@@ -219,3 +219,8 @@
 - **Date:** 2025-07-12
 - **Reasoning:** Allows explicitly assigning a ticket to a user without sending a PATCH request. Minimal risk wrapper around existing update logic.
 - **Impact:** Clients can POST `/tickets/:id/assign/:userId` to change a ticket's assignee and log history.
+
+### Added overdue stats endpoint
+- **Date:** 2025-07-13
+- **Reasoning:** Provides visibility into outstanding work by counting overdue tickets per agent. Low risk read-only calculation.
+- **Impact:** Clients can GET `/stats/overdue` to see overdue ticket counts for each user.

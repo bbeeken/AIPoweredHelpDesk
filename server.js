@@ -582,6 +582,20 @@ app.get('/stats/maintenance-cost', (req, res) => {
   res.json(costs);
 });
 
+// Overdue ticket counts per user
+app.get('/stats/overdue', (req, res) => {
+  const now = Date.now();
+  const stats = data.users.map(u => ({
+    userId: u.id,
+    count: data.tickets.filter(t => {
+      if (t.assigneeId !== u.id) return false;
+      if (!t.dueDate || t.status === 'closed') return false;
+      return new Date(t.dueDate).getTime() < now;
+    }).length
+  }));
+  res.json(stats);
+});
+
 // Asset management endpoints
 app.get('/assets', (req, res) => {
   let assets = data.assets || [];
