@@ -254,3 +254,8 @@
 - **Date:** 2025-07-17
 - **Reasoning:** Inline styles on each page duplicated code and limited responsive enhancements. Consolidating them into a shared stylesheet simplifies maintenance and allows mobile tweaks.
 - **Impact:** Both `index.html` and `chat.html` now load `styles.css`, providing consistent look and navigation across the demo.
+
+### Introduced skip link for improved navigation
+- **Date:** 2025-07-18
+- **Reasoning:** Keyboard users lacked a quick way to bypass repetitive header links. Adding a skip link is a low-effort accessibility win.
+- **Impact:** Users can jump straight to the main content on each page, enhancing compliance with WCAG guidelines.
