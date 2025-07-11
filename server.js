@@ -219,7 +219,14 @@ app.post('/tickets/:id/comments', (req, res) => {
   if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
   const { text } = req.body;
   if (!text) return res.status(400).json({ error: 'text required' });
-  const comment = { userId: req.user.id, text, date: new Date().toISOString() };
+  const nextId =
+    (ticket.comments || []).reduce((m, c) => Math.max(m, c.id || 0), 0) + 1;
+  const comment = {
+    id: nextId,
+    userId: req.user.id,
+    text,
+    date: new Date().toISOString()
+  };
   ticket.comments.push(comment);
   res.status(201).json(comment);
 });
@@ -229,6 +236,18 @@ app.get('/tickets/:id/comments', (req, res) => {
   const ticket = data.tickets.find(t => t.id === Number(req.params.id));
   if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
   res.json(ticket.comments || []);
+});
+
+// Delete a comment from a ticket
+app.delete('/tickets/:id/comments/:commentId', (req, res) => {
+  const ticket = data.tickets.find(t => t.id === Number(req.params.id));
+  if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+  const cid = Number(req.params.commentId);
+  ticket.comments = ticket.comments || [];
+  const index = ticket.comments.findIndex(c => (c.id || 0) === cid);
+  if (index === -1) return res.status(404).json({ error: 'Comment not found' });
+  ticket.comments.splice(index, 1);
+  res.json(ticket.comments);
 });
 
 // View ticket change history
