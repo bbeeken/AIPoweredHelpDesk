@@ -295,6 +295,23 @@ app.get('/stats/mttr', (req, res) => {
   res.json({ mttr: avg / 3600000 });
 });
 
+// Ticket counts per user by status
+app.get('/stats/workload', (req, res) => {
+  const workload = data.users.map(u => ({
+    userId: u.id,
+    open: data.tickets.filter(
+      t => t.assigneeId === u.id && t.status === 'open'
+    ).length,
+    waiting: data.tickets.filter(
+      t => t.assigneeId === u.id && t.status === 'waiting'
+    ).length,
+    closed: data.tickets.filter(
+      t => t.assigneeId === u.id && t.status === 'closed'
+    ).length
+  }));
+  res.json(workload);
+});
+
 // Asset management endpoints
 app.get('/assets', (req, res) => {
   let assets = data.assets || [];
