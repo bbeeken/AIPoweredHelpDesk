@@ -14,3 +14,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Provide audit trail of asset assignments. Minimal code change leveraging existing history data.
 - **Impact:** Clients can fetch `/assets/:id/history` to view assignment changes.
+
+### Added Qdrant client script
+- **Date:** 2025-07-11
+- **Reasoning:** Enables storing ticket text in a vector database for future AI-powered search features. Standalone utility with no impact on the server.
+- **Impact:** Run `python utils/qdrant_client.py` to push tickets into Qdrant.
