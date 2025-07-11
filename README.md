@@ -22,6 +22,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `POST /tickets/:id/comments` – add a comment to a ticket.
 - `GET /tickets/:id/attachments` – list attachments for a ticket.
 - `POST /tickets/:id/attachments` – attach a file by providing `name` and `url`.
+- `GET /tickets/:id/history` – view the change history of a ticket.
 - `GET /tickets/:id/tags` – list tags for a ticket.
 - `POST /tickets/:id/tags` – add a tag using `{tag:"example"}` or `{tags:[...]}`.
 - `DELETE /tickets/:id/tags/:tag` – remove a tag from a ticket.

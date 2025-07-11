@@ -53,8 +53,16 @@ const server = app.listen(0, () => {
                       const tags = JSON.parse(tg);
                       assert.ok(tags.includes('urgent'));
 
-                      // search endpoint
-                      http.get({ port, path: '/tickets/search?q=password' }, res6 => {
+                      http.get({ port, path: `/tickets/${tid}/history` }, resHist => {
+                        let h = '';
+                        resHist.on('data', c => h += c);
+                        resHist.on('end', () => {
+                          const history = JSON.parse(h);
+                          assert.ok(Array.isArray(history));
+                          assert.ok(history.length >= 1);
+
+                          // search endpoint
+                          http.get({ port, path: '/tickets/search?q=password' }, res6 => {
                         let s = '';
                         res6.on('data', cc => s += cc);
                         res6.on('end', () => {
@@ -123,6 +131,8 @@ const server = app.listen(0, () => {
       });
     });
   }).on('error', err => {
-    server.close(() => { throw err; });
+  server.close(() => { throw err; });
   });
+});
+});
 });

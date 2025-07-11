@@ -170,6 +170,13 @@ app.get('/tickets/:id/comments', (req, res) => {
   res.json(ticket.comments || []);
 });
 
+// View ticket change history
+app.get('/tickets/:id/history', (req, res) => {
+  const ticket = data.tickets.find(t => t.id === Number(req.params.id));
+  if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+  res.json(ticket.history || []);
+});
+
 // List tags for a ticket
 app.get('/tickets/:id/tags', (req, res) => {
   const ticket = data.tickets.find(t => t.id === Number(req.params.id));
