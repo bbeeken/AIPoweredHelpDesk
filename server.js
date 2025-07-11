@@ -395,7 +395,10 @@ app.get('/assets', (req, res) => {
   let assets = data.assets || [];
   const { tag, assignedTo } = req.query;
   if (tag) assets = assets.filter(a => (a.tags || []).includes(tag));
-  if (assignedTo) assets = assets.filter(a => String(a.assignedTo) === String(assignedTo));
+  if (assignedTo !== undefined) {
+    const assignedId = Number(assignedTo);
+    assets = assets.filter(a => Number(a.assignedTo) === assignedId);
+  }
   res.json(assets);
 });
 
