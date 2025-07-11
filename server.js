@@ -264,7 +264,10 @@ app.get('/stats', (req, res) => {
 
 // Asset management endpoints
 app.get('/assets', (req, res) => {
-  res.json(data.assets || []);
+  let assets = data.assets || [];
+  const { tag } = req.query;
+  if (tag) assets = assets.filter(a => (a.tags || []).includes(tag));
+  res.json(assets);
 });
 
 // Assets assigned to a specific user
@@ -275,14 +278,15 @@ app.get('/assets/assigned/:userId', (req, res) => {
 });
 
 app.post('/assets', (req, res) => {
-  const { name, assignedTo } = req.body;
+  const { name, assignedTo, tags } = req.body;
   if (!name) return res.status(400).json({ error: 'name required' });
   const asset = {
     id: nextAssetId++,
     name,
     assignedTo: assignedTo || null,
     history: [],
-    maintenance: []
+    maintenance: [],
+    tags: Array.isArray(tags) ? tags : []
   };
   data.assets = data.assets || [];
   data.assets.push(asset);
@@ -316,6 +320,36 @@ app.patch('/assets/:id', (req, res) => {
     asset.assignedTo = assignedTo;
   }
   res.json(asset);
+});
+
+// List tags for an asset
+app.get('/assets/:id/tags', (req, res) => {
+  const asset = (data.assets || []).find(a => a.id === Number(req.params.id));
+  if (!asset) return res.status(404).json({ error: 'Asset not found' });
+  res.json(asset.tags || []);
+});
+
+// Add tags to an asset
+app.post('/assets/:id/tags', (req, res) => {
+  const asset = (data.assets || []).find(a => a.id === Number(req.params.id));
+  if (!asset) return res.status(404).json({ error: 'Asset not found' });
+  const { tag, tags } = req.body;
+  const newTags = tags || (tag ? [tag] : []);
+  if (!newTags.length) return res.status(400).json({ error: 'tag or tags required' });
+  asset.tags = asset.tags || [];
+  newTags.forEach(t => {
+    if (!asset.tags.includes(t)) asset.tags.push(t);
+  });
+  res.status(201).json(asset.tags);
+});
+
+// Remove a tag from an asset
+app.delete('/assets/:id/tags/:tag', (req, res) => {
+  const asset = (data.assets || []).find(a => a.id === Number(req.params.id));
+  if (!asset) return res.status(404).json({ error: 'Asset not found' });
+  const tag = req.params.tag;
+  asset.tags = (asset.tags || []).filter(t => t !== tag);
+  res.json(asset.tags);
 });
 
 // View maintenance records for an asset

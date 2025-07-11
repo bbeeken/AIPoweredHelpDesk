@@ -64,3 +64,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Allows staff to quickly see total spend on an asset's maintenance. Low risk calculation over existing data.
 - **Impact:** Clients can GET `/assets/:id/maintenance/total-cost` for cost summaries.
+
+### Added asset tagging endpoints
+- **Date:** 2025-07-11
+- **Reasoning:** Enables categorizing assets and filtering by tag. Straightforward addition using arrays.
+- **Impact:** Clients can GET/POST/DELETE `/assets/:id/tags` and filter assets with `GET /assets?tag=value`.
