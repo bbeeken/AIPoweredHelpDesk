@@ -374,11 +374,14 @@ app.get('/assets/assigned/:userId', (req, res) => {
 app.post('/assets', (req, res) => {
   const { name, assignedTo, tags } = req.body;
   if (!name) return res.status(400).json({ error: 'name required' });
+  const now = new Date().toISOString();
   const asset = {
     id: nextAssetId++,
     name,
     assignedTo: assignedTo || null,
-    history: [],
+    history: [
+      { action: 'created', by: req.user.id, date: now }
+    ],
     maintenance: [],
     tags: Array.isArray(tags) ? tags : []
   };

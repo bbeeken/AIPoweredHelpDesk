@@ -35,9 +35,9 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /tickets/due-soon?days=n` – list tickets due within the next `n` days (default 3).
 - `GET /tickets/aging?days=n` – list open tickets created more than `n` days ago (default 7).
 - `GET /assets` – list all assets. Filter by tag with `?tag=value` or by assignee with `?assignedTo=userId`.
-- `POST /assets` – create a new asset with `name`, optional `assignedTo` and optional `tags` array.
+- `POST /assets` – create a new asset with `name`, optional `assignedTo` and optional `tags` array. Creation is recorded in the asset's history.
 - `GET /assets/:id` – view a specific asset.
-- `GET /assets/:id/history` – view the assignment history of an asset.
+- `GET /assets/:id/history` – view the creation and assignment history of an asset.
 - `GET /assets/assigned/:userId` – list assets assigned to a user.
 - `PATCH /assets/:id` – update asset `name` or `assignedTo`.
 - `POST /assets/:id/depreciate` – mark an asset as depreciated.
