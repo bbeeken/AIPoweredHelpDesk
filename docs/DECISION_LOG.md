@@ -190,3 +190,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Staff occasionally need to locate all tickets created by a specific user. A query parameter is an easy, low-risk addition.
 - **Impact:** Clients can GET `/tickets?submitter=2` to list tickets submitted by user 2.
+
+### Added ticket close and reopen endpoints
+- **Date:** 2025-07-11
+- **Reasoning:** Allows quick resolution or reopening of tickets without manual PATCH calls. Uses existing history logging so risk is low.
+- **Impact:** Clients can POST `/tickets/:id/close` and `/tickets/:id/reopen` to change ticket status with history entries.
