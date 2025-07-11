@@ -408,6 +408,21 @@ app.get('/tickets/aging', (req, res) => {
   res.json(tickets);
 });
 
+// List most recently created tickets
+app.get('/tickets/recent', (req, res) => {
+  const limit = Number(req.query.limit) || 5;
+  const sorted = data.tickets.slice().sort((a, b) => {
+    const aCreated = new Date(
+      (a.history || []).find(h => h.action === 'created').date
+    ).getTime();
+    const bCreated = new Date(
+      (b.history || []).find(h => h.action === 'created').date
+    ).getTime();
+    return bCreated - aCreated;
+  });
+  res.json(sorted.slice(0, limit));
+});
+
 // Simple system stats
 // View a single ticket
 app.get('/tickets/:id', (req, res) => {

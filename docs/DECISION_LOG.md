@@ -200,3 +200,8 @@
 - **Date:** 2025-07-12
 - **Reasoning:** Provides visibility into repair spending across assets. Simple aggregation of existing maintenance data with minimal risk.
 - **Impact:** Clients can GET `/stats/maintenance-cost` to retrieve maintenance cost totals per asset.
+
+### Added recent tickets endpoint
+- **Date:** 2025-07-12
+- **Reasoning:** Users wanted an easy way to view the newest tickets. Sorting by creation date and limiting results is low risk.
+- **Impact:** Clients can GET `/tickets/recent?limit=5` to fetch the latest tickets.
