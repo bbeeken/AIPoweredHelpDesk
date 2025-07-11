@@ -49,6 +49,8 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /assets/:id/tags` – list tags for an asset.
 - `POST /assets/:id/tags` – add one or more tags to an asset.
 - `DELETE /assets/:id/tags/:tag` – remove a tag from an asset.
+- `GET /stats` – basic counts of open, waiting and closed tickets plus asset total.
+- `GET /stats/mttr` – average time to resolve closed tickets in hours.
 
 ## Getting Started
 

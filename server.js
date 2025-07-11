@@ -276,6 +276,25 @@ app.get('/stats', (req, res) => {
   res.json(stats);
 });
 
+// Mean Time To Resolution in hours
+app.get('/stats/mttr', (req, res) => {
+  const durations = data.tickets
+    .filter(t => t.status === 'closed')
+    .map(t => {
+      const created = (t.history || []).find(h => h.action === 'created');
+      const closed = (t.history || []).find(
+        h => h.action === 'status' && h.to === 'closed'
+      );
+      if (!created || !closed) return null;
+      return new Date(closed.date).getTime() - new Date(created.date).getTime();
+    })
+    .filter(d => d !== null);
+  const avg = durations.length
+    ? durations.reduce((sum, d) => sum + d, 0) / durations.length
+    : 0;
+  res.json({ mttr: avg / 3600000 });
+});
+
 // Asset management endpoints
 app.get('/assets', (req, res) => {
   let assets = data.assets || [];

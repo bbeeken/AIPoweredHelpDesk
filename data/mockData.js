@@ -35,6 +35,22 @@ module.exports = {
       history: [
         { action: 'created', by: 2, date: '2024-05-10T12:00:00Z' }
       ]
+    },
+    {
+      id: 2355,
+      assigneeId: 2,
+      submitterId: 1,
+      status: 'closed',
+      priority: 'high',
+      question: 'Why is the network slow?',
+      dueDate: '2024-05-15T12:00:00Z',
+      tags: ['network'],
+      comments: [],
+      attachments: [],
+      history: [
+        { action: 'created', by: 1, date: '2024-05-11T12:00:00Z' },
+        { action: 'status', from: 'open', to: 'closed', by: 2, date: '2024-05-12T12:00:00Z' }
+      ]
     }
   ],
   assets: [
