@@ -82,7 +82,25 @@ const server = app.listen(0, () => {
                                     resC.on('end', () => {
                                       const retrieved = JSON.parse(g);
                                       assert.strictEqual(retrieved.id, asset.id);
-                                      server.close(() => console.log('All tests passed'));
+                                      // stats endpoint
+                                      http.get({ port, path: '/stats' }, resStats => {
+                                        let st = '';
+                                        resStats.on('data', d => st += d);
+                                        resStats.on('end', () => {
+                                          const stats = JSON.parse(st);
+                                          assert.ok(stats.tickets.open >= 0);
+
+                                          http.get({ port, path: '/tickets/assigned/1' }, resAssign => {
+                                            let at = '';
+                                            resAssign.on('data', d => at += d);
+                                            resAssign.on('end', () => {
+                                              const assigned = JSON.parse(at);
+                                              assert.ok(Array.isArray(assigned));
+                                              server.close(() => console.log('All tests passed'));
+                                            });
+                                          });
+                                        });
+                                      });
                                     });
                                   });
                                 });
