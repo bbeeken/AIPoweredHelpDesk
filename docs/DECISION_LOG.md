@@ -224,3 +224,13 @@
 - **Date:** 2025-07-13
 - **Reasoning:** Provides visibility into outstanding work by counting overdue tickets per agent. Low risk read-only calculation.
 - **Impact:** Clients can GET `/stats/overdue` to see overdue ticket counts for each user.
+
+### Fixed asset listing routes order
+- **Date:** 2025-07-13
+- **Reasoning:** `/assets/depreciated` and `/assets/retired` were unreachable because they were defined after `/assets/:id`. Moved them earlier to ensure correct routing.
+- **Impact:** Clients can access these endpoints reliably again.
+
+### Added comment statistics endpoint
+- **Date:** 2025-07-13
+- **Reasoning:** Needed insight into comment activity per ticket. Simple aggregation with minimal risk.
+- **Impact:** Clients can GET `/stats/comments` to retrieve comment counts per ticket.

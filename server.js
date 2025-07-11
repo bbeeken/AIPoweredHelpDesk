@@ -596,7 +596,28 @@ app.get('/stats/overdue', (req, res) => {
   res.json(stats);
 });
 
+// Comment counts per ticket
+app.get('/stats/comments', (req, res) => {
+  const counts = {};
+  data.tickets.forEach(t => {
+    counts[t.id] = (t.comments || []).length;
+  });
+  res.json(counts);
+});
+
 // Asset management endpoints
+// List all depreciated assets
+app.get('/assets/depreciated', (req, res) => {
+  const assets = (data.assets || []).filter(a => a.depreciationDate);
+  res.json(assets);
+});
+
+// List all retired assets
+app.get('/assets/retired', (req, res) => {
+  const assets = (data.assets || []).filter(a => a.retirementDate);
+  res.json(assets);
+});
+
 app.get('/assets', (req, res) => {
   let assets = data.assets || [];
   const { tag, assignedTo, sortBy, order } = req.query;
@@ -804,17 +825,6 @@ app.post('/assets/:id/retire', (req, res) => {
   res.json(asset);
 });
 
-// List all depreciated assets
-app.get('/assets/depreciated', (req, res) => {
-  const assets = (data.assets || []).filter(a => a.depreciationDate);
-  res.json(assets);
-});
-
-// List all retired assets
-app.get('/assets/retired', (req, res) => {
-  const assets = (data.assets || []).filter(a => a.retirementDate);
-  res.json(assets);
-});
 
 // Search assets by name
 app.get('/assets/search', (req, res) => {
