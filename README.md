@@ -17,10 +17,10 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /health` – simple health check returning `{status:"ok"}`.
 
 - `GET /dashboard` – show a summary of tickets assigned to the current user.
-- `GET /tickets` – list all tickets.
-  You can filter by status, priority, tag or assignee using query parameters, e.g.
-  `GET /tickets?status=open&priority=high&tag=urgent&assignee=1`.
-  Results may also be sorted with `?sortBy=field&order=asc|desc`.
+  - `GET /tickets` – list all tickets.
+    You can filter by status, priority, tag, assignee or submitter using query parameters, e.g.
+    `GET /tickets?status=open&priority=high&tag=urgent&assignee=1&submitter=2`.
+    Results may also be sorted with `?sortBy=field&order=asc|desc`.
 - `GET /tickets/:id` – view a specific ticket.
 - `POST /tickets` – create a new ticket. Requires a `question` field in the body.
 - `PATCH /tickets/:id` – update ticket status, assignee, priority or `dueDate`.
