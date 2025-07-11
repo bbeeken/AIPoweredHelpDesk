@@ -214,3 +214,8 @@
 - **Date:** 2025-07-12
 - **Reasoning:** Helps staff quickly see when an asset was last serviced. Low risk read-only addition.
 - **Impact:** Clients can GET `/assets/:id/maintenance/last` to retrieve the latest maintenance record.
+
+### Added ticket manual assign endpoint
+- **Date:** 2025-07-12
+- **Reasoning:** Allows explicitly assigning a ticket to a user without sending a PATCH request. Minimal risk wrapper around existing update logic.
+- **Impact:** Clients can POST `/tickets/:id/assign/:userId` to change a ticket's assignee and log history.

@@ -222,6 +222,25 @@ app.post('/tickets/:id/reassign-least-busy', (req, res) => {
   res.json(ticket);
 });
 
+// Assign a ticket to a specific user
+app.post('/tickets/:id/assign/:userId', (req, res) => {
+  const ticket = data.tickets.find(t => t.id === Number(req.params.id));
+  if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+  const uid = Number(req.params.userId);
+  if (uid !== ticket.assigneeId) {
+    ticket.history = ticket.history || [];
+    ticket.history.push({
+      action: 'assignee',
+      from: ticket.assigneeId,
+      to: uid,
+      by: req.user.id,
+      date: new Date().toISOString()
+    });
+    ticket.assigneeId = uid;
+  }
+  res.json(ticket);
+});
+
 // Escalate a ticket to high priority
 app.post('/tickets/:id/escalate', (req, res) => {
   const ticket = data.tickets.find(t => t.id === Number(req.params.id));
