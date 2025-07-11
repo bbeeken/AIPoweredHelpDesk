@@ -12,6 +12,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - **Qdrant client script** for indexing ticket text in a vector database.
 - **Automatic Qdrant indexing** of newly created tickets when the server is running.
 - **Ticket escalation endpoint** for quickly setting priority to high.
+- **Offline-capable UI** using a service worker and web app manifest.
 
 ### API Endpoints
 - `GET /health` – simple health check returning `{status:"ok"}`.
@@ -100,3 +101,5 @@ The Qdrant client script can be used separately to index ticket text. See
 
 The n8n webhook URL can be configured via the `N8N_URL` environment variable.
 The Qdrant server URL can be set with the `QDRANT_URL` environment variable.
+
+After the first visit, the pages are cached for offline use via a service worker.

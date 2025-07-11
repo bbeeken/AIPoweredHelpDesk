@@ -1,0 +1,9 @@
+{
+  "name": "AI Powered Help Desk",
+  "short_name": "Help Desk",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "description": "Demo help desk with AI features"
+}
+

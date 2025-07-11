@@ -1,10 +1,13 @@
+
 const CACHE_NAME = 'helpdesk-cache-v1';
 const STATIC_FILES = [
+
   '/',
   '/index.html',
   '/chat.html',
   '/styles.css'
 ];
+
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -27,3 +30,4 @@ self.addEventListener('fetch', event => {
     )
   );
 });
+
