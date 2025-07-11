@@ -36,6 +36,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /assets/:id/history` – view the assignment history of an asset.
 - `GET /assets/assigned/:userId` – list assets assigned to a user.
 - `PATCH /assets/:id` – update asset `name` or `assignedTo`.
+- `POST /assets/:id/depreciate` – mark an asset as depreciated.
 
 ## Getting Started
 
