@@ -340,6 +340,16 @@ app.get('/tickets/:id/comments', (req, res) => {
   res.json(ticket.comments || []);
 });
 
+// Get a single comment from a ticket
+app.get('/tickets/:id/comments/:commentId', (req, res) => {
+  const ticket = data.tickets.find(t => t.id === Number(req.params.id));
+  if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+  const cid = Number(req.params.commentId);
+  const comment = (ticket.comments || []).find(c => (c.id || 0) === cid);
+  if (!comment) return res.status(404).json({ error: 'Comment not found' });
+  res.json(comment);
+});
+
 // Delete a comment from a ticket
 app.delete('/tickets/:id/comments/:commentId', (req, res) => {
   const ticket = data.tickets.find(t => t.id === Number(req.params.id));
