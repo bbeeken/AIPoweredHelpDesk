@@ -53,7 +53,36 @@ const server = app.listen(0, () => {
                         res6.on('end', () => {
                           const results = JSON.parse(s);
                           assert.ok(results.length >= 1);
-                          server.close(() => console.log('All tests passed'));
+
+                          // assets API
+                          http.get({ port, path: '/assets' }, resA => {
+                            let ad = '';
+                            resA.on('data', d => ad += d);
+                            resA.on('end', () => {
+                              const assets = JSON.parse(ad);
+                              assert.ok(Array.isArray(assets));
+
+                              const req = http.request({ port, path: '/assets', method: 'POST', headers: {'Content-Type':'application/json'} }, resB => {
+                                let pb = '';
+                                resB.on('data', c => pb += c);
+                                resB.on('end', () => {
+                                  const asset = JSON.parse(pb);
+                                  assert.ok(asset.name === 'Phone');
+
+                                  http.get({ port, path: `/assets/${asset.id}` }, resC => {
+                                    let g = '';
+                                    resC.on('data', cc => g += cc);
+                                    resC.on('end', () => {
+                                      const retrieved = JSON.parse(g);
+                                      assert.strictEqual(retrieved.id, asset.id);
+                                      server.close(() => console.log('All tests passed'));
+                                    });
+                                  });
+                                });
+                              });
+                              req.end(JSON.stringify({ name: 'Phone', assignedTo: 1 }));
+                            });
+                          });
                         });
                       });
                     });

@@ -6,8 +6,9 @@ const data = require('./data/mockData');
 const app = express();
 app.use(bodyParser.json());
 
-// helper to track next ticket id
+// helper to track next ticket and asset ids
 let nextTicketId = data.tickets.reduce((m, t) => Math.max(m, t.id), 0) + 1;
+let nextAssetId = (data.assets || []).reduce((m, a) => Math.max(m, a.id), 0) + 1;
 
 // Middleware to simulate authentication
 app.use((req, res, next) => {
@@ -15,16 +16,24 @@ app.use((req, res, next) => {
   next();
 });
 
-// Dashboard route
+// Dashboard route with ticket stats and asset info
 app.get('/dashboard', (req, res) => {
   const userTickets = data.tickets.filter(t => t.assigneeId === req.user.id);
+  const assets = data.assets.filter(a => a.assignedTo === req.user.id);
   const pending = userTickets.filter(t => t.status === 'waiting');
+  const openCount = userTickets.filter(t => t.status === 'open').length;
+  const closedCount = userTickets.filter(t => t.status === 'closed').length;
+
   let message = `Hi ${req.user.name}, you have ${userTickets.length} tickets assigned to you.`;
+  message += ` (${openCount} open / ${closedCount} closed)`;
   if (pending.length) {
     const t = pending[0];
     message += ` Ticket ${t.id} appears to be waiting for your response. They asked: ${t.question}`;
   }
-  res.json({message});
+  if (assets.length) {
+    message += ` You manage ${assets.length} assets.`;
+  }
+  res.json({ message });
 });
 
 // List all tickets
@@ -160,6 +169,39 @@ app.get('/tickets/overdue', (req, res) => {
   const now = Date.now();
   const tickets = data.tickets.filter(t => t.dueDate && new Date(t.dueDate).getTime() < now && t.status !== 'closed');
   res.json(tickets);
+});
+
+// Asset management endpoints
+app.get('/assets', (req, res) => {
+  res.json(data.assets || []);
+});
+
+app.post('/assets', (req, res) => {
+  const { name, assignedTo } = req.body;
+  if (!name) return res.status(400).json({ error: 'name required' });
+  const asset = {
+    id: nextAssetId++,
+    name,
+    assignedTo: assignedTo || null
+  };
+  data.assets = data.assets || [];
+  data.assets.push(asset);
+  res.status(201).json(asset);
+});
+
+app.get('/assets/:id', (req, res) => {
+  const asset = (data.assets || []).find(a => a.id === Number(req.params.id));
+  if (!asset) return res.status(404).json({ error: 'Asset not found' });
+  res.json(asset);
+});
+
+app.patch('/assets/:id', (req, res) => {
+  const asset = (data.assets || []).find(a => a.id === Number(req.params.id));
+  if (!asset) return res.status(404).json({ error: 'Asset not found' });
+  const { name, assignedTo } = req.body;
+  if (name) asset.name = name;
+  if (assignedTo !== undefined) asset.assignedTo = assignedTo;
+  res.json(asset);
 });
 
 // AI endpoint for natural language commands

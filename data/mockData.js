@@ -31,4 +31,9 @@ module.exports = {
       attachments: []
     }
   ]
+  ,
+  assets: [
+    { id: 1, name: 'Laptop', assignedTo: 1 },
+    { id: 2, name: 'Headset', assignedTo: 2 }
+  ]
 };
