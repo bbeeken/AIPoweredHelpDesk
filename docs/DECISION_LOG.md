@@ -154,3 +154,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Needed quick overview of workload and assets per user. Simple calculation built on existing data.
 - **Impact:** Clients can GET `/stats/user/:userId` to retrieve ticket counts and asset total for a user.
+
+### Added priority stats endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Needed visibility into ticket distribution by priority. Simple read-only calculation with minimal risk.
+- **Impact:** Clients can GET `/stats/priorities` to see counts for each priority level.

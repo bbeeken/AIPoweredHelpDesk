@@ -368,6 +368,16 @@ app.get('/stats/workload', (req, res) => {
   res.json(workload);
 });
 
+// Ticket counts per priority across all tickets
+app.get('/stats/priorities', (req, res) => {
+  const counts = {};
+  data.tickets.forEach(t => {
+    const p = t.priority || 'unspecified';
+    counts[p] = (counts[p] || 0) + 1;
+  });
+  res.json(counts);
+});
+
 // Summary stats for a specific user
 app.get('/stats/user/:userId', (req, res) => {
   const uid = Number(req.params.userId);
