@@ -79,3 +79,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Mirrors ticket filtering capabilities and simplifies retrieving assets for a user via query parameter. Low risk since it filters existing data.
 - **Impact:** Clients can GET `/assets?assignedTo=2` to list assets owned by user 2.
+
+### Introduced MTTR stats endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Exposes a metric to track average ticket resolution time, supporting operational reporting. Implementation calculates the duration between ticket creation and closure using history data.
+- **Impact:** Clients can GET `/stats/mttr` to retrieve the mean time to resolve tickets in hours.
