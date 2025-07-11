@@ -30,9 +30,10 @@ app.get('/dashboard', (req, res) => {
 // List all tickets
 app.get('/tickets', (req, res) => {
   let tickets = data.tickets;
-  const { status, priority } = req.query;
+  const { status, priority, tag } = req.query;
   if (status) tickets = tickets.filter(t => t.status === status);
   if (priority) tickets = tickets.filter(t => t.priority === priority);
+  if (tag) tickets = tickets.filter(t => (t.tags || []).includes(tag));
   res.json(tickets);
 });
 
@@ -45,7 +46,7 @@ app.get('/tickets/:id', (req, res) => {
 
 // Create a new ticket
 app.post('/tickets', (req, res) => {
-  const { question, assigneeId, priority } = req.body;
+  const { question, assigneeId, priority, dueDate, tags } = req.body;
   if (!question) return res.status(400).json({ error: 'question required' });
   const ticket = {
     id: nextTicketId++,
@@ -54,6 +55,8 @@ app.post('/tickets', (req, res) => {
     status: 'open',
     priority: priority || 'medium',
     question,
+    dueDate: dueDate || null,
+    tags: Array.isArray(tags) ? tags : [],
     comments: []
   };
   data.tickets.push(ticket);
@@ -64,10 +67,11 @@ app.post('/tickets', (req, res) => {
 app.patch('/tickets/:id', (req, res) => {
   const ticket = data.tickets.find(t => t.id === Number(req.params.id));
   if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
-  const { status, assigneeId, priority } = req.body;
+  const { status, assigneeId, priority, dueDate } = req.body;
   if (status) ticket.status = status;
   if (assigneeId) ticket.assigneeId = assigneeId;
   if (priority) ticket.priority = priority;
+  if (dueDate) ticket.dueDate = dueDate;
   res.json(ticket);
 });
 
@@ -104,6 +108,58 @@ app.post('/tickets/:id/comments', (req, res) => {
   const comment = { userId: req.user.id, text, date: new Date().toISOString() };
   ticket.comments.push(comment);
   res.status(201).json(comment);
+});
+
+// List tags for a ticket
+app.get('/tickets/:id/tags', (req, res) => {
+  const ticket = data.tickets.find(t => t.id === Number(req.params.id));
+  if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+  res.json(ticket.tags || []);
+});
+
+// Add tags to a ticket
+app.post('/tickets/:id/tags', (req, res) => {
+  const ticket = data.tickets.find(t => t.id === Number(req.params.id));
+  if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+  const { tag, tags } = req.body;
+  const newTags = tags || (tag ? [tag] : []);
+  if (!newTags.length) return res.status(400).json({ error: 'tag or tags required' });
+  ticket.tags = ticket.tags || [];
+  newTags.forEach(t => {
+    if (!ticket.tags.includes(t)) ticket.tags.push(t);
+  });
+  res.status(201).json(ticket.tags);
+});
+
+// Remove a tag from a ticket
+app.delete('/tickets/:id/tags/:tag', (req, res) => {
+  const ticket = data.tickets.find(t => t.id === Number(req.params.id));
+  if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+  const tag = req.params.tag;
+  ticket.tags = (ticket.tags || []).filter(t => t !== tag);
+  res.json(ticket.tags);
+});
+
+// Search tickets by text or tag
+app.get('/tickets/search', (req, res) => {
+  const { q } = req.query;
+  if (!q) return res.json([]);
+  const query = q.toLowerCase();
+  const tickets = data.tickets.filter(t => {
+    return (
+      t.question.toLowerCase().includes(query) ||
+      (t.comments || []).some(c => c.text.toLowerCase().includes(query)) ||
+      (t.tags || []).some(tag => tag.toLowerCase().includes(query))
+    );
+  });
+  res.json(tickets);
+});
+
+// List overdue tickets
+app.get('/tickets/overdue', (req, res) => {
+  const now = Date.now();
+  const tickets = data.tickets.filter(t => t.dueDate && new Date(t.dueDate).getTime() < now && t.status !== 'closed');
+  res.json(tickets);
 });
 
 // AI endpoint for natural language commands

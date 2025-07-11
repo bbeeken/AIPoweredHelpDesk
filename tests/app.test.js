@@ -34,7 +34,33 @@ const server = app.listen(0, () => {
             res3.on('end', () => {
               const attachments = JSON.parse(a);
               assert.ok(Array.isArray(attachments));
-              server.close(() => console.log('All tests passed'));
+
+              // add and verify tag
+              const post = http.request({ port, path: `/tickets/${tid}/tags`, method: 'POST', headers: {'Content-Type':'application/json'} }, res4 => {
+                res4.resume();
+                res4.on('end', () => {
+                  http.get({ port, path: `/tickets/${tid}/tags` }, res5 => {
+                    let tg = '';
+                    res5.on('data', c => tg += c);
+                    res5.on('end', () => {
+                      const tags = JSON.parse(tg);
+                      assert.ok(tags.includes('urgent'));
+
+                      // search endpoint
+                      http.get({ port, path: '/tickets/search?q=password' }, res6 => {
+                        let s = '';
+                        res6.on('data', cc => s += cc);
+                        res6.on('end', () => {
+                          const results = JSON.parse(s);
+                          assert.ok(results.length >= 1);
+                          server.close(() => console.log('All tests passed'));
+                        });
+                      });
+                    });
+                  });
+                });
+              });
+              post.end(JSON.stringify({ tag: 'urgent' }));
             });
           });
         });
