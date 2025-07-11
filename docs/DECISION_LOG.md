@@ -24,3 +24,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Provides quick visibility into tickets approaching their deadline. Low risk filter on existing ticket data.
 - **Impact:** Clients can fetch `/tickets/due-soon?days=2` to see tickets due in the next 2 days.
+
+### Added asset depreciation endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Allows tracking when assets are depreciated to improve lifecycle management. Minimal risk as it only sets a timestamp.
+- **Impact:** Clients can POST to `/assets/:id/depreciate` to mark an asset as depreciated.
