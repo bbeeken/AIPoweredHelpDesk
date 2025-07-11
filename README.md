@@ -13,6 +13,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - **Automatic Qdrant indexing** of newly created tickets when the server is running.
 
 ### API Endpoints
+- `GET /health` – simple health check returning `{status:"ok"}`.
 
 - `GET /dashboard` – show a summary of tickets assigned to the current user.
 - `GET /tickets` – list all tickets.
