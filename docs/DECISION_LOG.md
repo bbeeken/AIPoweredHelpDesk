@@ -239,3 +239,8 @@
 - **Date:** 2025-07-14
 - **Reasoning:** Completes comment CRUD API by allowing clients to fetch a specific comment. Very low risk read-only route.
 - **Impact:** Clients can GET `/tickets/:id/comments/:commentId` to view one comment.
+
+### Increased server keep-alive timeout
+- **Date:** 2025-07-15
+- **Reasoning:** Tests experienced intermittent socket hang ups due to Node's 5s default keep-alive timeout. Modified the custom Express server to set a 30s keep-alive which reduces connection resets.
+- **Impact:** All http servers created via `express` now hold connections open longer; no API changes.

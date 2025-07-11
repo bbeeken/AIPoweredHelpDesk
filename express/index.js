@@ -55,7 +55,13 @@ function createApp() {
     };
   });
 
-  app.listen = (port, cb) => http.createServer(app).listen(port, cb);
+  app.listen = (port, cb) => {
+    const server = http.createServer(app);
+    // Allow longer keep-alive so tests don't hit the default 5s timeout
+    server.keepAliveTimeout = 30000; // 30 seconds
+    server.headersTimeout = 32000;
+    return server.listen(port, cb);
+  };
   return app;
 }
 
