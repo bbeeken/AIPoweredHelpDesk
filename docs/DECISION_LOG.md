@@ -19,3 +19,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Enables storing ticket text in a vector database for future AI-powered search features. Standalone utility with no impact on the server.
 - **Impact:** Run `python utils/qdrant_client.py` to push tickets into Qdrant.
+
+### Added due-soon tickets endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Provides quick visibility into tickets approaching their deadline. Low risk filter on existing ticket data.
+- **Impact:** Clients can fetch `/tickets/due-soon?days=2` to see tickets due in the next 2 days.

@@ -229,6 +229,19 @@ app.get('/tickets/overdue', (req, res) => {
   res.json(tickets);
 });
 
+// List tickets due within the next N days (default 3)
+app.get('/tickets/due-soon', (req, res) => {
+  const days = Number(req.query.days) || 3;
+  const now = Date.now();
+  const cutoff = now + days * 24 * 60 * 60 * 1000;
+  const tickets = data.tickets.filter(t => {
+    if (!t.dueDate || t.status === 'closed') return false;
+    const due = new Date(t.dueDate).getTime();
+    return due >= now && due <= cutoff;
+  });
+  res.json(tickets);
+});
+
 // Simple system stats
 app.get('/stats', (req, res) => {
   const stats = {
