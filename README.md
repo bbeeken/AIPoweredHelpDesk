@@ -29,6 +29,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `DELETE /tickets/:id/tags/:tag` – remove a tag from a ticket.
 - `GET /tickets/search?q=text` – search tickets by question, comment or tag.
 - `GET /tickets/overdue` – list tickets past their `dueDate`.
+- `GET /tickets/due-soon?days=n` – list tickets due within the next `n` days (default 3).
 - `GET /assets` – list all assets.
 - `POST /assets` – create a new asset with `name` and optional `assignedTo`.
 - `GET /assets/:id` – view a specific asset.
