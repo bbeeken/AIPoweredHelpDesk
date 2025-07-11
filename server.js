@@ -340,9 +340,23 @@ app.post('/assets/:id/depreciate', (req, res) => {
   res.json(asset);
 });
 
+// Retire an asset by setting retirementDate to now
+app.post('/assets/:id/retire', (req, res) => {
+  const asset = (data.assets || []).find(a => a.id === Number(req.params.id));
+  if (!asset) return res.status(404).json({ error: 'Asset not found' });
+  asset.retirementDate = new Date().toISOString();
+  res.json(asset);
+});
+
 // List all depreciated assets
 app.get('/assets/depreciated', (req, res) => {
   const assets = (data.assets || []).filter(a => a.depreciationDate);
+  res.json(assets);
+});
+
+// List all retired assets
+app.get('/assets/retired', (req, res) => {
+  const assets = (data.assets || []).filter(a => a.retirementDate);
   res.json(assets);
 });
 

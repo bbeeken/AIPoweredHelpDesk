@@ -44,3 +44,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Allows staff to quickly find assets by name. Straightforward filter with minimal risk.
 - **Impact:** Clients can GET `/assets/search?q=term` to locate matching assets.
+
+### Added asset retirement endpoints
+- **Date:** 2025-07-11
+- **Reasoning:** Needed a way to mark assets as removed from service. Reuses existing in-memory data; low risk.
+- **Impact:** Clients can POST `/assets/:id/retire` and GET `/assets/retired` to manage retired equipment.
