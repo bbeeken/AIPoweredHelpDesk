@@ -31,6 +31,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /assets` – list all assets.
 - `POST /assets` – create a new asset with `name` and optional `assignedTo`.
 - `GET /assets/:id` – view a specific asset.
+- `GET /assets/assigned/:userId` – list assets assigned to a user.
 - `PATCH /assets/:id` – update asset `name` or `assignedTo`.
 
 ## Getting Started
