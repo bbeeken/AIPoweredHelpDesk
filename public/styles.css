@@ -16,6 +16,18 @@ nav a {
 button {
   padding: 0.5em 1em;
 }
+
+
+.skip-link:focus {
+  left: 1em;
+  top: 1em;
+  width: auto;
+  height: auto;
+  padding: 0.5em 1em;
+  background: #000;
+  color: #fff;
+  z-index: 1000;
+
 #searchForm {
   margin-bottom: 1em;
 }
@@ -24,6 +36,7 @@ button {
 }
 #searchForm button {
   margin-left: 0.5em;
+
 }
 #messages {
   border: 1px solid #ccc;
