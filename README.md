@@ -22,6 +22,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /tickets/:id` – view a specific ticket.
 - `POST /tickets` – create a new ticket. Requires a `question` field in the body.
 - `PATCH /tickets/:id` – update ticket status, assignee, priority or `dueDate`.
+- `DELETE /tickets/:id` – remove a ticket completely.
 - `POST /tickets/:id/reassign-least-busy` – automatically assign the ticket to the agent with the fewest open tickets.
 - `POST /tickets/:id/comments` – add a comment to a ticket.
 - `GET /tickets/:id/attachments` – list attachments for a ticket.
@@ -41,6 +42,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /assets/:id/history` – view the creation and assignment history of an asset.
 - `GET /assets/assigned/:userId` – list assets assigned to a user.
 - `PATCH /assets/:id` – update asset `name` or `assignedTo`.
+- `DELETE /assets/:id` – remove an asset from inventory.
 - `POST /assets/:id/depreciate` – mark an asset as depreciated.
 - `GET /assets/depreciated` – list all depreciated assets.
 - `POST /assets/:id/retire` – mark an asset as retired.

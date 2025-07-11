@@ -124,3 +124,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Provides visibility into asset categories by counting assets per tag. Read-only calculation with minimal risk.
 - **Impact:** Clients can GET `/stats/asset-tags` to see asset counts by tag.
+
+### Added ticket and asset deletion endpoints
+- **Date:** 2025-07-11
+- **Reasoning:** Needed a way to fully remove records from the system. Straightforward array splice operations carry minimal risk.
+- **Impact:** Clients can DELETE `/tickets/:id` and `/assets/:id` to delete items.

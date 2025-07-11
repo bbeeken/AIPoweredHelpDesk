@@ -146,6 +146,16 @@ app.patch('/tickets/:id', (req, res) => {
   res.json(ticket);
 });
 
+// Delete a ticket
+app.delete('/tickets/:id', (req, res) => {
+  const index = data.tickets.findIndex(t => t.id === Number(req.params.id));
+  if (index === -1) {
+    return res.status(404).json({ error: 'Ticket not found' });
+  }
+  data.tickets.splice(index, 1);
+  res.json({ success: true });
+});
+
 // Reassign ticket to the least busy user
 app.post('/tickets/:id/reassign-least-busy', (req, res) => {
   const ticket = data.tickets.find(t => t.id === Number(req.params.id));
@@ -442,6 +452,16 @@ app.patch('/assets/:id', (req, res) => {
     asset.assignedTo = assignedTo;
   }
   res.json(asset);
+});
+
+// Delete an asset
+app.delete('/assets/:id', (req, res) => {
+  const index = (data.assets || []).findIndex(a => a.id === Number(req.params.id));
+  if (index === -1) {
+    return res.status(404).json({ error: 'Asset not found' });
+  }
+  data.assets.splice(index, 1);
+  res.json({ success: true });
 });
 
 // List tags for an asset
