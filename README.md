@@ -37,6 +37,8 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /assets/assigned/:userId` – list assets assigned to a user.
 - `PATCH /assets/:id` – update asset `name` or `assignedTo`.
 - `POST /assets/:id/depreciate` – mark an asset as depreciated.
+- `GET /assets/:id/maintenance` – view maintenance records for an asset.
+- `POST /assets/:id/maintenance` – add a maintenance record with `description` and optional `cost`.
 
 ## Getting Started
 
