@@ -1,4 +1,3 @@
-const axios = require('axios');
 const crypto = require('crypto');
 
 function textToVector(text, dim = 32) {
@@ -17,8 +16,10 @@ async function addTicketText(id, text, collection = 'tickets', qdrantUrl = proce
       { id, payload: { text }, vector }
     ]
   };
-  await axios.put(`${qdrantUrl}/collections/${collection}/points`, payload, {
-    headers: { 'Content-Type': 'application/json' }
+  await fetch(`${qdrantUrl}/collections/${collection}/points`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
   });
 }
 

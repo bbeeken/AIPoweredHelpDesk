@@ -1,6 +1,6 @@
-const express = require('express');
+const express = require('./express');
 const path = require('path');
-const bodyParser = require('body-parser');
+const bodyParser = require('./body-parser');
 const n8nClient = require('./utils/n8nClient');
 const qdrant = require('./utils/qdrantClient');
 const data = require('./data/mockData');
@@ -68,6 +68,21 @@ app.get('/tickets', (req, res) => {
   if (priority) tickets = tickets.filter(t => t.priority === priority);
   if (tag) tickets = tickets.filter(t => (t.tags || []).includes(tag));
   if (assignee) tickets = tickets.filter(t => t.assigneeId === Number(assignee));
+  res.json(tickets);
+});
+
+// Search tickets by text or tag
+app.get('/tickets/search', (req, res) => {
+  const { q } = req.query;
+  if (!q) return res.json([]);
+  const query = q.toLowerCase();
+  const tickets = data.tickets.filter(t => {
+    return (
+      t.question.toLowerCase().includes(query) ||
+      (t.comments || []).some(c => c.text.toLowerCase().includes(query)) ||
+      (t.tags || []).some(tag => tag.toLowerCase().includes(query))
+    );
+  });
   res.json(tickets);
 });
 
@@ -300,21 +315,6 @@ app.delete('/tickets/:id/tags/:tag', (req, res) => {
   const tag = req.params.tag;
   ticket.tags = (ticket.tags || []).filter(t => t !== tag);
   res.json(ticket.tags);
-});
-
-// Search tickets by text or tag
-app.get('/tickets/search', (req, res) => {
-  const { q } = req.query;
-  if (!q) return res.json([]);
-  const query = q.toLowerCase();
-  const tickets = data.tickets.filter(t => {
-    return (
-      t.question.toLowerCase().includes(query) ||
-      (t.comments || []).some(c => c.text.toLowerCase().includes(query)) ||
-      (t.tags || []).some(tag => tag.toLowerCase().includes(query))
-    );
-  });
-  res.json(tickets);
 });
 
 // List overdue tickets
