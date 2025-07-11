@@ -570,6 +570,21 @@ app.get("/stats/mttr", (req, res) => {
   res.json({ mttr: avg / 3600000 });
 });
 
+// Predict ticket creation volume for the next N days (default 7)
+app.get("/stats/forecast", (req, res) => {
+  const days = Number(req.query.days) || 7;
+  const counts = {};
+  data.tickets.forEach((t) => {
+    const created = (t.history || []).find((h) => h.action === "created");
+    if (!created) return;
+    const d = new Date(created.date).toISOString().slice(0, 10);
+    counts[d] = (counts[d] || 0) + 1;
+  });
+  const total = Object.values(counts).reduce((sum, c) => sum + c, 0);
+  const avg = Object.keys(counts).length ? total / Object.keys(counts).length : 0;
+  res.json({ forecast: avg * days });
+});
+
 // Ticket counts per user by status
 app.get("/stats/workload", (req, res) => {
   const workload = data.users.map((u) => ({

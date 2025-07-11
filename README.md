@@ -81,6 +81,7 @@ For the long-term roadmap, see [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.
 - `GET /stats/maintenance-cost` – total maintenance cost per asset.
 - `GET /stats/comments` – number of comments per ticket.
 - `GET /stats/overdue` – counts of overdue tickets per user.
+- `GET /stats/forecast?days=N` – predicted ticket volume for the next N days.
 - `GET /stats/user/:userId` – summary of ticket counts and assets for a user.
 
 ## Getting Started
