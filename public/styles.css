@@ -16,6 +16,13 @@ nav a {
 button {
   padding: 0.5em 1em;
 }
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid #005fcc;
+  outline-offset: 2px;
+}
 #messages {
   border: 1px solid #ccc;
   padding: 1em;
