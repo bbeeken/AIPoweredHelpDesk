@@ -63,11 +63,31 @@ app.get('/dashboard', (req, res) => {
 // List all tickets
 app.get('/tickets', (req, res) => {
   let tickets = data.tickets;
-  const { status, priority, tag, assignee } = req.query;
+  const { status, priority, tag, assignee, sortBy, order } = req.query;
   if (status) tickets = tickets.filter(t => t.status === status);
   if (priority) tickets = tickets.filter(t => t.priority === priority);
   if (tag) tickets = tickets.filter(t => (t.tags || []).includes(tag));
   if (assignee) tickets = tickets.filter(t => t.assigneeId === Number(assignee));
+  if (sortBy) {
+    const dir = order === 'desc' ? -1 : 1;
+    tickets = tickets.slice().sort((a, b) => {
+      const av = a[sortBy];
+      const bv = b[sortBy];
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      const aDate = Date.parse(av);
+      const bDate = Date.parse(bv);
+      if (!isNaN(aDate) && !isNaN(bDate)) {
+        return (aDate - bDate) * dir;
+      }
+      const aNum = Number(av);
+      const bNum = Number(bv);
+      if (!isNaN(aNum) && !isNaN(bNum)) {
+        return (aNum - bNum) * dir;
+      }
+      return av > bv ? dir : av < bv ? -dir : 0;
+    });
+  }
   res.json(tickets);
 });
 
@@ -467,11 +487,26 @@ app.get('/stats/assets-per-user', (req, res) => {
 // Asset management endpoints
 app.get('/assets', (req, res) => {
   let assets = data.assets || [];
-  const { tag, assignedTo } = req.query;
+  const { tag, assignedTo, sortBy, order } = req.query;
   if (tag) assets = assets.filter(a => (a.tags || []).includes(tag));
   if (assignedTo !== undefined) {
     const assignedId = Number(assignedTo);
     assets = assets.filter(a => Number(a.assignedTo) === assignedId);
+  }
+  if (sortBy) {
+    const dir = order === 'desc' ? -1 : 1;
+    assets = assets.slice().sort((a, b) => {
+      const av = a[sortBy];
+      const bv = b[sortBy];
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      const aNum = Number(av);
+      const bNum = Number(bv);
+      if (!isNaN(aNum) && !isNaN(bNum)) {
+        return (aNum - bNum) * dir;
+      }
+      return av > bv ? dir : av < bv ? -dir : 0;
+    });
   }
   res.json(assets);
 });
