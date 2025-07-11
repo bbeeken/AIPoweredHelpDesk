@@ -24,3 +24,7 @@
 
 ## [2025-07-20] Added Prettier formatting command
 - Introduced `npm run format` script using Prettier for JS, JSON and Markdown files.
+
+## [2025-07-21] Fixed CSS focus styles
+- Closed unbalanced rule in `styles.css` and removed duplicate skip link declarations.
+- Ensures focus outlines and skip link display correctly across pages.

@@ -23,6 +23,7 @@ button:focus-visible,
 input:focus-visible {
   outline: 3px solid #005fcc;
   outline-offset: 2px;
+}
 
 
 .skip-link:focus {
@@ -34,6 +35,7 @@ input:focus-visible {
   background: #000;
   color: #fff;
   z-index: 1000;
+}
 
 #searchForm {
   margin-bottom: 1em;
@@ -51,20 +53,6 @@ input:focus-visible {
   height: 300px;
   overflow-y: auto;
   margin-bottom: 1em;
-}
-.skip-link {
-  position: absolute;
-  left: -10000px;
-  top: auto;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-}
-.skip-link:focus {
-  position: static;
-  width: auto;
-  height: auto;
-  margin: 1em;
 }
 .visually-hidden {
   position: absolute;
