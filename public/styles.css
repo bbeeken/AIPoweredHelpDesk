@@ -18,6 +18,13 @@ button {
 }
 
 
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid #005fcc;
+  outline-offset: 2px;
+
+
 .skip-link:focus {
   left: 1em;
   top: 1em;
