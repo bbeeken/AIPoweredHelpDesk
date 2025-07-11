@@ -279,8 +279,9 @@ app.get('/stats', (req, res) => {
 // Asset management endpoints
 app.get('/assets', (req, res) => {
   let assets = data.assets || [];
-  const { tag } = req.query;
+  const { tag, assignedTo } = req.query;
   if (tag) assets = assets.filter(a => (a.tags || []).includes(tag));
+  if (assignedTo) assets = assets.filter(a => String(a.assignedTo) === String(assignedTo));
   res.json(assets);
 });
 

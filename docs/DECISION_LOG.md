@@ -74,3 +74,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Provides visibility into tickets lingering in the queue for long periods. Uses existing history data to compute creation date. Minimal risk read-only endpoint.
 - **Impact:** Clients can GET `/tickets/aging?days=7` to list old open tickets.
+
+### Added assignedTo filter for assets list
+- **Date:** 2025-07-11
+- **Reasoning:** Mirrors ticket filtering capabilities and simplifies retrieving assets for a user via query parameter. Low risk since it filters existing data.
+- **Impact:** Clients can GET `/assets?assignedTo=2` to list assets owned by user 2.
