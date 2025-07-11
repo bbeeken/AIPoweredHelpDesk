@@ -129,3 +129,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Needed a way to fully remove records from the system. Straightforward array splice operations carry minimal risk.
 - **Impact:** Clients can DELETE `/tickets/:id` and `/assets/:id` to delete items.
+
+### Improved asset history records
+- **Date:** 2025-07-11
+- **Reasoning:** Asset history entries lacked context when updating name or assignment. Adding detailed actions and user tracking improves auditing with minimal complexity.
+- **Impact:** PATCH `/assets/:id` now logs `name` and `assignee` changes with `action`, `from`, `to`, `by` and `date` fields.

@@ -444,11 +444,25 @@ app.patch('/assets/:id', (req, res) => {
   const { name, assignedTo } = req.body;
   const now = new Date().toISOString();
   if (name && name !== asset.name) {
+    asset.history = asset.history || [];
+    asset.history.push({
+      action: 'name',
+      from: asset.name,
+      to: name,
+      by: req.user.id,
+      date: now
+    });
     asset.name = name;
   }
   if (assignedTo !== undefined && assignedTo !== asset.assignedTo) {
     asset.history = asset.history || [];
-    asset.history.push({ from: asset.assignedTo, to: assignedTo, date: now });
+    asset.history.push({
+      action: 'assignee',
+      from: asset.assignedTo,
+      to: assignedTo,
+      by: req.user.id,
+      date: now
+    });
     asset.assignedTo = assignedTo;
   }
   res.json(asset);

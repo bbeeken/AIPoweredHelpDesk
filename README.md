@@ -39,9 +39,9 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /assets` – list all assets. Filter by tag with `?tag=value` or by assignee with `?assignedTo=userId`.
 - `POST /assets` – create a new asset with `name`, optional `assignedTo` and optional `tags` array. Creation is recorded in the asset's history.
 - `GET /assets/:id` – view a specific asset.
-- `GET /assets/:id/history` – view the creation and assignment history of an asset.
+- `GET /assets/:id/history` – view the creation, assignment and name change history of an asset.
 - `GET /assets/assigned/:userId` – list assets assigned to a user.
-- `PATCH /assets/:id` – update asset `name` or `assignedTo`.
+- `PATCH /assets/:id` – update asset `name` or `assignedTo`. Changes are logged in the asset's history.
 - `DELETE /assets/:id` – remove an asset from inventory.
 - `POST /assets/:id/depreciate` – mark an asset as depreciated.
 - `GET /assets/depreciated` – list all depreciated assets.
