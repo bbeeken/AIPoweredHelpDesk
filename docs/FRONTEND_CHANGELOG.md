@@ -10,7 +10,9 @@
 - Added mobile-friendly input sizing and navigation link from chat page back to the dashboard.
 - Clean markup and unified appearance make the demo easier to maintain and use on small screens.
 
-## [2025-07-18] Added ticket search and skip navigation
-- Introduced a search form on the dashboard page to query tickets by text using the existing API.
-- Added a "Skip to content" link for keyboard users and styled it for accessibility.
-- Styles updated to support the new form and skip link.
+
+## [2025-07-18] Added skip link for accessibility
+- Introduced a hidden "Skip to content" link that appears when focused.
+- Added `id="main"` to main sections and styles in `styles.css`.
+- Keyboard users can now jump directly to page content.
+

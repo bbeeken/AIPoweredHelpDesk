@@ -57,6 +57,24 @@ button {
   white-space: nowrap;
   border: 0;
 }
+.skip-link {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.skip-link:focus {
+  left: 0;
+  top: 0;
+  width: auto;
+  height: auto;
+  background: #000;
+  color: #fff;
+  padding: 1em;
+  z-index: 1000;
+}
 @media (max-width: 600px) {
   body {
     padding: 0.5rem;
