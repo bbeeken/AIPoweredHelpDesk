@@ -249,6 +249,13 @@ app.get('/assets', (req, res) => {
   res.json(data.assets || []);
 });
 
+// Assets assigned to a specific user
+app.get('/assets/assigned/:userId', (req, res) => {
+  const uid = Number(req.params.userId);
+  const assets = (data.assets || []).filter(a => a.assignedTo === uid);
+  res.json(assets);
+});
+
 app.post('/assets', (req, res) => {
   const { name, assignedTo } = req.body;
   if (!name) return res.status(400).json({ error: 'name required' });

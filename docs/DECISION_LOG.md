@@ -4,3 +4,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Needed API to audit ticket changes. Lightweight addition with minimal risk.
 - **Impact:** Clients can fetch `/tickets/:id/history` to view modifications.
+
+### Added assets assigned-to-user endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Improves staff workflow by quickly listing assets owned by a user. Low risk; simple filter on existing data.
+- **Impact:** Clients can fetch `/assets/assigned/:userId` to see assets per user.
