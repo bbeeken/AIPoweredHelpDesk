@@ -2,6 +2,8 @@
 
 This project is a simple Node.js/Express application that demonstrates how an AI driven help desk might work with n8n integration.
 
+For the long-term roadmap, see [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md).
+
 ## Features
 
 - **Dashboard** route that greets the logged in user and summarizes their assigned tickets.
