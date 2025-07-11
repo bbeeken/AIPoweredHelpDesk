@@ -255,7 +255,9 @@
 - **Reasoning:** Inline styles on each page duplicated code and limited responsive enhancements. Consolidating them into a shared stylesheet simplifies maintenance and allows mobile tweaks.
 - **Impact:** Both `index.html` and `chat.html` now load `styles.css`, providing consistent look and navigation across the demo.
 
-### Added skip navigation link
+
+### Added skip link for keyboard navigation
 - **Date:** 2025-07-18
-- **Reasoning:** Keyboard users needed a quick way to bypass repetitive navigation. Adding a skip link offers a low-effort accessibility improvement.
-- **Impact:** All pages include a focusable "Skip to main content" link enabling faster navigation for assistive technology users.
+- **Reasoning:** Keyboard and screen reader users benefit from a quick way to bypass repetitive headers.
+- **Impact:** `index.html` and `chat.html` include a focusable "Skip to content" link styled in `styles.css`.
+

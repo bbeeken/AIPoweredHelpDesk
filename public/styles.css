@@ -16,14 +16,7 @@ nav a {
 button {
   padding: 0.5em 1em;
 }
-.skip-link {
-  position: absolute;
-  left: -999px;
-  top: auto;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-}
+
 
 .skip-link:focus {
   left: 1em;
@@ -34,6 +27,16 @@ button {
   background: #000;
   color: #fff;
   z-index: 1000;
+
+#searchForm {
+  margin-bottom: 1em;
+}
+#searchForm input {
+  padding: 0.5em;
+}
+#searchForm button {
+  margin-left: 0.5em;
+
 }
 #messages {
   border: 1px solid #ccc;
@@ -41,6 +44,20 @@ button {
   height: 300px;
   overflow-y: auto;
   margin-bottom: 1em;
+}
+.skip-link {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.skip-link:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 1em;
 }
 .visually-hidden {
   position: absolute;
@@ -52,6 +69,24 @@ button {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+.skip-link {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.skip-link:focus {
+  left: 0;
+  top: 0;
+  width: auto;
+  height: auto;
+  background: #000;
+  color: #fff;
+  padding: 1em;
+  z-index: 1000;
 }
 @media (max-width: 600px) {
   body {
