@@ -69,3 +69,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Enables categorizing assets and filtering by tag. Straightforward addition using arrays.
 - **Impact:** Clients can GET/POST/DELETE `/assets/:id/tags` and filter assets with `GET /assets?tag=value`.
+
+### Added aging tickets endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Provides visibility into tickets lingering in the queue for long periods. Uses existing history data to compute creation date. Minimal risk read-only endpoint.
+- **Impact:** Clients can GET `/tickets/aging?days=7` to list old open tickets.

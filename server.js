@@ -247,6 +247,20 @@ app.get('/tickets/due-soon', (req, res) => {
   res.json(tickets);
 });
 
+// List open tickets created more than N days ago (default 7)
+app.get('/tickets/aging', (req, res) => {
+  const days = Number(req.query.days) || 7;
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+  const tickets = data.tickets.filter(t => {
+    if (t.status === 'closed') return false;
+    const createdEntry = (t.history || []).find(h => h.action === 'created');
+    if (!createdEntry) return false;
+    const created = new Date(createdEntry.date).getTime();
+    return created < cutoff;
+  });
+  res.json(tickets);
+});
+
 // Simple system stats
 app.get('/stats', (req, res) => {
   const stats = {
