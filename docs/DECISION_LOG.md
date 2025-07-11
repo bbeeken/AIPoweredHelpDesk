@@ -144,3 +144,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Provides visibility into asset distribution among staff. Low risk read-only calculation.
 - **Impact:** Clients can GET `/stats/assets-per-user` to see asset counts per user.
+
+### Recorded depreciation and retirement in asset history
+- **Date:** 2025-07-11
+- **Reasoning:** Depreciation and retirement actions were not tracked, limiting lifecycle auditing. Adding history entries has minimal risk.
+- **Impact:** POST `/assets/:id/depreciate` and `/assets/:id/retire` now append `depreciated` or `retired` events to asset history.

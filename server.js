@@ -551,7 +551,14 @@ app.get('/assets/:id/maintenance/total-cost', (req, res) => {
 app.post('/assets/:id/depreciate', (req, res) => {
   const asset = (data.assets || []).find(a => a.id === Number(req.params.id));
   if (!asset) return res.status(404).json({ error: 'Asset not found' });
-  asset.depreciationDate = new Date().toISOString();
+  const now = new Date().toISOString();
+  asset.depreciationDate = now;
+  asset.history = asset.history || [];
+  asset.history.push({
+    action: 'depreciated',
+    by: req.user.id,
+    date: now
+  });
   res.json(asset);
 });
 
@@ -559,7 +566,14 @@ app.post('/assets/:id/depreciate', (req, res) => {
 app.post('/assets/:id/retire', (req, res) => {
   const asset = (data.assets || []).find(a => a.id === Number(req.params.id));
   if (!asset) return res.status(404).json({ error: 'Asset not found' });
-  asset.retirementDate = new Date().toISOString();
+  const now = new Date().toISOString();
+  asset.retirementDate = now;
+  asset.history = asset.history || [];
+  asset.history.push({
+    action: 'retired',
+    by: req.user.id,
+    date: now
+  });
   res.json(asset);
 });
 
