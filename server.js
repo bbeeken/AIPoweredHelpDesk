@@ -369,6 +369,17 @@ app.get('/stats/tags', (req, res) => {
   res.json(counts);
 });
 
+// Asset counts per tag across all assets
+app.get('/stats/asset-tags', (req, res) => {
+  const counts = {};
+  (data.assets || []).forEach(a => {
+    (a.tags || []).forEach(tag => {
+      counts[tag] = (counts[tag] || 0) + 1;
+    });
+  });
+  res.json(counts);
+});
+
 // Asset management endpoints
 app.get('/assets', (req, res) => {
   let assets = data.assets || [];

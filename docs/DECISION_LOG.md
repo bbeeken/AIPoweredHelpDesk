@@ -119,3 +119,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Users needed a way to remove uploaded files from tickets. Implementation mirrors other delete operations and carries minimal risk.
 - **Impact:** Clients can DELETE `/tickets/:id/attachments/:attachmentId` to remove attachments.
+
+### Added asset tag stats endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Provides visibility into asset categories by counting assets per tag. Read-only calculation with minimal risk.
+- **Impact:** Clients can GET `/stats/asset-tags` to see asset counts by tag.
