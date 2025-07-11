@@ -27,6 +27,8 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `DELETE /tickets/:id` – remove a ticket completely.
 - `POST /tickets/:id/reassign-least-busy` – automatically assign the ticket to the agent with the fewest open tickets.
 - `POST /tickets/:id/escalate` – set ticket priority to high.
+- `POST /tickets/:id/close` – change ticket status to closed.
+- `POST /tickets/:id/reopen` – reopen a closed ticket.
 - `POST /tickets/:id/comments` – add a comment to a ticket.
 - `PATCH /tickets/:id/comments/:commentId` – edit a comment's text.
 - `DELETE /tickets/:id/comments/:commentId` – remove a comment from a ticket.

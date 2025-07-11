@@ -223,6 +223,30 @@ app.post('/tickets/:id/escalate', (req, res) => {
   res.json(ticket);
 });
 
+// Close a ticket
+app.post('/tickets/:id/close', (req, res) => {
+  const ticket = data.tickets.find(t => t.id === Number(req.params.id));
+  if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+  if (ticket.status !== 'closed') {
+    ticket.history = ticket.history || [];
+    ticket.history.push({ action: 'status', from: ticket.status, to: 'closed', by: req.user.id, date: new Date().toISOString() });
+    ticket.status = 'closed';
+  }
+  res.json(ticket);
+});
+
+// Reopen a ticket
+app.post('/tickets/:id/reopen', (req, res) => {
+  const ticket = data.tickets.find(t => t.id === Number(req.params.id));
+  if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+  if (ticket.status !== 'open') {
+    ticket.history = ticket.history || [];
+    ticket.history.push({ action: 'status', from: ticket.status, to: 'open', by: req.user.id, date: new Date().toISOString() });
+    ticket.status = 'open';
+  }
+  res.json(ticket);
+});
+
 // List attachments for a ticket
 app.get('/tickets/:id/attachments', (req, res) => {
   const ticket = data.tickets.find(t => t.id === Number(req.params.id));
