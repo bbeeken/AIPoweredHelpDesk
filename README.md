@@ -10,6 +10,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - **AI endpoint** that forwards natural language text to an n8n workflow for processing.
 - Mock data for users, tickets and assets to simulate a database.
 - **Qdrant client script** for indexing ticket text in a vector database.
+- **Automatic Qdrant indexing** of newly created tickets when the server is running.
 
 ### API Endpoints
 
@@ -63,3 +64,4 @@ The Qdrant client script can be used separately to index ticket text. See
 `docs/QDRANT_CLIENT.md` for details.
 
 The n8n webhook URL can be configured via the `N8N_URL` environment variable.
+The Qdrant server URL can be set with the `QDRANT_URL` environment variable.

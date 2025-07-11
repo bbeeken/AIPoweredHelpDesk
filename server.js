@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
 const n8nClient = require('./utils/n8nClient');
+const qdrant = require('./utils/qdrantClient');
 const data = require('./data/mockData');
 
 const app = express();
@@ -100,6 +101,9 @@ app.post('/tickets', (req, res) => {
   };
   data.tickets.push(ticket);
   res.status(201).json(ticket);
+  qdrant
+    .addTicketText(ticket.id, ticket.question)
+    .catch(err => console.error('Qdrant indexing failed:', err.message));
 });
 
 // Update an existing ticket

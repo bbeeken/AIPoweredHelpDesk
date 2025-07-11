@@ -54,3 +54,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Simplifies retrieving tickets assigned to a specific user without a separate endpoint. Minimal risk query filter.
 - **Impact:** Clients can GET `/tickets?assignee=1` to list tickets for user 1.
+
+### Integrated automatic Qdrant indexing on ticket creation
+- **Date:** 2025-07-11
+- **Reasoning:** Reduces manual steps by pushing new ticket text to Qdrant automatically.
+- **Impact:** Tickets are indexed in the vector database as soon as they are created; failures are logged without affecting the API.
