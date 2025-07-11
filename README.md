@@ -43,6 +43,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /tickets/overdue` – list tickets past their `dueDate`.
 - `GET /tickets/due-soon?days=n` – list tickets due within the next `n` days (default 3).
 - `GET /tickets/aging?days=n` – list open tickets created more than `n` days ago (default 7).
+- `GET /tickets/recent?limit=n` – list the most recently created tickets (default 5).
 - `GET /tickets/unassigned` – list tickets that have no assignee.
 - `GET /assets` – list all assets. Filter by tag with `?tag=value` or by assignee with `?assignedTo=userId`.
   Results may also be sorted with `?sortBy=field&order=asc|desc`.
