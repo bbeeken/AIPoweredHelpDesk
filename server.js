@@ -732,6 +732,15 @@ app.get('/assets/:id/maintenance/total-cost', (req, res) => {
   res.json({ total });
 });
 
+// Get the most recent maintenance record for an asset
+app.get('/assets/:id/maintenance/last', (req, res) => {
+  const asset = (data.assets || []).find(a => a.id === Number(req.params.id));
+  if (!asset) return res.status(404).json({ error: 'Asset not found' });
+  const records = asset.maintenance || [];
+  if (!records.length) return res.status(404).json({ error: 'No maintenance records' });
+  res.json(records[records.length - 1]);
+});
+
 // Mark an asset as depreciated by setting depreciationDate to now
 app.post('/assets/:id/depreciate', (req, res) => {
   const asset = (data.assets || []).find(a => a.id === Number(req.params.id));

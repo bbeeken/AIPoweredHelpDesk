@@ -62,6 +62,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /assets/:id/maintenance` – view maintenance records for an asset.
 - `POST /assets/:id/maintenance` – add a maintenance record with `description` and optional `cost`.
 - `GET /assets/:id/maintenance/total-cost` – get the sum of all maintenance costs for an asset.
+- `GET /assets/:id/maintenance/last` – get the most recent maintenance record for an asset.
 - `GET /assets/:id/tags` – list tags for an asset.
 - `POST /assets/:id/tags` – add one or more tags to an asset.
 - `DELETE /assets/:id/tags/:tag` – remove a tag from an asset.

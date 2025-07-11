@@ -205,4 +205,12 @@
 - **Date:** 2025-07-12
 - **Reasoning:** Users wanted an easy way to view the newest tickets. Sorting by creation date and limiting results is low risk.
 - **Impact:** Clients can GET `/tickets/recent?limit=5` to fetch the latest tickets.
-\n### Added CORS middleware\n- **Date:** 2025-07-11\n- **Reasoning:** Allow cross-origin requests for API consumers. Simple headers with minimal risk.\n- **Impact:** All routes now respond with `Access-Control-Allow-Origin: *` and handle OPTIONS preflight.\n
+### Added CORS middleware
+- **Date:** 2025-07-11
+- **Reasoning:** Allow cross-origin requests for API consumers. Simple headers with minimal risk.
+- **Impact:** All routes now respond with `Access-Control-Allow-Origin: *` and handle OPTIONS preflight.
+
+### Added asset last-maintenance endpoint
+- **Date:** 2025-07-12
+- **Reasoning:** Helps staff quickly see when an asset was last serviced. Low risk read-only addition.
+- **Impact:** Clients can GET `/assets/:id/maintenance/last` to retrieve the latest maintenance record.
