@@ -39,3 +39,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Helps staff track which assets are no longer in active service. Low risk filter of in-memory data.
 - **Impact:** Clients can GET `/assets/depreciated` to retrieve all assets with a `depreciationDate`.
+
+### Added asset search endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Allows staff to quickly find assets by name. Straightforward filter with minimal risk.
+- **Impact:** Clients can GET `/assets/search?q=term` to locate matching assets.
