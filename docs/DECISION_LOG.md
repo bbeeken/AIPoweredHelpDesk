@@ -195,3 +195,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Allows quick resolution or reopening of tickets without manual PATCH calls. Uses existing history logging so risk is low.
 - **Impact:** Clients can POST `/tickets/:id/close` and `/tickets/:id/reopen` to change ticket status with history entries.
+
+### Added maintenance cost stats endpoint
+- **Date:** 2025-07-12
+- **Reasoning:** Provides visibility into repair spending across assets. Simple aggregation of existing maintenance data with minimal risk.
+- **Impact:** Clients can GET `/stats/maintenance-cost` to retrieve maintenance cost totals per asset.

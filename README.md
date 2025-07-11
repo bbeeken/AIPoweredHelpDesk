@@ -71,6 +71,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /stats/tags` – counts of tickets per tag.
 - `GET /stats/asset-tags` – counts of assets per tag.
 - `GET /stats/assets-per-user` – counts of assets assigned to each user.
+- `GET /stats/maintenance-cost` – total maintenance cost per asset.
 - `GET /stats/user/:userId` – summary of ticket counts and assets for a user.
 
 ## Getting Started

@@ -527,6 +527,16 @@ app.get('/stats/assets-per-user', (req, res) => {
   res.json(stats);
 });
 
+// Total maintenance cost per asset
+app.get('/stats/maintenance-cost', (req, res) => {
+  const costs = {};
+  (data.assets || []).forEach(a => {
+    const total = (a.maintenance || []).reduce((sum, r) => sum + (r.cost || 0), 0);
+    costs[a.id] = total;
+  });
+  res.json(costs);
+});
+
 // Asset management endpoints
 app.get('/assets', (req, res) => {
   let assets = data.assets || [];
