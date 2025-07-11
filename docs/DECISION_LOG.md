@@ -185,3 +185,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Mirror asset workflow by listing tickets without an assignee. Simple filter on in-memory data, minimal risk.
 - **Impact:** Clients can GET `/tickets/unassigned` to retrieve tickets awaiting assignment.
+
+### Added submitter filter for ticket listing
+- **Date:** 2025-07-11
+- **Reasoning:** Staff occasionally need to locate all tickets created by a specific user. A query parameter is an easy, low-risk addition.
+- **Impact:** Clients can GET `/tickets?submitter=2` to list tickets submitted by user 2.

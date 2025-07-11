@@ -63,11 +63,12 @@ app.get('/dashboard', (req, res) => {
 // List all tickets
 app.get('/tickets', (req, res) => {
   let tickets = data.tickets;
-  const { status, priority, tag, assignee, sortBy, order } = req.query;
+  const { status, priority, tag, assignee, submitter, sortBy, order } = req.query;
   if (status) tickets = tickets.filter(t => t.status === status);
   if (priority) tickets = tickets.filter(t => t.priority === priority);
   if (tag) tickets = tickets.filter(t => (t.tags || []).includes(tag));
   if (assignee) tickets = tickets.filter(t => t.assigneeId === Number(assignee));
+  if (submitter) tickets = tickets.filter(t => t.submitterId === Number(submitter));
   if (sortBy) {
     const dir = order === 'desc' ? -1 : 1;
     tickets = tickets.slice().sort((a, b) => {
