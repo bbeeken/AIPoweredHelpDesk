@@ -165,3 +165,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Needed quick way to list spare equipment for allocation. Low risk read-only filter.
 - **Impact:** Clients can GET `/assets/unassigned` to see assets without an assigned user.
+
+### Added comment edit endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Users sometimes need to correct mistakes in comments. Editing improves collaboration with minimal impact.
+- **Impact:** Clients can PATCH `/tickets/:id/comments/:commentId` with new text to modify a comment.

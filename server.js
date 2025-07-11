@@ -250,6 +250,21 @@ app.delete('/tickets/:id/comments/:commentId', (req, res) => {
   res.json(ticket.comments);
 });
 
+// Edit a comment on a ticket
+app.patch('/tickets/:id/comments/:commentId', (req, res) => {
+  const ticket = data.tickets.find(t => t.id === Number(req.params.id));
+  if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+  const cid = Number(req.params.commentId);
+  ticket.comments = ticket.comments || [];
+  const comment = ticket.comments.find(c => (c.id || 0) === cid);
+  if (!comment) return res.status(404).json({ error: 'Comment not found' });
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ error: 'text required' });
+  comment.text = text;
+  comment.edited = new Date().toISOString();
+  res.json(comment);
+});
+
 // View ticket change history
 app.get('/tickets/:id/history', (req, res) => {
   const ticket = data.tickets.find(t => t.id === Number(req.params.id));
