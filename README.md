@@ -31,8 +31,8 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /tickets/search?q=text` – search tickets by question, comment or tag.
 - `GET /tickets/overdue` – list tickets past their `dueDate`.
 - `GET /tickets/due-soon?days=n` – list tickets due within the next `n` days (default 3).
-- `GET /assets` – list all assets.
-- `POST /assets` – create a new asset with `name` and optional `assignedTo`.
+- `GET /assets` – list all assets. Filter by tag with `?tag=value`.
+- `POST /assets` – create a new asset with `name`, optional `assignedTo` and optional `tags` array.
 - `GET /assets/:id` – view a specific asset.
 - `GET /assets/:id/history` – view the assignment history of an asset.
 - `GET /assets/assigned/:userId` – list assets assigned to a user.
@@ -45,6 +45,9 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /assets/:id/maintenance` – view maintenance records for an asset.
 - `POST /assets/:id/maintenance` – add a maintenance record with `description` and optional `cost`.
 - `GET /assets/:id/maintenance/total-cost` – get the sum of all maintenance costs for an asset.
+- `GET /assets/:id/tags` – list tags for an asset.
+- `POST /assets/:id/tags` – add one or more tags to an asset.
+- `DELETE /assets/:id/tags/:tag` – remove a tag from an asset.
 
 ## Getting Started
 

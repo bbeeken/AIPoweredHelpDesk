@@ -38,7 +38,7 @@ module.exports = {
     }
   ],
   assets: [
-    { id: 1, name: 'Laptop', assignedTo: 1, history: [] },
-    { id: 2, name: 'Headset', assignedTo: 2, history: [] }
+    { id: 1, name: 'Laptop', assignedTo: 1, history: [], tags: [] },
+    { id: 2, name: 'Headset', assignedTo: 2, history: [], tags: [] }
   ]
 };
