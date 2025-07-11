@@ -57,10 +57,11 @@ app.get('/dashboard', (req, res) => {
 // List all tickets
 app.get('/tickets', (req, res) => {
   let tickets = data.tickets;
-  const { status, priority, tag } = req.query;
+  const { status, priority, tag, assignee } = req.query;
   if (status) tickets = tickets.filter(t => t.status === status);
   if (priority) tickets = tickets.filter(t => t.priority === priority);
   if (tag) tickets = tickets.filter(t => (t.tags || []).includes(tag));
+  if (assignee) tickets = tickets.filter(t => t.assigneeId === Number(assignee));
   res.json(tickets);
 });
 
