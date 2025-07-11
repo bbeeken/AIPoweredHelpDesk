@@ -133,6 +133,14 @@ app.patch('/tickets/:id', (req, res) => {
     ticket.priority = priority;
   }
   if (dueDate && dueDate !== ticket.dueDate) {
+    ticket.history = ticket.history || [];
+    ticket.history.push({
+      action: 'dueDate',
+      from: ticket.dueDate,
+      to: dueDate,
+      by: req.user.id,
+      date: now
+    });
     ticket.dueDate = dueDate;
   }
   res.json(ticket);
