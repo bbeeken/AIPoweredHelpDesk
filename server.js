@@ -189,6 +189,20 @@ app.post('/tickets/:id/attachments', (req, res) => {
   res.status(201).json(attach);
 });
 
+// Remove an attachment from a ticket
+app.delete('/tickets/:id/attachments/:attachmentId', (req, res) => {
+  const ticket = data.tickets.find(t => t.id === Number(req.params.id));
+  if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+  const attId = Number(req.params.attachmentId);
+  ticket.attachments = ticket.attachments || [];
+  const initial = ticket.attachments.length;
+  ticket.attachments = ticket.attachments.filter(a => a.id !== attId);
+  if (ticket.attachments.length === initial) {
+    return res.status(404).json({ error: 'Attachment not found' });
+  }
+  res.json(ticket.attachments);
+});
+
 // Add a comment to a ticket
 app.post('/tickets/:id/comments', (req, res) => {
   const ticket = data.tickets.find(t => t.id === Number(req.params.id));
