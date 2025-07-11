@@ -89,3 +89,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Provides visibility into ticket distribution among agents. Low risk read-only calculation using existing ticket data.
 - **Impact:** Clients can GET `/stats/workload` to see open, waiting and closed counts per user.
+
+### Added ticket reassign-least-busy endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Allows quickly redistributing work by automatically assigning a ticket to the agent with the smallest active queue. Uses existing helper function so risk is minimal.
+- **Impact:** Clients can POST `/tickets/:id/reassign-least-busy` to move the ticket to the least busy user and record the change in history.
