@@ -113,12 +113,6 @@ app.get('/tickets/assigned/:userId', (req, res) => {
   res.json(tickets);
 });
 
-// View a single ticket
-app.get('/tickets/:id', (req, res) => {
-  const ticket = data.tickets.find(t => t.id === Number(req.params.id));
-  if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
-  res.json(ticket);
-});
 
 // Create a new ticket
 app.post('/tickets', (req, res) => {
@@ -206,6 +200,18 @@ app.post('/tickets/:id/reassign-least-busy', (req, res) => {
       date: new Date().toISOString()
     });
     ticket.assigneeId = newId;
+  }
+  res.json(ticket);
+});
+
+// Escalate a ticket to high priority
+app.post('/tickets/:id/escalate', (req, res) => {
+  const ticket = data.tickets.find(t => t.id === Number(req.params.id));
+  if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+  if (ticket.priority !== 'high') {
+    ticket.history = ticket.history || [];
+    ticket.history.push({ action: 'priority', from: ticket.priority, to: 'high', by: req.user.id, date: new Date().toISOString() });
+    ticket.priority = 'high';
   }
   res.json(ticket);
 });
@@ -372,6 +378,12 @@ app.get('/tickets/aging', (req, res) => {
 });
 
 // Simple system stats
+// View a single ticket
+app.get('/tickets/:id', (req, res) => {
+  const ticket = data.tickets.find(t => t.id === Number(req.params.id));
+  if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+  res.json(ticket);
+});
 app.get('/stats', (req, res) => {
   const stats = {
     tickets: {

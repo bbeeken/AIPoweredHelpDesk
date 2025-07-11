@@ -175,3 +175,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Staff needed an easy way to order results. Sorting the in-memory arrays is straightforward and low risk.
 - **Impact:** Clients can use `?sortBy=field&order=asc|desc` on `/tickets` and `/assets`.
+
+### Added ticket escalation endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Allows agents to quickly mark a ticket as urgent without sending a full PATCH request. Low risk wrapper around priority update.
+- **Impact:** Clients can POST `/tickets/:id/escalate` to set priority to `high` and record the change in history.
