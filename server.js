@@ -734,6 +734,22 @@ app.get("/assets/assigned/:userId", (req, res) => {
 // List all unassigned assets
 app.get("/assets/unassigned", (req, res) => {
   const assets = (data.assets || []).filter((a) => !a.assignedTo);
+
+  res.json(assets);
+});
+
+// Search assets by name
+app.get("/assets/search", (req, res) => {
+  const { q } = req.query;
+  if (!q) return res.json([]);
+  const query = q.toLowerCase();
+  const assets = (data.assets || []).filter((a) =>
+    a.name.toLowerCase().includes(query),
+  );
+  res.json(assets);
+});
+
+app.post("/assets", (req, res) => {
   res.json(assets);
 });
 
