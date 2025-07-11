@@ -261,3 +261,7 @@
 - **Reasoning:** Keyboard and screen reader users benefit from a quick way to bypass repetitive headers.
 - **Impact:** `index.html` and `chat.html` include a focusable "Skip to content" link styled in `styles.css`.
 
+### Optimized service worker registration
+- **Date:** 2025-07-23
+- **Reasoning:** Duplicate service worker registration scripts caused unnecessary network requests.
+- **Impact:** Cleaned up HTML and added manifest to cache for smoother offline experience.
