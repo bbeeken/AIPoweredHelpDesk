@@ -116,3 +116,19 @@ The n8n webhook URL can be configured via the `N8N_URL` environment variable.
 The Qdrant server URL can be set with the `QDRANT_URL` environment variable.
 
 After the first visit, the pages are cached for offline use via a service worker.
+
+### Authentication
+
+Use `POST /auth/login` with `username` and `password` to obtain a JWT token.
+Pass it using `Authorization: Bearer <token>` to `/auth/verify` to validate
+the session.
+
+### Frontend
+
+A minimal React application is located in the `frontend` directory. Run
+`npm install` and `npm run dev` from that folder to start it with Vite.
+
+### DevOps
+
+A `Dockerfile` is provided for containerization and a GitHub Actions workflow
+executes the test suite on each push.
