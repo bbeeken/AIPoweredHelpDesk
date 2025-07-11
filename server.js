@@ -738,17 +738,21 @@ app.get("/assets/unassigned", (req, res) => {
 });
 
 // Search assets by name
+
 app.get("/assets/search", (req, res) => {
   const { q } = req.query;
   if (!q) return res.json([]);
   const query = q.toLowerCase();
   const assets = (data.assets || []).filter((a) =>
     a.name.toLowerCase().includes(query),
+
   );
   res.json(assets);
 });
 
+
 app.post("/assets", (req, res) => {
+
   const { name, assignedTo, tags } = req.body;
   if (!name) return res.status(400).json({ error: "name required" });
   const now = new Date().toISOString();
@@ -925,6 +929,7 @@ app.post("/assets/:id/retire", (req, res) => {
   });
   res.json(asset);
 });
+
 
 // AI endpoint for natural language commands
 app.post("/ai", async (req, res) => {
