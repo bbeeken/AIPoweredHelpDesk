@@ -20,7 +20,16 @@ const server = app.listen(0, () => {
               const arr = JSON.parse(out);
               assert.ok(Array.isArray(arr));
               assert.ok(arr.some(a => a.id === id));
-              server.close(() => console.log('Asset retire test passed'));
+              http.get({ port, path: `/assets/${id}/history` }, hres => {
+                let hist = '';
+                hres.on('data', d => hist += d);
+                hres.on('end', () => {
+                  const entries = JSON.parse(hist);
+                  const entry = entries.find(e => e.action === 'retired');
+                  assert.ok(entry && entry.by === 1);
+                  server.close(() => console.log('Asset retire test passed'));
+                });
+              });
             });
           });
         });
