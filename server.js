@@ -468,6 +468,12 @@ app.get('/assets/assigned/:userId', (req, res) => {
   res.json(assets);
 });
 
+// List all unassigned assets
+app.get('/assets/unassigned', (req, res) => {
+  const assets = (data.assets || []).filter(a => !a.assignedTo);
+  res.json(assets);
+});
+
 app.post('/assets', (req, res) => {
   const { name, assignedTo, tags } = req.body;
   if (!name) return res.status(400).json({ error: 'name required' });
