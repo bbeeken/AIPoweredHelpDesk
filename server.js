@@ -667,6 +667,17 @@ app.get('/assets/unassigned', (req, res) => {
   res.json(assets);
 });
 
+// Search assets by name
+app.get('/assets/search', (req, res) => {
+  const { q } = req.query;
+  if (!q) return res.json([]);
+  const query = q.toLowerCase();
+  const assets = (data.assets || []).filter(a =>
+    a.name.toLowerCase().includes(query)
+  );
+  res.json(assets);
+});
+
 app.post('/assets', (req, res) => {
   const { name, assignedTo, tags } = req.body;
   if (!name) return res.status(400).json({ error: 'name required' });
@@ -835,17 +846,6 @@ app.post('/assets/:id/retire', (req, res) => {
   res.json(asset);
 });
 
-
-// Search assets by name
-app.get('/assets/search', (req, res) => {
-  const { q } = req.query;
-  if (!q) return res.json([]);
-  const query = q.toLowerCase();
-  const assets = (data.assets || []).filter(a =>
-    a.name.toLowerCase().includes(query)
-  );
-  res.json(assets);
-});
 
 // AI endpoint for natural language commands
 app.post('/ai', async (req, res) => {

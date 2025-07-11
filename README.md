@@ -96,6 +96,19 @@ This project is a simple Node.js/Express application that demonstrates how an AI
    npm test
    ```
 
+### Database Setup
+
+To migrate the sample data into a MSSQL database you can use the provided
+migration script. Ensure your connection details are configured in a `.env`
+file based on `.env.example` and run:
+
+```bash
+npm run migrate
+```
+
+This executes `migrate.js` which creates the tables defined in
+`migrations/schema.sql` and populates them using `migrations/seed.sql`.
+
 The Qdrant client script can be used separately to index ticket text. See
 `docs/QDRANT_CLIENT.md` for details.
 
