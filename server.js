@@ -9,6 +9,11 @@ const app = express();
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Basic health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
 // helper to track next ticket and asset ids
 let nextTicketId = data.tickets.reduce((m, t) => Math.max(m, t.id), 0) + 1;
 let nextAssetId = (data.assets || []).reduce((m, a) => Math.max(m, a.id), 0) + 1;

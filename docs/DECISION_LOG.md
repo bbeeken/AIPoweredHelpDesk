@@ -94,3 +94,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Allows quickly redistributing work by automatically assigning a ticket to the agent with the smallest active queue. Uses existing helper function so risk is minimal.
 - **Impact:** Clients can POST `/tickets/:id/reassign-least-busy` to move the ticket to the least busy user and record the change in history.
+
+### Added health check endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Basic monitoring support for load balancers and uptime tools. Very low risk standalone route.
+- **Impact:** Clients can GET `/health` to verify service availability.
