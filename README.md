@@ -44,6 +44,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /assets/search?q=text` – search assets by name.
 - `GET /assets/:id/maintenance` – view maintenance records for an asset.
 - `POST /assets/:id/maintenance` – add a maintenance record with `description` and optional `cost`.
+- `GET /assets/:id/maintenance/total-cost` – get the sum of all maintenance costs for an asset.
 
 ## Getting Started
 

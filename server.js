@@ -337,6 +337,14 @@ app.post('/assets/:id/maintenance', (req, res) => {
   res.status(201).json(record);
 });
 
+// Get total maintenance cost for an asset
+app.get('/assets/:id/maintenance/total-cost', (req, res) => {
+  const asset = (data.assets || []).find(a => a.id === Number(req.params.id));
+  if (!asset) return res.status(404).json({ error: 'Asset not found' });
+  const total = (asset.maintenance || []).reduce((sum, r) => sum + (r.cost || 0), 0);
+  res.json({ total });
+});
+
 // Mark an asset as depreciated by setting depreciationDate to now
 app.post('/assets/:id/depreciate', (req, res) => {
   const asset = (data.assets || []).find(a => a.id === Number(req.params.id));
