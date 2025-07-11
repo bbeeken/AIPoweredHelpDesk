@@ -16,12 +16,35 @@ nav a {
 button {
   padding: 0.5em 1em;
 }
+#searchForm {
+  margin-bottom: 1em;
+}
+#searchForm input {
+  padding: 0.5em;
+}
+#searchForm button {
+  margin-left: 0.5em;
+}
 #messages {
   border: 1px solid #ccc;
   padding: 1em;
   height: 300px;
   overflow-y: auto;
   margin-bottom: 1em;
+}
+.skip-link {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.skip-link:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 1em;
 }
 .visually-hidden {
   position: absolute;
