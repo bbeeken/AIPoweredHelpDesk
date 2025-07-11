@@ -244,3 +244,8 @@
 - **Date:** 2025-07-15
 - **Reasoning:** Tests experienced intermittent socket hang ups due to Node's 5s default keep-alive timeout. Modified the custom Express server to set a 30s keep-alive which reduces connection resets.
 - **Impact:** All http servers created via `express` now hold connections open longer; no API changes.
+
+### Improved front-end accessibility
+- **Date:** 2025-07-16
+- **Reasoning:** The demo pages lacked semantic structure and ARIA attributes making screen reader navigation difficult.
+- **Impact:** Users benefit from responsive layouts and live updates that comply with basic accessibility guidelines.
