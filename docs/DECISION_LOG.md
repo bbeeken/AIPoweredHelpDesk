@@ -160,3 +160,8 @@
 - **Reasoning:** Needed visibility into ticket distribution by priority. Simple read-only calculation with minimal risk.
 - **Impact:** Clients can GET `/stats/priorities` to see counts for each priority level.
 \n### Added comment deletion endpoint\n- **Date:** 2025-07-11\n- **Reasoning:** Needed ability to remove erroneous or outdated comments. Low risk extension using comment IDs.\n- **Impact:** Clients can DELETE `/tickets/:id/comments/:commentId` to remove a comment.
+
+### Added unassigned assets endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Needed quick way to list spare equipment for allocation. Low risk read-only filter.
+- **Impact:** Clients can GET `/assets/unassigned` to see assets without an assigned user.
