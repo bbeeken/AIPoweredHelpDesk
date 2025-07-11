@@ -84,3 +84,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Exposes a metric to track average ticket resolution time, supporting operational reporting. Implementation calculates the duration between ticket creation and closure using history data.
 - **Impact:** Clients can GET `/stats/mttr` to retrieve the mean time to resolve tickets in hours.
+
+### Added workload stats endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Provides visibility into ticket distribution among agents. Low risk read-only calculation using existing ticket data.
+- **Impact:** Clients can GET `/stats/workload` to see open, waiting and closed counts per user.
