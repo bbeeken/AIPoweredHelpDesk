@@ -1,22 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI Powered Help Desk</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; }
-    .nav { margin-bottom: 1em; }
-    .nav a { margin-right: 1em; }
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 1rem; }
+    nav { margin-bottom: 1em; }
+    nav a { margin-right: 1em; }
     #tickets { margin-top: 1em; }
+    button { padding: 0.5em 1em; }
   </style>
 </head>
 <body>
-  <h1>AI Powered Help Desk</h1>
-  <div class="nav">
-    <a href="/chat.html">AI Chat</a>
-  </div>
-  <button id="load">Load Tickets</button>
-  <ul id="tickets"></ul>
+  <header>
+    <h1>AI Powered Help Desk</h1>
+    <nav>
+      <a href="/chat.html">AI Chat</a>
+    </nav>
+  </header>
+  <main>
+    <button id="load">Load Tickets</button>
+    <ul id="tickets" aria-live="polite"></ul>
+  </main>
   <script>
     document.getElementById('load').onclick = async () => {
       const res = await fetch('/tickets');
