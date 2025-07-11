@@ -9,3 +9,8 @@
 - Extracted shared CSS into `public/styles.css` for use across pages.
 - Added mobile-friendly input sizing and navigation link from chat page back to the dashboard.
 - Clean markup and unified appearance make the demo easier to maintain and use on small screens.
+
+## [2025-07-18] Added skip navigation link
+- Inserted a keyboard-accessible "Skip to main content" link on all pages.
+- Provided CSS to reveal the link when focused.
+- Improves navigation efficiency for screen reader and keyboard users.
