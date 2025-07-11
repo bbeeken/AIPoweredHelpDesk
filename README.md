@@ -21,6 +21,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /tickets/:id` – view a specific ticket.
 - `POST /tickets` – create a new ticket. Requires a `question` field in the body.
 - `PATCH /tickets/:id` – update ticket status, assignee, priority or `dueDate`.
+- `POST /tickets/:id/reassign-least-busy` – automatically assign the ticket to the agent with the fewest open tickets.
 - `POST /tickets/:id/comments` – add a comment to a ticket.
 - `GET /tickets/:id/attachments` – list attachments for a ticket.
 - `POST /tickets/:id/attachments` – attach a file by providing `name` and `url`.

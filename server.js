@@ -133,6 +133,25 @@ app.patch('/tickets/:id', (req, res) => {
   res.json(ticket);
 });
 
+// Reassign ticket to the least busy user
+app.post('/tickets/:id/reassign-least-busy', (req, res) => {
+  const ticket = data.tickets.find(t => t.id === Number(req.params.id));
+  if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+  const newId = getLeastBusyUserId();
+  if (newId !== ticket.assigneeId) {
+    ticket.history = ticket.history || [];
+    ticket.history.push({
+      action: 'assignee',
+      from: ticket.assigneeId,
+      to: newId,
+      by: req.user.id,
+      date: new Date().toISOString()
+    });
+    ticket.assigneeId = newId;
+  }
+  res.json(ticket);
+});
+
 // List attachments for a ticket
 app.get('/tickets/:id/attachments', (req, res) => {
   const ticket = data.tickets.find(t => t.id === Number(req.params.id));
