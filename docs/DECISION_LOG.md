@@ -99,3 +99,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Basic monitoring support for load balancers and uptime tools. Very low risk standalone route.
 - **Impact:** Clients can GET `/health` to verify service availability.
+
+### Added ticket tag stats endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Provides insight into common support topics by tallying ticket counts per tag. Simple read-only calculation.
+- **Impact:** Clients can GET `/stats/tags` to view how many tickets exist for each tag.

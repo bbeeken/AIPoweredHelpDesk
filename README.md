@@ -54,6 +54,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /stats` – basic counts of open, waiting and closed tickets plus asset total.
 - `GET /stats/mttr` – average time to resolve closed tickets in hours.
 - `GET /stats/workload` – ticket counts per user broken down by status.
+- `GET /stats/tags` – counts of tickets per tag.
 
 ## Getting Started
 

@@ -336,6 +336,17 @@ app.get('/stats/workload', (req, res) => {
   res.json(workload);
 });
 
+// Ticket counts per tag across all tickets
+app.get('/stats/tags', (req, res) => {
+  const counts = {};
+  data.tickets.forEach(t => {
+    (t.tags || []).forEach(tag => {
+      counts[tag] = (counts[tag] || 0) + 1;
+    });
+  });
+  res.json(counts);
+});
+
 // Asset management endpoints
 app.get('/assets', (req, res) => {
   let assets = data.assets || [];
