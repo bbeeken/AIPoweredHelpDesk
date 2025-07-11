@@ -22,3 +22,5 @@
 - Added high-contrast outlines for links, buttons and inputs when focused.
 - Helps keyboard users track their position while navigating the demo pages.
 
+## [2025-07-20] Added Prettier formatting command
+- Introduced `npm run format` script using Prettier for JS, JSON and Markdown files.
