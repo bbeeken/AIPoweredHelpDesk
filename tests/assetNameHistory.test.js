@@ -4,7 +4,6 @@ const app = require('../server');
 
 const server = app.listen(0, () => {
   const port = server.address().port;
-
   const create = http.request({ port, path: '/assets', method: 'POST', headers: { 'Content-Type': 'application/json' } }, res => {
     let body = '';
     res.on('data', c => body += c);
@@ -19,20 +18,19 @@ const server = app.listen(0, () => {
             hres.on('data', d => hist += d);
             hres.on('end', () => {
               const arr = JSON.parse(hist);
-              assert.ok(Array.isArray(arr));
               assert.ok(arr.length === 2);
               const entry = arr[1];
-              assert.strictEqual(entry.action, 'assignee');
-              assert.strictEqual(entry.from, 1);
-              assert.strictEqual(entry.to, 2);
+              assert.strictEqual(entry.action, 'name');
+              assert.strictEqual(entry.from, 'Monitor');
+              assert.strictEqual(entry.to, 'LCD Monitor');
               assert.strictEqual(entry.by, 1);
-              server.close(() => console.log('History test passed'));
+              server.close(() => console.log('Asset name history test passed'));
             });
           });
         });
       });
-      patch.end(JSON.stringify({ assignedTo: 2 }));
+      patch.end(JSON.stringify({ name: 'LCD Monitor' }));
     });
   });
-  create.end(JSON.stringify({ name: 'Tablet', assignedTo: 1 }));
+  create.end(JSON.stringify({ name: 'Monitor', assignedTo: 1 }));
 });
