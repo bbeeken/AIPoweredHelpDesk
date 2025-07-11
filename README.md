@@ -19,6 +19,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /tickets` – list all tickets.
   You can filter by status, priority, tag or assignee using query parameters, e.g.
   `GET /tickets?status=open&priority=high&tag=urgent&assignee=1`.
+  Results may also be sorted with `?sortBy=field&order=asc|desc`.
 - `GET /tickets/:id` – view a specific ticket.
 - `POST /tickets` – create a new ticket. Requires a `question` field in the body.
 - `PATCH /tickets/:id` – update ticket status, assignee, priority or `dueDate`.
@@ -39,6 +40,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `GET /tickets/due-soon?days=n` – list tickets due within the next `n` days (default 3).
 - `GET /tickets/aging?days=n` – list open tickets created more than `n` days ago (default 7).
 - `GET /assets` – list all assets. Filter by tag with `?tag=value` or by assignee with `?assignedTo=userId`.
+  Results may also be sorted with `?sortBy=field&order=asc|desc`.
 - `POST /assets` – create a new asset with `name`, optional `assignedTo` and optional `tags` array. Creation is recorded in the asset's history.
 - `GET /assets/:id` – view a specific asset.
 - `GET /assets/:id/history` – view the creation, assignment and name change history of an asset.

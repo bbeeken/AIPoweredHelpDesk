@@ -170,3 +170,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Users sometimes need to correct mistakes in comments. Editing improves collaboration with minimal impact.
 - **Impact:** Clients can PATCH `/tickets/:id/comments/:commentId` with new text to modify a comment.
+
+### Added sorting for ticket and asset listing
+- **Date:** 2025-07-11
+- **Reasoning:** Staff needed an easy way to order results. Sorting the in-memory arrays is straightforward and low risk.
+- **Impact:** Clients can use `?sortBy=field&order=asc|desc` on `/tickets` and `/assets`.
