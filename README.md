@@ -132,3 +132,8 @@ A minimal React application is located in the `frontend` directory. Run
 
 A `Dockerfile` is provided for containerization and a GitHub Actions workflow
 executes the test suite on each push.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
