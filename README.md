@@ -32,6 +32,7 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 - `POST /tickets/:id/reopen` – reopen a closed ticket.
 - `POST /tickets/:id/comments` – add a comment to a ticket.
 - `PATCH /tickets/:id/comments/:commentId` – edit a comment's text.
+- `GET /tickets/:id/comments/:commentId` – view a specific comment.
 - `DELETE /tickets/:id/comments/:commentId` – remove a comment from a ticket.
 - `GET /tickets/:id/attachments` – list attachments for a ticket.
 - `POST /tickets/:id/attachments` – attach a file by providing `name` and `url`.

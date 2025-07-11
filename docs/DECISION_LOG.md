@@ -234,3 +234,8 @@
 - **Date:** 2025-07-13
 - **Reasoning:** Needed insight into comment activity per ticket. Simple aggregation with minimal risk.
 - **Impact:** Clients can GET `/stats/comments` to retrieve comment counts per ticket.
+
+### Added single comment retrieval endpoint
+- **Date:** 2025-07-14
+- **Reasoning:** Completes comment CRUD API by allowing clients to fetch a specific comment. Very low risk read-only route.
+- **Impact:** Clients can GET `/tickets/:id/comments/:commentId` to view one comment.
