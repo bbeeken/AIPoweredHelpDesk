@@ -9,3 +9,8 @@
 - **Date:** 2025-07-11
 - **Reasoning:** Improves staff workflow by quickly listing assets owned by a user. Low risk; simple filter on existing data.
 - **Impact:** Clients can fetch `/assets/assigned/:userId` to see assets per user.
+
+### Added asset history endpoint
+- **Date:** 2025-07-11
+- **Reasoning:** Provide audit trail of asset assignments. Minimal code change leveraging existing history data.
+- **Impact:** Clients can fetch `/assets/:id/history` to view assignment changes.
