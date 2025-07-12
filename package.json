@@ -4,9 +4,10 @@
   "description": "AI powered help desk using Express and n8n",
   "main": "server.js",
   "scripts": {
-    "start": "ts-node src/server/index.ts",
+    "start": "node server.js",
+    "dev": "ts-node src/server/index.ts",
     "build": "tsc -p src/server",
-    "test": "env -u http_proxy -u https_proxy -u HTTP_PROXY -u HTTPS_PROXY -u npm_config_http_proxy -u npm_config_https_proxy -u npm_config_proxy -u YARN_HTTP_PROXY -u YARN_HTTPS_PROXY sh -c 'for f in tests/*.test.js; do node \"$f\" || exit 1; done'",
+    "test": "node run-tests.js",
     "format": "prettier \"**/*.{js,json,md}\" --write",
     "migrate": "node migrate.js"
   },
@@ -15,13 +16,18 @@
     "express": "^4.18.2",
     "bcrypt": "^5.1.0",
     "jsonwebtoken": "^9.0.0",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "dotenv": "^16.0.0"
   },
   "devDependencies": {
     "prettier": "^3.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.0",
     "@types/node": "^20.4.2",
-    "@types/express": "^4.17.17"
+    "@types/express": "^4.17.17",
+    "@types/bcrypt": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.0",
+    "@types/uuid": "^9.0.0"
+
   }
 }
