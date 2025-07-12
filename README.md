@@ -147,12 +147,12 @@ the session.
 
 ### Frontend
 
-A minimal React application is located in the `frontend` directory. Run
-`npm install` and `npm run dev` from that folder to start it with Vite.
-The landing page served from `public/index.html` now displays current ticket
-counts, a status chart and the average resolution time. Tickets can be filtered
-and sorted in a responsive table styled with Tailwind CSS and rendered with data
-from the API.
+The user interface has moved to a React application in the `frontend` directory.
+Run `npm install` and `npm run build` in that folder to produce a `dist`
+directory which the Express server will serve automatically. During
+development you can run `npm run dev` for hot reloading. The dashboard includes
+ticket tables, real-time updates via Server-Sent Events and a new analytics
+page rendered with Chart.js.
 
 ### DevOps
 

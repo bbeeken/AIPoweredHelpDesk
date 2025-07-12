@@ -1,5 +1,10 @@
 # Front-End Changelog
 
+## [2025-07-12] React dashboard and analytics page
+- Replaced static HTML dashboard with a React application served by Express.
+- Added routing with React Router and a new analytics page powered by Chart.js.
+- Ticket tables now update in real time via Server-Sent Events.
+
 ## [2025-07-16] Improved accessibility of public pages
 - Added responsive viewport meta tag and semantic markup in `index.html` and `chat.html`.
 - Introduced ARIA live regions for dynamic content and provided a visually hidden label for the chat input field.
