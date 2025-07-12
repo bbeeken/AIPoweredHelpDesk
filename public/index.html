@@ -16,6 +16,7 @@
     <nav>
       <a href="/chat.html">AI Chat</a>
     </nav>
+    <button id="themeToggle" type="button" aria-label="Toggle dark mode">🌓</button>
   </header>
   <main id="main">
 
@@ -51,10 +52,19 @@
       });
     }
 
-    document.getElementById('load').onclick = async () => {
-      const res = await fetch('/tickets');
-      const tickets = await res.json();
-      renderTickets(tickets);
+    const loadBtn = document.getElementById('load');
+    loadBtn.onclick = async () => {
+      loadBtn.disabled = true;
+      const original = loadBtn.textContent;
+      loadBtn.textContent = 'Loading...';
+      try {
+        const res = await fetch('/tickets');
+        const tickets = await res.json();
+        renderTickets(tickets);
+      } finally {
+        loadBtn.textContent = original;
+        loadBtn.disabled = false;
+      }
     };
 
     document.getElementById('searchForm').onsubmit = async e => {
@@ -103,6 +113,18 @@
     }
 
     loadStats();
+
+    // Dark mode toggle
+    const themeToggle = document.getElementById('themeToggle');
+    function applyTheme(theme) {
+      document.body.classList.toggle('dark', theme === 'dark');
+    }
+    themeToggle.addEventListener('click', () => {
+      const newTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
+      applyTheme(newTheme);
+      localStorage.setItem('theme', newTheme);
+    });
+    applyTheme(localStorage.getItem('theme') || 'light');
 
     // Register service worker for offline support
     if ('serviceWorker' in navigator) {
