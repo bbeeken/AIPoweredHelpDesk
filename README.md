@@ -15,6 +15,7 @@ For the long-term roadmap, see [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.
 - **Automatic Qdrant indexing** of newly created tickets when the server is running.
 - **Ticket escalation endpoint** for quickly setting priority to high.
 - **Offline-capable UI** using a service worker and web app manifest.
+- **Stats dashboard** showing ticket counts, mean resolution time and a 7-day ticket forecast.
 
 ### API Endpoints
 - `GET /health` – simple health check returning `{status:"ok"}`.
@@ -81,6 +82,8 @@ For the long-term roadmap, see [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.
 - `GET /stats/maintenance-cost` – total maintenance cost per asset.
 - `GET /stats/comments` – number of comments per ticket.
 - `GET /stats/overdue` – counts of overdue tickets per user.
+- `GET /stats/forecast?days=N` – predicted ticket volume for the next N days.
+- `GET /stats/dashboard` – aggregate counts, forecast and MTTR for the landing page.
 - `GET /stats/user/:userId` – summary of ticket counts and assets for a user.
 
 ## Getting Started
@@ -129,6 +132,8 @@ the session.
 
 A minimal React application is located in the `frontend` directory. Run
 `npm install` and `npm run dev` from that folder to start it with Vite.
+The landing page served from `public/index.html` now displays current ticket
+counts, the average resolution time and a 7-day forecast fetched from the API.
 
 ### DevOps
 
