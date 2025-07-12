@@ -13,12 +13,24 @@
   <a href="#main" class="skip-link">Skip to content</a>
 
   <header class="flex justify-between items-center py-4">
-    <h1 class="text-2xl font-bold">AI Chat</h1>
-    <nav>
-      <a href="/index.html" class="text-blue-600 hover:underline">Home</a>
+    <div class="flex items-center gap-2">
+      <button id="menuToggle" aria-controls="sidebar" aria-expanded="false" class="border p-2 md:hidden">☰</button>
+      <h1 class="text-2xl font-bold">AI Chat</h1>
+    </div>
+    <nav class="hidden md:block">
+      <a href="/index.html" class="text-blue-600 hover:underline mr-4">Home</a>
+      <a href="/realtime.html" class="text-blue-600 hover:underline">Real-Time</a>
     </nav>
     <button id="themeToggle" type="button" aria-label="Toggle dark mode" class="ml-4">🌓</button>
   </header>
+
+  <nav id="sidebar" aria-label="Sidebar" class="fixed inset-y-0 left-0 w-56 bg-gray-100 dark:bg-gray-900 p-4 transform -translate-x-full transition-transform md:static md:translate-x-0 md:w-48">
+    <ul class="space-y-2">
+      <li><a href="/index.html" class="block hover:underline">Dashboard</a></li>
+      <li><a href="/chat.html" class="block hover:underline">AI Chat</a></li>
+      <li><a href="/realtime.html" class="block hover:underline">Real-Time</a></li>
+    </ul>
+  </nav>
   <main id="main" class="mt-4">
     <div id="messages" role="log" aria-live="polite" class="border p-4 h-72 overflow-y-auto mb-4"></div>
     <form id="chatForm" class="flex gap-2">
@@ -72,17 +84,28 @@
     function applyTheme(theme) {
       document.body.classList.toggle('dark', theme === 'dark');
     }
-    themeToggle.addEventListener('click', () => {
-      const newTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
-      applyTheme(newTheme);
-      localStorage.setItem('theme', newTheme);
-    });
-    applyTheme(localStorage.getItem('theme') || 'light');
+  themeToggle.addEventListener('click', () => {
+    const newTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
+    applyTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+  });
+  applyTheme(localStorage.getItem('theme') || 'light');
 
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js');
-    }
+  // Sidebar toggle
+  const sidebar = document.getElementById('sidebar');
+  const menuToggle = document.getElementById('menuToggle');
+  if (menuToggle) {
+    menuToggle.addEventListener('click', () => {
+      const open = sidebar.classList.toggle('open');
+      sidebar.classList.toggle('-translate-x-full', !open);
+      menuToggle.setAttribute('aria-expanded', open);
+    });
+  }
+
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
   </script>
 </body>
 </html>
