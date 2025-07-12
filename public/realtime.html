@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Real-Time Ticket Updates</title>
+</head>
+<body>
+  <h1>Real-Time Ticket Updates</h1>
+  <ul id="updates"></ul>
+  <script>
+    const list = document.getElementById('updates');
+    const es = new EventSource('/events');
+    es.addEventListener('ticketCreated', e => {
+      const li = document.createElement('li');
+      li.textContent = 'Created: ' + e.data;
+      list.appendChild(li);
+    });
+    es.addEventListener('ticketUpdated', e => {
+      const li = document.createElement('li');
+      li.textContent = 'Updated: ' + e.data;
+      list.appendChild(li);
+    });
+  </script>
+</body>
+</html>
