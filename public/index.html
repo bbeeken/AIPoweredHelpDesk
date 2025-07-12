@@ -19,6 +19,14 @@
   </header>
   <main id="main">
 
+    <section id="stats" aria-live="polite">
+      <h2>Ticket Stats</h2>
+      <p id="statCounts"></p>
+      <p id="statForecast"></p>
+      <p id="statMttr"></p>
+      <p id="assetTotal"></p>
+    </section>
+
 
     <form id="searchForm">
       <label for="search" class="visually-hidden">Search tickets</label>
@@ -76,6 +84,25 @@
         });
       }, 300);
     });
+
+    async function loadStats() {
+      try {
+        const res = await fetch('/stats/dashboard');
+        const stats = await res.json();
+        document.getElementById('statCounts').textContent =
+          `Open: ${stats.tickets.open}, Waiting: ${stats.tickets.waiting}, Closed: ${stats.tickets.closed}`;
+        document.getElementById('statForecast').textContent =
+          `Expected new tickets next 7 days: ${stats.forecast.toFixed(1)}`;
+        document.getElementById('statMttr').textContent =
+          `Average resolution time: ${stats.mttr.toFixed(1)}h`;
+        document.getElementById('assetTotal').textContent =
+          `Total assets: ${stats.assets.total}`;
+      } catch (err) {
+        console.error('Error loading stats', err);
+      }
+    }
+
+    loadStats();
 
     // Register service worker for offline support
     if ('serviceWorker' in navigator) {

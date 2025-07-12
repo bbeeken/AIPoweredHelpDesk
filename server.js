@@ -582,6 +582,49 @@ app.get("/stats", (req, res) => {
   res.json(stats);
 });
 
+// Consolidated stats for dashboard UI
+app.get("/stats/dashboard", (req, res) => {
+  const tickets = {
+    open: data.tickets.filter((t) => t.status === "open").length,
+    waiting: data.tickets.filter((t) => t.status === "waiting").length,
+    closed: data.tickets.filter((t) => t.status === "closed").length,
+  };
+
+  const counts = {};
+  data.tickets.forEach((t) => {
+    const created = (t.history || []).find((h) => h.action === "created");
+    if (!created) return;
+    const d = new Date(created.date).toISOString().slice(0, 10);
+    counts[d] = (counts[d] || 0) + 1;
+  });
+  const total = Object.values(counts).reduce((sum, c) => sum + c, 0);
+  const avgDaily = Object.keys(counts).length
+    ? total / Object.keys(counts).length
+    : 0;
+
+  const durations = data.tickets
+    .filter((t) => t.status === "closed")
+    .map((t) => {
+      const created = (t.history || []).find((h) => h.action === "created");
+      const closed = (t.history || []).find(
+        (h) => h.action === "status" && h.to === "closed",
+      );
+      if (!created || !closed) return null;
+      return new Date(closed.date).getTime() - new Date(created.date).getTime();
+    })
+    .filter((d) => d !== null);
+  const avgMs = durations.length
+    ? durations.reduce((sum, d) => sum + d, 0) / durations.length
+    : 0;
+
+  res.json({
+    tickets,
+    forecast: avgDaily * 7,
+    mttr: avgMs / 3600000,
+    assets: { total: (data.assets || []).length },
+  });
+});
+
 // Mean Time To Resolution in hours
 app.get("/stats/mttr", (req, res) => {
   const durations = data.tickets
@@ -599,6 +642,21 @@ app.get("/stats/mttr", (req, res) => {
     ? durations.reduce((sum, d) => sum + d, 0) / durations.length
     : 0;
   res.json({ mttr: avg / 3600000 });
+});
+
+// Predict ticket creation volume for the next N days (default 7)
+app.get("/stats/forecast", (req, res) => {
+  const days = Number(req.query.days) || 7;
+  const counts = {};
+  data.tickets.forEach((t) => {
+    const created = (t.history || []).find((h) => h.action === "created");
+    if (!created) return;
+    const d = new Date(created.date).toISOString().slice(0, 10);
+    counts[d] = (counts[d] || 0) + 1;
+  });
+  const total = Object.values(counts).reduce((sum, c) => sum + c, 0);
+  const avg = Object.keys(counts).length ? total / Object.keys(counts).length : 0;
+  res.json({ forecast: avg * days });
 });
 
 // Ticket counts per user by status
