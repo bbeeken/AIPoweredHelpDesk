@@ -13,13 +13,22 @@ export default function TicketTable() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
-    const url = new URL('/tickets', window.location.origin);
-    url.searchParams.set('sortBy', sortField);
-    url.searchParams.set('order', sortOrder);
-    fetch(url.toString())
-      .then(res => res.json())
-      .then(setTickets)
-      .catch(err => console.error('Error loading tickets', err));
+    async function load() {
+      const url = new URL('/tickets', window.location.origin);
+      url.searchParams.set('sortBy', sortField);
+      url.searchParams.set('order', sortOrder);
+      const res = await fetch(url.toString());
+      const data = await res.json();
+      setTickets(data);
+    }
+    load().catch(err => console.error('Error loading tickets', err));
+
+    if (window.EventSource) {
+      const es = new EventSource('/events');
+      es.addEventListener('ticketCreated', load);
+      es.addEventListener('ticketUpdated', load);
+      return () => es.close();
+    }
   }, [sortField, sortOrder]);
 
   function toggleSort(field: keyof Ticket) {
