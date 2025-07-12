@@ -15,6 +15,7 @@ For the long-term roadmap, see [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.
 - **Automatic Qdrant indexing** of newly created tickets when the server is running.
 - **Ticket escalation endpoint** for quickly setting priority to high.
 - **Offline-capable UI** using a service worker and web app manifest.
+- **Real-time updates** via a Server-Sent Events endpoint.
 
 ### API Endpoints
 - `GET /health` – simple health check returning `{status:"ok"}`.
@@ -50,6 +51,7 @@ For the long-term roadmap, see [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.
 - `GET /tickets/aging?days=n` – list open tickets created more than `n` days ago (default 7).
 - `GET /tickets/recent?limit=n` – list the most recently created tickets (default 5).
 - `GET /tickets/unassigned` – list tickets that have no assignee.
+- `GET /events` – subscribe to real-time ticket events via Server-Sent Events.
 - `GET /assets` – list all assets. Filter by tag with `?tag=value` or by assignee with `?assignedTo=userId`.
   Results may also be sorted with `?sortBy=field&order=asc|desc`.
 - `POST /assets` – create a new asset with `name`, optional `assignedTo` and optional `tags` array. Creation is recorded in the asset's history.
@@ -118,6 +120,7 @@ The n8n webhook URL can be configured via the `N8N_URL` environment variable.
 The Qdrant server URL can be set with the `QDRANT_URL` environment variable.
 
 After the first visit, the pages are cached for offline use via a service worker.
+An experimental `realtime.html` page demonstrates live ticket notifications using the `/events` SSE endpoint.
 
 ### Authentication
 
