@@ -92,11 +92,15 @@ For the long-term roadmap, see [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.
    ```bash
    npm install
    ```
-2. Start the server:
+2. (Optional) build the TypeScript server:
+   ```bash
+   npm run build
+   ```
+3. Start the server:
    ```bash
    npm start
    ```
-3. Run tests:
+4. Run tests:
    ```bash
    npm test
    ```
