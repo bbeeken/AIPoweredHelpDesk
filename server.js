@@ -5,6 +5,7 @@ const n8nClient = require("./utils/n8nClient");
 const qdrant = require("./utils/qdrantClient");
 const data = require("./data/mockData");
 const auth = require("./utils/authService");
+const eventBus = require("./utils/eventBus");
 
 const app = express();
 app.use(bodyParser.json());
@@ -42,6 +43,29 @@ app.get("/auth/verify", (req, res) => {
 // Basic health check endpoint
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
+});
+
+// Server Sent Events endpoint for real-time updates
+app.get("/events", (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.write(": connected\n\n");
+
+  const ticketCreated = (ticket) => {
+    res.write(`event: ticketCreated\ndata:${JSON.stringify(ticket)}\n\n`);
+  };
+  const ticketUpdated = (ticket) => {
+    res.write(`event: ticketUpdated\ndata:${JSON.stringify(ticket)}\n\n`);
+  };
+
+  eventBus.on("ticketCreated", ticketCreated);
+  eventBus.on("ticketUpdated", ticketUpdated);
+
+  req.on("close", () => {
+    eventBus.off("ticketCreated", ticketCreated);
+    eventBus.off("ticketUpdated", ticketUpdated);
+  });
 });
 
 // helper to track next ticket and asset ids
@@ -175,6 +199,7 @@ app.post("/tickets", (req, res) => {
     ],
   };
   data.tickets.push(ticket);
+  eventBus.emit("ticketCreated", ticket);
   res.status(201).json(ticket);
   qdrant
     .addTicketText(ticket.id, ticket.question)
@@ -231,6 +256,7 @@ app.patch("/tickets/:id", (req, res) => {
     });
     ticket.dueDate = dueDate;
   }
+  eventBus.emit("ticketUpdated", ticket);
   res.json(ticket);
 });
 
@@ -260,6 +286,7 @@ app.post("/tickets/:id/reassign-least-busy", (req, res) => {
     });
     ticket.assigneeId = newId;
   }
+  eventBus.emit("ticketUpdated", ticket);
   res.json(ticket);
 });
 
@@ -279,6 +306,7 @@ app.post("/tickets/:id/assign/:userId", (req, res) => {
     });
     ticket.assigneeId = uid;
   }
+  eventBus.emit("ticketUpdated", ticket);
   res.json(ticket);
 });
 
@@ -297,6 +325,7 @@ app.post("/tickets/:id/escalate", (req, res) => {
     });
     ticket.priority = "high";
   }
+  eventBus.emit("ticketUpdated", ticket);
   res.json(ticket);
 });
 
@@ -315,6 +344,7 @@ app.post("/tickets/:id/close", (req, res) => {
     });
     ticket.status = "closed";
   }
+  eventBus.emit("ticketUpdated", ticket);
   res.json(ticket);
 });
 
@@ -333,6 +363,7 @@ app.post("/tickets/:id/reopen", (req, res) => {
     });
     ticket.status = "open";
   }
+  eventBus.emit("ticketUpdated", ticket);
   res.json(ticket);
 });
 
