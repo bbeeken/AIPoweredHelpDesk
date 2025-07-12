@@ -23,6 +23,8 @@
       <h2>Ticket Stats</h2>
       <p id="statCounts"></p>
       <p id="statForecast"></p>
+      <p id="statMttr"></p>
+      <p id="assetTotal"></p>
     </section>
 
 
@@ -85,14 +87,16 @@
 
     async function loadStats() {
       try {
-        const res = await fetch('/stats');
+        const res = await fetch('/stats/dashboard');
         const stats = await res.json();
         document.getElementById('statCounts').textContent =
           `Open: ${stats.tickets.open}, Waiting: ${stats.tickets.waiting}, Closed: ${stats.tickets.closed}`;
-        const fRes = await fetch('/stats/forecast');
-        const forecast = await fRes.json();
         document.getElementById('statForecast').textContent =
-          `Expected new tickets next 7 days: ${forecast.forecast.toFixed(1)}`;
+          `Expected new tickets next 7 days: ${stats.forecast.toFixed(1)}`;
+        document.getElementById('statMttr').textContent =
+          `Average resolution time: ${stats.mttr.toFixed(1)}h`;
+        document.getElementById('assetTotal').textContent =
+          `Total assets: ${stats.assets.total}`;
       } catch (err) {
         console.error('Error loading stats', err);
       }

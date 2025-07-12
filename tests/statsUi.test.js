@@ -10,6 +10,7 @@ const server = app.listen(0, () => {
     res.on('end', () => {
       assert.strictEqual(res.statusCode, 200);
       assert.ok(body.includes('id="stats"'), 'stats section should exist');
+      assert.ok(body.includes('id="statMttr"'), 'mttr element should exist');
       server.close(() => console.log('Stats UI test passed'));
     });
   });
