@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI Powered Help Desk</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="/styles.css">
   <link rel="manifest" href="/manifest.json">
 </head>
@@ -11,61 +13,85 @@
 
   <a href="#main" class="skip-link">Skip to content</a>
 
-  <header>
-    <h1>AI Powered Help Desk</h1>
+  <header class="flex justify-between items-center py-4">
+    <h1 class="text-2xl font-bold">AI Powered Help Desk</h1>
     <nav>
-      <a href="/chat.html">AI Chat</a>
+      <a href="/chat.html" class="text-blue-600 hover:underline">AI Chat</a>
     </nav>
-    <button id="themeToggle" type="button" aria-label="Toggle dark mode">🌓</button>
+    <button id="themeToggle" type="button" aria-label="Toggle dark mode" class="ml-4">🌓</button>
   </header>
-  <main id="main">
+  <main id="main" class="mt-4">
 
-    <section id="stats" aria-live="polite">
-      <h2>Ticket Stats</h2>
+    <section id="stats" aria-live="polite" class="mb-6">
+      <h2 class="text-xl font-semibold mb-2">Ticket Stats</h2>
+      <canvas id="statusChart" class="mb-4"></canvas>
       <p id="statCounts"></p>
       <p id="statForecast"></p>
       <p id="statMttr"></p>
       <p id="assetTotal"></p>
     </section>
 
-
-    <form id="searchForm">
+    <form id="searchForm" class="flex gap-2 mb-4">
       <label for="search" class="visually-hidden">Search tickets</label>
-      <input id="search" type="search" placeholder="Search tickets..." list="suggestions" autocomplete="off" />
+      <input id="search" type="search" placeholder="Search tickets..." list="suggestions" autocomplete="off" class="border p-2 flex-grow" />
       <datalist id="suggestions"></datalist>
-      <button type="submit">Search</button>
+      <button type="submit" class="border px-3 py-2">Search</button>
     </form>
 
+    <div class="flex items-center gap-2 mb-2">
+      <label for="statusFilter" class="visually-hidden">Status</label>
+      <select id="statusFilter" class="border p-2">
+        <option value="">All statuses</option>
+        <option value="open">Open</option>
+        <option value="waiting">Waiting</option>
+        <option value="closed">Closed</option>
+      </select>
+    </div>
 
-    <button id="load">Load Tickets</button>
-    <ul id="tickets" aria-live="polite"></ul>
+    <table id="ticketTable" class="table-auto w-full border-collapse text-sm">
+      <thead>
+        <tr>
+          <th data-sort="id" class="border px-2 py-1 cursor-pointer">ID</th>
+          <th data-sort="question" class="border px-2 py-1 cursor-pointer">Question</th>
+          <th data-sort="status" class="border px-2 py-1 cursor-pointer">Status</th>
+          <th data-sort="priority" class="border px-2 py-1 cursor-pointer">Priority</th>
+        </tr>
+      </thead>
+      <tbody id="tickets"></tbody>
+    </table>
   </main>
   <script>
-    const list = document.getElementById('tickets');
+    const tableBody = document.getElementById('tickets');
+    const statusFilter = document.getElementById('statusFilter');
+    let sortField = 'id';
+    let sortOrder = 'asc';
+
+    async function fetchTickets() {
+      const url = new URL('/tickets', location.origin);
+      if (statusFilter.value) url.searchParams.set('status', statusFilter.value);
+      url.searchParams.set('sortBy', sortField);
+      url.searchParams.set('order', sortOrder);
+      const res = await fetch(url);
+      return res.json();
+    }
 
     function renderTickets(tickets) {
-      list.innerHTML = '';
+      tableBody.innerHTML = '';
       tickets.forEach(t => {
-        const li = document.createElement('li');
-        li.textContent = `${t.id}: ${t.question} (${t.status})`;
-        list.appendChild(li);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="border px-2 py-1"><a href="/ticket.html?id=${t.id}" class="text-blue-600 hover:underline">${t.id}</a></td>
+          <td class="border px-2 py-1">${t.question}</td>
+          <td class="border px-2 py-1">${t.status}</td>
+          <td class="border px-2 py-1">${t.priority}</td>`;
+        tableBody.appendChild(tr);
       });
     }
 
-    const loadBtn = document.getElementById('load');
-    loadBtn.onclick = async () => {
-      loadBtn.disabled = true;
-      const original = loadBtn.textContent;
-      loadBtn.textContent = 'Loading...';
-      try {
-        const res = await fetch('/tickets');
-        const tickets = await res.json();
-        renderTickets(tickets);
-      } finally {
-        loadBtn.textContent = original;
-        loadBtn.disabled = false;
-      }
-    };
+    async function loadTickets() {
+      const tickets = await fetchTickets();
+      renderTickets(tickets);
+    }
 
     document.getElementById('searchForm').onsubmit = async e => {
       e.preventDefault();
@@ -75,6 +101,22 @@
       const tickets = await res.json();
       renderTickets(tickets);
     };
+
+    statusFilter.addEventListener('change', loadTickets);
+    document.querySelectorAll('#ticketTable th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => {
+        const field = th.getAttribute('data-sort');
+        if (sortField === field) {
+          sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+        } else {
+          sortField = field;
+          sortOrder = 'asc';
+        }
+        loadTickets();
+      });
+    });
+
+    loadTickets();
 
     // Fetch suggestions as user types
     let suggestTimer;
@@ -107,6 +149,20 @@
           `Average resolution time: ${stats.mttr.toFixed(1)}h`;
         document.getElementById('assetTotal').textContent =
           `Total assets: ${stats.assets.total}`;
+        new Chart(
+          document.getElementById('statusChart').getContext('2d'),
+          {
+            type: 'bar',
+            data: {
+              labels: ['Open', 'Waiting', 'Closed'],
+              datasets: [{
+                data: [stats.tickets.open, stats.tickets.waiting, stats.tickets.closed],
+                backgroundColor: ['#3b82f6', '#facc15', '#10b981']
+              }]
+            },
+            options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+          }
+        );
       } catch (err) {
         console.error('Error loading stats', err);
       }

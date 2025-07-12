@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI Chat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/styles.css">
   <link rel="manifest" href="/manifest.json">
 </head>
@@ -11,20 +12,20 @@
 
   <a href="#main" class="skip-link">Skip to content</a>
 
-  <header>
-    <h1>AI Chat</h1>
+  <header class="flex justify-between items-center py-4">
+    <h1 class="text-2xl font-bold">AI Chat</h1>
     <nav>
-      <a href="/index.html">Home</a>
+      <a href="/index.html" class="text-blue-600 hover:underline">Home</a>
     </nav>
-    <button id="themeToggle" type="button" aria-label="Toggle dark mode">🌓</button>
+    <button id="themeToggle" type="button" aria-label="Toggle dark mode" class="ml-4">🌓</button>
   </header>
-  <main id="main">
-    <div id="messages" role="log" aria-live="polite"></div>
-    <form id="chatForm">
+  <main id="main" class="mt-4">
+    <div id="messages" role="log" aria-live="polite" class="border p-4 h-72 overflow-y-auto mb-4"></div>
+    <form id="chatForm" class="flex gap-2">
       <label for="msg" class="visually-hidden">Message</label>
-      <input id="msg" placeholder="Ask a question..." size="50" />
-      <button id="voice" type="button" aria-label="Start voice input">🎤</button>
-      <button type="submit">Send</button>
+      <input id="msg" placeholder="Ask a question..." size="50" class="border flex-grow p-2" />
+      <button id="voice" type="button" aria-label="Start voice input" class="border px-3">🎤</button>
+      <button type="submit" class="border px-4">Send</button>
     </form>
   </main>
   <script>
