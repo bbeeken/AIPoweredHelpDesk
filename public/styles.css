@@ -1,20 +1,43 @@
+:root {
+  --bg-color: #ffffff;
+  --text-color: #000000;
+  --border-color: #ccc;
+  --link-color: #005fcc;
+}
+
 body {
   font-family: Arial, sans-serif;
   max-width: 800px;
   margin: auto;
   padding: 1rem;
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+body.dark {
+  --bg-color: #121212;
+  --text-color: #e0e0e0;
+  --border-color: #444;
+  --link-color: #9fc5e8;
 }
 nav {
   margin-bottom: 1em;
 }
 nav a {
   margin-right: 1em;
+  color: var(--link-color);
+}
+a {
+  color: var(--link-color);
 }
 #tickets {
   margin-top: 1em;
 }
 button {
   padding: 0.5em 1em;
+}
+#themeToggle {
+  margin-left: 1em;
 }
 
 
@@ -48,7 +71,7 @@ input:focus-visible {
 
 }
 #messages {
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   padding: 1em;
   height: 300px;
   overflow-y: auto;
