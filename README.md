@@ -150,7 +150,9 @@ the session.
 A minimal React application is located in the `frontend` directory. Run
 `npm install` and `npm run dev` from that folder to start it with Vite.
 The landing page served from `public/index.html` now displays current ticket
-counts, the average resolution time and a 7-day forecast fetched from the API.
+counts, a status chart and the average resolution time. Tickets can be filtered
+and sorted in a responsive table styled with Tailwind CSS and rendered with data
+from the API.
 
 ### DevOps
 

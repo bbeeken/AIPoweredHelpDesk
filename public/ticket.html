@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ticket Details</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+  <header class="flex justify-between items-center py-4">
+    <h1 class="text-2xl font-bold">Ticket Details</h1>
+    <nav>
+      <a href="/index.html" class="text-blue-600 hover:underline">Home</a>
+    </nav>
+    <button id="themeToggle" type="button" aria-label="Toggle dark mode" class="ml-4">🌓</button>
+  </header>
+  <main id="main" class="prose max-w-none">
+    <div id="details"></div>
+  </main>
+  <script>
+    const themeToggle = document.getElementById('themeToggle');
+    function applyTheme(theme) {
+      document.body.classList.toggle('dark', theme === 'dark');
+    }
+    themeToggle.addEventListener('click', () => {
+      const newTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
+      applyTheme(newTheme);
+      localStorage.setItem('theme', newTheme);
+    });
+    applyTheme(localStorage.getItem('theme') || 'light');
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    async function loadTicket() {
+      if (!id) return;
+      const res = await fetch('/tickets/' + id);
+      if (!res.ok) return;
+      const t = await res.json();
+      const d = document.getElementById('details');
+      d.innerHTML = `
+        <h2>Ticket #${t.id}</h2>
+        <p><strong>Status:</strong> ${t.status}</p>
+        <p><strong>Priority:</strong> ${t.priority}</p>
+        <p>${t.question}</p>
+      `;
+    }
+    loadTicket();
+  </script>
+</body>
+</html>

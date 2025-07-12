@@ -5,6 +5,7 @@ const STATIC_FILES = [
   '/',
   '/index.html',
   '/chat.html',
+  '/ticket.html',
   '/styles.css',
   '/manifest.json',
 ];
