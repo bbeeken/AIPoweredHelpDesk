@@ -126,6 +126,13 @@ This executes `migrate.js` which creates the tables defined in
 The Qdrant client script can be used separately to index ticket text. See
 `docs/QDRANT_CLIENT.md` for details.
 
+### Using a MSSQL Database
+
+By default the server uses in-memory mock data. To fetch ticket data from an
+actual MSSQL database set `USE_MSSQL=true` in your `.env` file along with the
+standard `DB_*` connection settings. When enabled the `/tickets` and
+`/tickets/:id` endpoints read from the `V_Ticket_Master_Expanded` view.
+
 The n8n webhook URL can be configured via the `N8N_URL` environment variable.
 The Qdrant server URL can be set with the `QDRANT_URL` environment variable.
 

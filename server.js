@@ -4,6 +4,7 @@ const bodyParser = require("./body-parser");
 const n8nClient = require("./utils/n8nClient");
 const qdrant = require("./utils/qdrantClient");
 const data = require("./data/mockData");
+const dataService = require("./utils/dataService");
 const auth = require("./utils/authService");
 const eventBus = require("./utils/eventBus");
 
@@ -116,8 +117,8 @@ app.get("/dashboard", (req, res) => {
 });
 
 // List all tickets
-app.get("/tickets", (req, res) => {
-  let tickets = data.tickets;
+app.get("/tickets", async (req, res) => {
+  let tickets = await dataService.getTickets();
   const { status, priority, tag, assignee, submitter, sortBy, order } =
     req.query;
   if (status) tickets = tickets.filter((t) => t.status === status);
@@ -563,8 +564,8 @@ app.get("/tickets/recent", (req, res) => {
 
 // Simple system stats
 // View a single ticket
-app.get("/tickets/:id", (req, res) => {
-  const ticket = data.tickets.find((t) => t.id === Number(req.params.id));
+app.get("/tickets/:id", async (req, res) => {
+  const ticket = await dataService.getTicketById(Number(req.params.id));
   if (!ticket) return res.status(404).json({ error: "Ticket not found" });
   res.json(ticket);
 });
