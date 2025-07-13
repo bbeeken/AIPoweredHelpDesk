@@ -2,16 +2,24 @@
   "compilerOptions": {
     "target": "ES2019",
     "module": "CommonJS",
-    "rootDir": "./",
+    "rootDir": "../",
     "outDir": "../../dist/server",
     "esModuleInterop": true,
     "moduleResolution": "node",
     "strict": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": [
+      "node"
+    ]
   },
   "include": [
+
     "**/*.ts",
     "express.d.ts",
     "body-parser.d.ts"
+
+    "../shared/**/*.ts",
+    "./**/*.ts"
+
   ]
 }

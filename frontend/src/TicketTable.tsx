@@ -19,6 +19,7 @@ export default function TicketTable({ filters }: Props) {
   const [sortField, setSortField] = useState<keyof Ticket>('id');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [activeId, setActiveId] = useState<number | null>(null);
 
 
   useEffect(() => {
@@ -99,7 +100,14 @@ export default function TicketTable({ filters }: Props) {
       </thead>
       <tbody>
         {tickets.map(t => (
-          <tr key={t.id}>
+          <tr
+            key={t.id}
+            onMouseEnter={() => setActiveId(t.id)}
+            onFocus={() => setActiveId(t.id)}
+            onClick={() => setActiveId(t.id)}
+            tabIndex={0}
+            className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
             <td>
               <input
                 type="checkbox"
@@ -111,26 +119,9 @@ export default function TicketTable({ filters }: Props) {
             <td>{t.question}</td>
             <td>{t.status}</td>
             <td>{t.priority}</td>
-
           </tr>
-        </thead>
-        <tbody>
-          {tickets.map((t) => (
-            <tr
-              key={t.id}
-              onMouseEnter={() => setActiveId(t.id)}
-              onFocus={() => setActiveId(t.id)}
-              onClick={() => setActiveId(t.id)}
-              tabIndex={0}
-              className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
-            >
-              <td>{t.id}</td>
-              <td>{t.question}</td>
-              <td>{t.status}</td>
-              <td>{t.priority}</td>
-            </tr>
-          ))}
-        </tbody>
+        ))}
+      </tbody>
       </table>
       <TicketDetailPanel
         ticketId={activeId}
