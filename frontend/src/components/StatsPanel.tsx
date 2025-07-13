@@ -12,17 +12,26 @@ export default function StatsPanel() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  useEffect(() => {
-    async function loadStats() {
-      try {
-        const res = await fetch('/stats/dashboard');
-        const data: DashboardStats = await res.json();
-        setStats(data);
-      } catch (err) {
-        console.error('Error loading stats', err);
-      }
+  async function loadStats() {
+    try {
+      const res = await fetch('/stats/dashboard');
+      const data: DashboardStats = await res.json();
+      setStats(data);
+    } catch (err) {
+      console.error('Error loading stats', err);
     }
+  }
+
+  useEffect(() => {
     loadStats();
+  }, []);
+
+  useEffect(() => {
+    if (!window.EventSource) return;
+    const es = new EventSource('/events');
+    es.addEventListener('ticketCreated', loadStats);
+    es.addEventListener('ticketUpdated', loadStats);
+    return () => es.close();
   }, []);
 
   useEffect(() => {
