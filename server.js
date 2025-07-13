@@ -80,6 +80,9 @@ app.get("/events", (req, res) => {
 let nextTicketId = data.tickets.reduce((m, t) => Math.max(m, t.id), 0) + 1;
 let nextAssetId =
   (data.assets || []).reduce((m, a) => Math.max(m, a.id), 0) + 1;
+// store saved ticket filter presets per user
+let nextFilterId = 1;
+const filterPresets = {};
 
 // choose user with fewest open tickets
 function getLeastBusyUserId() {
@@ -1027,6 +1030,23 @@ app.post("/assets/:id/retire", (req, res) => {
     date: now,
   });
   res.json(asset);
+});
+
+// User-specific ticket filter presets
+app.get("/filters", (req, res) => {
+  const presets = filterPresets[req.user.id] || [];
+  res.json(presets);
+});
+
+app.post("/filters", (req, res) => {
+  const { name, filters } = req.body;
+  if (!name || !filters) {
+    return res.status(400).json({ error: "name and filters required" });
+  }
+  filterPresets[req.user.id] = filterPresets[req.user.id] || [];
+  const preset = { id: nextFilterId++, name, filters };
+  filterPresets[req.user.id].push(preset);
+  res.status(201).json(preset);
 });
 
 
