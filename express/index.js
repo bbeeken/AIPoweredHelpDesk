@@ -2,6 +2,16 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
+const MIME_TYPES = {
+  '.js': 'text/javascript',
+  '.css': 'text/css',
+  '.html': 'text/html',
+};
+
+function mimeFor(file) {
+  return MIME_TYPES[path.extname(file).toLowerCase()];
+}
+
 function compilePath(p) {
   const keys = [];
   const replaced = p
@@ -28,6 +38,8 @@ function createApp() {
         res.statusCode = 404;
         res.end('Not Found');
       });
+      const mime = mimeFor(file);
+      if (mime) res.setHeader('Content-Type', mime);
       stream.pipe(res);
     };
     const url = new URL(req.url, 'http://localhost');
@@ -85,6 +97,8 @@ createApp.static = dir => (req, res, next) => {
   const file = path.join(dir, req.path.replace(/^\//, ''));
   fs.stat(file, (err, stat) => {
     if (!err && stat.isFile()) {
+      const mime = mimeFor(file);
+      if (mime) res.setHeader('Content-Type', mime);
       fs.createReadStream(file).pipe(res);
     } else {
       next();
