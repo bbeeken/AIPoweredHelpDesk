@@ -1,5 +1,5 @@
-import express from '../../express';
-import bodyParser from '../../body-parser';
+import express from 'custom-express';
+import bodyParser from 'custom-body-parser';
 import authRoutes from './routes/auth';
 import { config } from './config/environment';
 import { Request, Response } from 'express';

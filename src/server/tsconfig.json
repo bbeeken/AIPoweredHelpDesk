@@ -10,13 +10,17 @@
     "skipLibCheck": true,
     "types": [
       "node"
-    ]
+    ],
+    "paths": {
+      "custom-express": ["../../express"],
+      "custom-body-parser": ["../../body-parser"]
+    }
   },
   "include": [
 
     "**/*.ts",
     "express.d.ts",
-    "body-parser.d.ts"
+    "body-parser.d.ts",
 
     "../shared/**/*.ts",
     "./**/*.ts"
