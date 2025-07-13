@@ -12,8 +12,10 @@
       "node"
     ],
     "paths": {
-      "custom-express": ["../../express"],
-      "custom-body-parser": ["../../body-parser"]
+
+      "../../express": ["./express.d.ts"],
+      "../../body-parser": ["./body-parser.d.ts"]
+
     }
   },
   "include": [
