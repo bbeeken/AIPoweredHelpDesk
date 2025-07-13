@@ -15,9 +15,11 @@ interface Props {
 
 export default function TicketTable({ filters }: Props) {
   const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [sortField, setSortField] = useState<keyof Ticket>("id");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [activeId, setActiveId] = useState<number | null>(null);
+
+  const [sortField, setSortField] = useState<keyof Ticket>('id');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+
 
   useEffect(() => {
     async function load() {
@@ -49,32 +51,67 @@ export default function TicketTable({ filters }: Props) {
     }
   }
 
+  function toggleSelect(id: number) {
+    setSelected(s => {
+      const copy = new Set(s);
+      if (copy.has(id)) {
+        copy.delete(id);
+      } else {
+        copy.add(id);
+      }
+      return copy;
+    });
+  }
+
+  const allSelected = tickets.length > 0 && tickets.every(t => selected.has(t.id));
+
+  function toggleSelectAll(checked: boolean) {
+    setSelected(s => {
+      const copy = new Set(s);
+      if (checked) {
+        tickets.forEach(t => copy.add(t.id));
+      } else {
+        tickets.forEach(t => copy.delete(t.id));
+      }
+      return copy;
+    });
+  }
+
   return (
+
     <div className="relative" onMouseLeave={() => setActiveId(null)}>
-      <table className="table-auto border-collapse" style={{ width: "100%" }}>
-        <thead>
-          <tr>
-            <th onClick={() => toggleSort("id")} style={{ cursor: "pointer" }}>
-              ID
-            </th>
-            <th
-              onClick={() => toggleSort("question")}
-              style={{ cursor: "pointer" }}
-            >
-              Question
-            </th>
-            <th
-              onClick={() => toggleSort("status")}
-              style={{ cursor: "pointer" }}
-            >
-              Status
-            </th>
-            <th
-              onClick={() => toggleSort("priority")}
-              style={{ cursor: "pointer" }}
-            >
-              Priority
-            </th>
+   
+    <table className="table-auto border-collapse" style={{ width: '100%' }}>
+      <thead>
+        <tr>
+          <th>
+            <input
+              type="checkbox"
+              checked={allSelected}
+              onChange={e => toggleSelectAll(e.target.checked)}
+            />
+          </th>
+          <th onClick={() => toggleSort('id')} style={{ cursor: 'pointer' }}>ID</th>
+          <th onClick={() => toggleSort('question')} style={{ cursor: 'pointer' }}>Question</th>
+          <th onClick={() => toggleSort('status')} style={{ cursor: 'pointer' }}>Status</th>
+          <th onClick={() => toggleSort('priority')} style={{ cursor: 'pointer' }}>Priority</th>
+        </tr>
+      </thead>
+      <tbody>
+        {tickets.map(t => (
+          <tr key={t.id}>
+            <td>
+              <input
+                type="checkbox"
+                checked={selected.has(t.id)}
+                onChange={() => toggleSelect(t.id)}
+              />
+            </td>
+            <td>{t.id}</td>
+            <td>{t.question}</td>
+            <td>{t.status}</td>
+            <td>{t.priority}</td>
+
           </tr>
         </thead>
         <tbody>
