@@ -4,7 +4,13 @@ const path = require('path');
 
 function compilePath(p) {
   const keys = [];
-  const regexStr = '^' + p.replace(/\/?:(\w+)/g, (_, k) => { keys.push(k); return '/([^/]+)'; }) + '$';
+  const replaced = p
+    .replace(/\/?:(\w+)/g, (_, k) => {
+      keys.push(k);
+      return '/([^/]+)';
+    })
+    .replace(/\*/g, '.*');
+  const regexStr = '^' + replaced + '$';
   return { regexp: new RegExp(regexStr), keys };
 }
 
