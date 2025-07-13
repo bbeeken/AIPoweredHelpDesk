@@ -12,11 +12,10 @@ const fs = require('fs');
 const app = express();
 app.use(bodyParser.json());
 
+app.use(express.static(path.join(__dirname, 'public')));
 const reactDist = path.join(__dirname, 'frontend', 'dist');
 if (fs.existsSync(reactDist)) {
   app.use(express.static(reactDist));
-} else {
-  app.use(express.static(path.join(__dirname, 'public')));
 }
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -1187,11 +1186,13 @@ app.post("/ai", async (req, res) => {
   }
 });
 
-if (fs.existsSync(reactDist)) {
-  app.get('*', (req, res) => {
+app.get('*', (req, res) => {
+  if (fs.existsSync(reactDist)) {
     res.sendFile(path.join(reactDist, 'index.html'));
-  });
-}
+  } else {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  }
+});
 
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
