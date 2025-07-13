@@ -22,6 +22,14 @@ function createApp() {
   function handler(req, res) {
     res.status = code => { res.statusCode = code; return res; };
     res.json = obj => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(obj)); };
+    res.sendFile = file => {
+      const stream = fs.createReadStream(file);
+      stream.on('error', () => {
+        res.statusCode = 404;
+        res.end('Not Found');
+      });
+      stream.pipe(res);
+    };
     const url = new URL(req.url, 'http://localhost');
     req.path = url.pathname;
     req.query = Object.fromEntries(url.searchParams.entries());
