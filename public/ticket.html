@@ -31,6 +31,7 @@
   </nav>
   <main id="main" class="prose max-w-none">
     <div id="details"></div>
+    <div id="articles" class="mt-4"></div>
   </main>
   <script>
     const themeToggle = document.getElementById('themeToggle');
@@ -73,6 +74,23 @@
         <p><strong>Priority:</strong> ${t.priority}</p>
         <p>${t.question}</p>
       `;
+
+      try {
+        const aiRes = await fetch('/ai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: t.question })
+        });
+        const aiData = await aiRes.json();
+        if (aiData.articles && aiData.articles.length) {
+          const list = aiData.articles
+            .map(a => `<li><a href="${a.url}" class="text-blue-600 hover:underline">${a.title}</a></li>`) 
+            .join('');
+          document.getElementById('articles').innerHTML = `<h3>Relevant Articles</h3><ul>${list}</ul>`;
+        }
+      } catch (err) {
+        console.error('Failed to load AI results', err);
+      }
     }
     loadTicket();
   </script>
