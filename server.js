@@ -418,17 +418,32 @@ app.delete("/tickets/:id/attachments/:attachmentId", (req, res) => {
 });
 
 // Add a comment to a ticket
+function parseMentions(text) {
+  const regex = /@([a-zA-Z0-9_]+)/g;
+  const mentions = [];
+  const highlighted = text.replace(regex, (m, name) => {
+    const user = data.users.find((u) => u.name.toLowerCase() === name.toLowerCase());
+    if (user) mentions.push(user.id);
+    return `<mark>@${name}</mark>`;
+  });
+  return { highlighted, mentions };
+}
+
 app.post("/tickets/:id/comments", (req, res) => {
   const ticket = data.tickets.find((t) => t.id === Number(req.params.id));
   if (!ticket) return res.status(404).json({ error: "Ticket not found" });
-  const { text } = req.body;
+  const { text, isInternal } = req.body;
   if (!text) return res.status(400).json({ error: "text required" });
   const nextId =
     (ticket.comments || []).reduce((m, c) => Math.max(m, c.id || 0), 0) + 1;
+  const { highlighted, mentions } = parseMentions(text);
   const comment = {
     id: nextId,
     userId: req.user.id,
     text,
+    html: highlighted,
+    mentions,
+    isInternal: !!isInternal,
     date: new Date().toISOString(),
   };
   ticket.comments.push(comment);
@@ -439,7 +454,12 @@ app.post("/tickets/:id/comments", (req, res) => {
 app.get("/tickets/:id/comments", (req, res) => {
   const ticket = data.tickets.find((t) => t.id === Number(req.params.id));
   if (!ticket) return res.status(404).json({ error: "Ticket not found" });
-  res.json(ticket.comments || []);
+  let comments = ticket.comments || [];
+  if (req.user.id === ticket.submitterId) {
+    comments = comments.filter((c) => !c.isInternal);
+  }
+  comments = comments.map((c) => ({ ...c, html: parseMentions(c.text).highlighted }));
+  res.json(comments);
 });
 
 // Get a single comment from a ticket
@@ -448,8 +468,9 @@ app.get("/tickets/:id/comments/:commentId", (req, res) => {
   if (!ticket) return res.status(404).json({ error: "Ticket not found" });
   const cid = Number(req.params.commentId);
   const comment = (ticket.comments || []).find((c) => (c.id || 0) === cid);
-  if (!comment) return res.status(404).json({ error: "Comment not found" });
-  res.json(comment);
+  if (!comment || (req.user.id === ticket.submitterId && comment.isInternal))
+    return res.status(404).json({ error: "Comment not found" });
+  res.json({ ...comment, html: parseMentions(comment.text).highlighted });
 });
 
 // Delete a comment from a ticket
@@ -475,6 +496,7 @@ app.patch("/tickets/:id/comments/:commentId", (req, res) => {
   const { text } = req.body;
   if (!text) return res.status(400).json({ error: "text required" });
   comment.text = text;
+  comment.html = parseMentions(text).highlighted;
   comment.edited = new Date().toISOString();
   res.json(comment);
 });
