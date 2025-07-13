@@ -153,9 +153,10 @@ the session.
 ### Frontend
 
 The user interface has moved to a React application in the `frontend` directory.
-Run `npm install` and `npm run build` in that folder to produce a `dist`
-directory which the Express server will serve automatically. During
-development you can run `npm run dev` for hot reloading. The dashboard includes
+Before starting the server, run `npm install && npm run build` in that folder to
+produce the `dist` directory. A blank page or MIME type errors in the browser
+usually mean the `frontend/dist` directory is missing or the server could not
+find it. During development you can run `npm run dev` for hot reloading. The dashboard includes
 ticket tables, real-time updates via Server-Sent Events and a new analytics
 page rendered with Chart.js.
 
