@@ -15,7 +15,7 @@
 
   <header class="flex justify-between items-center py-4">
     <div class="flex items-center gap-2">
-      <button id="menuToggle" aria-controls="sidebar" aria-expanded="false" class="border p-2 md:hidden">☰</button>
+      <button id="menuToggle" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle navigation" class="border p-2 md:hidden">☰</button>
       <h1 class="text-2xl font-bold">AI Powered Help Desk</h1>
     </div>
     <nav class="hidden md:block">
@@ -25,7 +25,7 @@
     <button id="themeToggle" type="button" aria-label="Toggle dark mode" class="ml-4">🌓</button>
   </header>
 
-  <nav id="sidebar" aria-label="Sidebar" class="fixed inset-y-0 left-0 w-56 bg-gray-100 dark:bg-gray-900 p-4 transform -translate-x-full transition-transform md:static md:translate-x-0 md:w-48">
+  <nav id="sidebar" aria-label="Sidebar" tabindex="-1" class="fixed inset-y-0 left-0 w-56 bg-gray-100 dark:bg-gray-900 p-4 transform -translate-x-full transition-transform md:static md:translate-x-0 md:w-48">
     <ul class="space-y-2">
       <li><a href="/index.html" class="block hover:underline">Dashboard</a></li>
       <li><a href="/chat.html" class="block hover:underline">AI Chat</a></li>
@@ -202,6 +202,19 @@
       const open = sidebar.classList.toggle('open');
       sidebar.classList.toggle('-translate-x-full', !open);
       menuToggle.setAttribute('aria-expanded', open);
+      if (open) {
+        sidebar.focus();
+      } else {
+        menuToggle.focus();
+      }
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+        sidebar.classList.remove('open');
+        sidebar.classList.add('-translate-x-full');
+        menuToggle.setAttribute('aria-expanded', 'false');
+        menuToggle.focus();
+      }
     });
   }
 
