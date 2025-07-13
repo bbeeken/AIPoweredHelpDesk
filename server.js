@@ -828,6 +828,23 @@ app.get("/assets/assigned/:userId", (req, res) => {
   res.json(assets);
 });
 
+// Tickets and assets for a specific user
+app.get("/users/:id/tickets", (req, res) => {
+  const uid = Number(req.params.id);
+  const user = data.users.find((u) => u.id === uid);
+  if (!user) return res.status(404).json({ error: "User not found" });
+  const tickets = data.tickets.filter((t) => t.assigneeId === uid);
+  res.json(tickets);
+});
+
+app.get("/users/:id/assets", (req, res) => {
+  const uid = Number(req.params.id);
+  const user = data.users.find((u) => u.id === uid);
+  if (!user) return res.status(404).json({ error: "User not found" });
+  const assets = (data.assets || []).filter((a) => a.assignedTo === uid);
+  res.json(assets);
+});
+
 // List all unassigned assets
 app.get("/assets/unassigned", (req, res) => {
   const assets = (data.assets || []).filter((a) => !a.assignedTo);

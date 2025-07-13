@@ -43,3 +43,7 @@
 ## [2025-07-23] Service worker tweaks
 - Removed duplicate service worker registration scripts from HTML pages.
 - Cached `manifest.json` for offline support.
+
+## [2025-07-24] Added user profile page
+- Introduced `UserProfile.tsx` reachable at `/users/:id` displaying tickets and assets for the selected user.
+- Navigation menu now links to the profile page.
