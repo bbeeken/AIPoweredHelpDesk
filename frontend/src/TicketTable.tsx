@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { TicketFilter } from './TicketFilters';
 
 interface Ticket {
   id: number;
@@ -7,7 +8,11 @@ interface Ticket {
   priority: string;
 }
 
-export default function TicketTable() {
+interface Props {
+  filters: TicketFilter;
+}
+
+export default function TicketTable({ filters }: Props) {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [sortField, setSortField] = useState<keyof Ticket>('id');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -15,6 +20,8 @@ export default function TicketTable() {
   useEffect(() => {
     async function load() {
       const url = new URL('/tickets', window.location.origin);
+      if (filters.status) url.searchParams.set('status', filters.status);
+      if (filters.priority) url.searchParams.set('priority', filters.priority);
       url.searchParams.set('sortBy', sortField);
       url.searchParams.set('order', sortOrder);
       const res = await fetch(url.toString());
@@ -29,7 +36,7 @@ export default function TicketTable() {
       es.addEventListener('ticketUpdated', load);
       return () => es.close();
     }
-  }, [sortField, sortOrder]);
+  }, [filters, sortField, sortOrder]);
 
   function toggleSort(field: keyof Ticket) {
     if (sortField === field) {
