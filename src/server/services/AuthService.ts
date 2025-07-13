@@ -41,7 +41,10 @@ class AuthService {
       throw new Error('Account is locked');
     }
 
-    const isValid = await bcrypt.compare(credentials.password, user.Password_Hash);
+    const isValid = await bcrypt.compare(
+      credentials.password,
+      user.Password_Hash!
+    );
     if (!isValid) {
       await this.incrementFailedAttempts(user.User_ID);
       throw new Error('Invalid credentials');
