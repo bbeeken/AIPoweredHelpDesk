@@ -45,6 +45,12 @@
 - Cached `manifest.json` for offline support.
 
 
+## [2025-07-24] Toast notifications and settings page
+- Added toast container using `/events` to show ticket create/update messages.
+- Dashboard stats now refresh when events arrive.
+- Introduced a settings page for opting into email or push notifications used by future AI triage.
+
+
 ## [2025-07-24] Added user profile page
 - Introduced `UserProfile.tsx` reachable at `/users/:id` displaying tickets and assets for the selected user.
 - Navigation menu now links to the profile page.
@@ -52,4 +58,5 @@
 ## [2025-07-24] AI reply suggestions
 - Typing `/ai` followed by a prompt in `chat.html` now fetches suggested replies from the server.
 - Suggestions appear as buttons that insert the text into the input when clicked.
+
 

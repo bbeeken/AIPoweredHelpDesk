@@ -17,6 +17,32 @@ function StatusWidget({ onRemove }: { onRemove: () => void }) {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const ref = useRef<HTMLCanvasElement>(null);
 
+
+  async function loadStats() {
+    try {
+      const res = await fetch('/stats/dashboard');
+      const data: DashboardStats = await res.json();
+      setStats(data);
+    } catch (err) {
+      console.error('Error loading stats', err);
+    }
+  }
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  useEffect(() => {
+    if (!window.EventSource) return;
+    const es = new EventSource('/events');
+    es.addEventListener('ticketCreated', loadStats);
+    es.addEventListener('ticketUpdated', loadStats);
+    return () => es.close();
+  }, []);
+
+  useEffect(() => {
+    if (!stats || !canvasRef.current) return;
+
   useEffect(() => {
     async function load() {
       try {
@@ -32,6 +58,7 @@ function StatusWidget({ onRemove }: { onRemove: () => void }) {
 
   useEffect(() => {
     if (!stats || !ref.current) return;
+
     const cfg: ChartConfiguration<'bar'> = {
       type: 'bar',
       data: {
