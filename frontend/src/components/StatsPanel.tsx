@@ -41,9 +41,6 @@ function StatusWidget({ onRemove }: { onRemove: () => void }) {
   }, []);
 
   useEffect(() => {
-    if (!stats || !canvasRef.current) return;
-
-  useEffect(() => {
     async function load() {
       try {
         const res = await fetch('/stats/dashboard');
