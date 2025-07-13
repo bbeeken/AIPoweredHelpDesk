@@ -133,8 +133,10 @@ actual MSSQL database set `USE_MSSQL=true` in your `.env` file along with the
 standard `DB_*` connection settings. When enabled the `/tickets` and
 `/tickets/:id` endpoints read from the `V_Ticket_Master_Expanded` view.
 
-The n8n webhook URL can be configured via the `N8N_URL` environment variable.
-The Qdrant server URL can be set with the `QDRANT_URL` environment variable.
+Other useful environment variables include:
+
+- `N8N_URL` – n8n workflow webhook URL.
+- `QDRANT_URL` – base address of the Qdrant server.
 
 After the first visit, the pages are cached for offline use via a service worker.
 An experimental `realtime.html` page demonstrates live ticket notifications using the `/events` SSE endpoint.
