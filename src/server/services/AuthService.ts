@@ -151,7 +151,7 @@ class AuthService {
     };
 
     const accessToken = jwt.sign(tokenPayload, config.jwt.secret, {
-      expiresIn: config.jwt.expiresIn,
+      expiresIn: config.jwt.expiresIn as jwt.SignOptions['expiresIn'],
       issuer: 'helpdesk-api',
       audience: 'helpdesk-app'
     });
@@ -160,7 +160,7 @@ class AuthService {
       { userId: user.userId, sessionId: user.sessionId },
       config.jwt.refreshSecret,
       {
-        expiresIn: config.jwt.refreshExpiresIn,
+        expiresIn: config.jwt.refreshExpiresIn as jwt.SignOptions['expiresIn'],
         issuer: 'helpdesk-api',
         audience: 'helpdesk-app'
       }
