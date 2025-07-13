@@ -2,6 +2,7 @@ import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Analytics from './pages/Analytics';
 import ThemeToggle from './ThemeToggle';
+import CommandPalette from './components/CommandPalette';
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/analytics" element={<Analytics />} />
       </Routes>
+      <CommandPalette />
     </BrowserRouter>
   );
 }
