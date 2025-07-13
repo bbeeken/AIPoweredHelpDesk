@@ -257,7 +257,25 @@ class AuthService {
   }
 
   private async validateMicrosoftToken(token: string): Promise<MicrosoftUserData> {
-    throw new Error('Microsoft token validation not implemented');
+    const response = await fetch('https://graph.microsoft.com/v1.0/me', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to validate Microsoft token');
+    }
+
+    const data = await response.json();
+
+    return {
+      objectId: data.id,
+      email: data.mail || data.userPrincipalName,
+      displayName: data.displayName,
+      firstName: data.givenName,
+      lastName: data.surname
+    };
   }
 
   private async createMicrosoftUser(microsoftUser: MicrosoftUserData): Promise<User> {
