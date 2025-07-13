@@ -265,3 +265,8 @@
 - **Date:** 2025-07-23
 - **Reasoning:** Duplicate service worker registration scripts caused unnecessary network requests.
 - **Impact:** Cleaned up HTML and added manifest to cache for smoother offline experience.
+
+### Added user profile API and page
+- **Date:** 2025-07-24
+- **Reasoning:** Needed a consolidated view of tickets and assets for individual users.
+- **Impact:** New endpoints `/users/:id/tickets` and `/users/:id/assets` expose this data and a React `UserProfile` page displays it.
