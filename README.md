@@ -17,6 +17,7 @@ For the long-term roadmap, see [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.
 - **Offline-capable UI** using a service worker and web app manifest.
 
 - **Real-time updates** via a Server-Sent Events endpoint.
+- **Wildcard routing** using `*` to match any path.
 
 - **Stats dashboard** showing ticket counts, mean resolution time and a 7-day ticket forecast.
 
