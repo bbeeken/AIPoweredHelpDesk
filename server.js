@@ -268,6 +268,92 @@ app.patch("/tickets/:id", (req, res) => {
   res.json(ticket);
 });
 
+// Bulk update tickets (status, assignee, priority, dueDate)
+app.patch("/tickets/bulk-update", (req, res) => {
+  const { ids, status, assigneeId, priority, dueDate } = req.body;
+  if (!Array.isArray(ids) || !ids.length)
+    return res.status(400).json({ error: "ids array required" });
+  const updated = [];
+  ids.forEach((id) => {
+    const ticket = data.tickets.find((t) => t.id === Number(id));
+    if (!ticket) return;
+    const now = new Date().toISOString();
+    if (status && status !== ticket.status) {
+      ticket.history = ticket.history || [];
+      ticket.history.push({
+        action: "status",
+        from: ticket.status,
+        to: status,
+        by: req.user.id,
+        date: now,
+      });
+      ticket.status = status;
+    }
+    if (assigneeId !== undefined && assigneeId !== ticket.assigneeId) {
+      ticket.history = ticket.history || [];
+      ticket.history.push({
+        action: "assignee",
+        from: ticket.assigneeId,
+        to: assigneeId,
+        by: req.user.id,
+        date: now,
+      });
+      ticket.assigneeId = assigneeId;
+    }
+    if (priority && priority !== ticket.priority) {
+      ticket.history = ticket.history || [];
+      ticket.history.push({
+        action: "priority",
+        from: ticket.priority,
+        to: priority,
+        by: req.user.id,
+        date: now,
+      });
+      ticket.priority = priority;
+    }
+    if (dueDate && dueDate !== ticket.dueDate) {
+      ticket.history = ticket.history || [];
+      ticket.history.push({
+        action: "dueDate",
+        from: ticket.dueDate,
+        to: dueDate,
+        by: req.user.id,
+        date: now,
+      });
+      ticket.dueDate = dueDate;
+    }
+    eventBus.emit("ticketUpdated", ticket);
+    updated.push(ticket);
+  });
+  res.json(updated);
+});
+
+// Bulk assign tickets to a user
+app.post("/tickets/bulk-assign", (req, res) => {
+  const { ids, assigneeId } = req.body;
+  if (!Array.isArray(ids) || !ids.length || assigneeId === undefined)
+    return res.status(400).json({ error: "ids and assigneeId required" });
+  const updated = [];
+  ids.forEach((id) => {
+    const ticket = data.tickets.find((t) => t.id === Number(id));
+    if (!ticket) return;
+    if (ticket.assigneeId === assigneeId) return;
+    const now = new Date().toISOString();
+    ticket.history = ticket.history || [];
+    ticket.history.push({
+      action: "assignee",
+      from: ticket.assigneeId,
+      to: assigneeId,
+      by: req.user.id,
+      date: now,
+    });
+    ticket.assigneeId = assigneeId;
+    eventBus.emit("ticketUpdated", ticket);
+    updated.push(ticket);
+  });
+  res.json(updated);
+});
+
 // Delete a ticket
 app.delete("/tickets/:id", (req, res) => {
   const index = data.tickets.findIndex((t) => t.id === Number(req.params.id));
