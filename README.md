@@ -41,7 +41,7 @@ For the long-term roadmap, see [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.
 - `POST /tickets/:id/escalate` – set ticket priority to high.
 - `POST /tickets/:id/close` – change ticket status to closed.
 - `POST /tickets/:id/reopen` – reopen a closed ticket.
-- `POST /tickets/:id/comments` – add a comment to a ticket.
+ - `POST /tickets/:id/comments` – add a comment to a ticket. Include `isInternal: true` to keep it hidden from the ticket submitter. `@mentions` are returned highlighted in an `html` field.
 - `PATCH /tickets/:id/comments/:commentId` – edit a comment's text.
 - `GET /tickets/:id/comments/:commentId` – view a specific comment.
 - `DELETE /tickets/:id/comments/:commentId` – remove a comment from a ticket.

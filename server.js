@@ -80,6 +80,9 @@ app.get("/events", (req, res) => {
 let nextTicketId = data.tickets.reduce((m, t) => Math.max(m, t.id), 0) + 1;
 let nextAssetId =
   (data.assets || []).reduce((m, a) => Math.max(m, a.id), 0) + 1;
+// store saved ticket filter presets per user
+let nextFilterId = 1;
+const filterPresets = {};
 
 // choose user with fewest open tickets
 function getLeastBusyUserId() {
@@ -268,6 +271,92 @@ app.patch("/tickets/:id", (req, res) => {
   res.json(ticket);
 });
 
+// Bulk update tickets (status, assignee, priority, dueDate)
+app.patch("/tickets/bulk-update", (req, res) => {
+  const { ids, status, assigneeId, priority, dueDate } = req.body;
+  if (!Array.isArray(ids) || !ids.length)
+    return res.status(400).json({ error: "ids array required" });
+  const updated = [];
+  ids.forEach((id) => {
+    const ticket = data.tickets.find((t) => t.id === Number(id));
+    if (!ticket) return;
+    const now = new Date().toISOString();
+    if (status && status !== ticket.status) {
+      ticket.history = ticket.history || [];
+      ticket.history.push({
+        action: "status",
+        from: ticket.status,
+        to: status,
+        by: req.user.id,
+        date: now,
+      });
+      ticket.status = status;
+    }
+    if (assigneeId !== undefined && assigneeId !== ticket.assigneeId) {
+      ticket.history = ticket.history || [];
+      ticket.history.push({
+        action: "assignee",
+        from: ticket.assigneeId,
+        to: assigneeId,
+        by: req.user.id,
+        date: now,
+      });
+      ticket.assigneeId = assigneeId;
+    }
+    if (priority && priority !== ticket.priority) {
+      ticket.history = ticket.history || [];
+      ticket.history.push({
+        action: "priority",
+        from: ticket.priority,
+        to: priority,
+        by: req.user.id,
+        date: now,
+      });
+      ticket.priority = priority;
+    }
+    if (dueDate && dueDate !== ticket.dueDate) {
+      ticket.history = ticket.history || [];
+      ticket.history.push({
+        action: "dueDate",
+        from: ticket.dueDate,
+        to: dueDate,
+        by: req.user.id,
+        date: now,
+      });
+      ticket.dueDate = dueDate;
+    }
+    eventBus.emit("ticketUpdated", ticket);
+    updated.push(ticket);
+  });
+  res.json(updated);
+});
+
+// Bulk assign tickets to a user
+app.post("/tickets/bulk-assign", (req, res) => {
+  const { ids, assigneeId } = req.body;
+  if (!Array.isArray(ids) || !ids.length || assigneeId === undefined)
+    return res.status(400).json({ error: "ids and assigneeId required" });
+  const updated = [];
+  ids.forEach((id) => {
+    const ticket = data.tickets.find((t) => t.id === Number(id));
+    if (!ticket) return;
+    if (ticket.assigneeId === assigneeId) return;
+    const now = new Date().toISOString();
+    ticket.history = ticket.history || [];
+    ticket.history.push({
+      action: "assignee",
+      from: ticket.assigneeId,
+      to: assigneeId,
+      by: req.user.id,
+      date: now,
+    });
+    ticket.assigneeId = assigneeId;
+    eventBus.emit("ticketUpdated", ticket);
+    updated.push(ticket);
+  });
+  res.json(updated);
+});
+
 // Delete a ticket
 app.delete("/tickets/:id", (req, res) => {
   const index = data.tickets.findIndex((t) => t.id === Number(req.params.id));
@@ -418,17 +507,32 @@ app.delete("/tickets/:id/attachments/:attachmentId", (req, res) => {
 });
 
 // Add a comment to a ticket
+function parseMentions(text) {
+  const regex = /@([a-zA-Z0-9_]+)/g;
+  const mentions = [];
+  const highlighted = text.replace(regex, (m, name) => {
+    const user = data.users.find((u) => u.name.toLowerCase() === name.toLowerCase());
+    if (user) mentions.push(user.id);
+    return `<mark>@${name}</mark>`;
+  });
+  return { highlighted, mentions };
+}
+
 app.post("/tickets/:id/comments", (req, res) => {
   const ticket = data.tickets.find((t) => t.id === Number(req.params.id));
   if (!ticket) return res.status(404).json({ error: "Ticket not found" });
-  const { text } = req.body;
+  const { text, isInternal } = req.body;
   if (!text) return res.status(400).json({ error: "text required" });
   const nextId =
     (ticket.comments || []).reduce((m, c) => Math.max(m, c.id || 0), 0) + 1;
+  const { highlighted, mentions } = parseMentions(text);
   const comment = {
     id: nextId,
     userId: req.user.id,
     text,
+    html: highlighted,
+    mentions,
+    isInternal: !!isInternal,
     date: new Date().toISOString(),
   };
   ticket.comments.push(comment);
@@ -439,7 +543,12 @@ app.post("/tickets/:id/comments", (req, res) => {
 app.get("/tickets/:id/comments", (req, res) => {
   const ticket = data.tickets.find((t) => t.id === Number(req.params.id));
   if (!ticket) return res.status(404).json({ error: "Ticket not found" });
-  res.json(ticket.comments || []);
+  let comments = ticket.comments || [];
+  if (req.user.id === ticket.submitterId) {
+    comments = comments.filter((c) => !c.isInternal);
+  }
+  comments = comments.map((c) => ({ ...c, html: parseMentions(c.text).highlighted }));
+  res.json(comments);
 });
 
 // Get a single comment from a ticket
@@ -448,8 +557,9 @@ app.get("/tickets/:id/comments/:commentId", (req, res) => {
   if (!ticket) return res.status(404).json({ error: "Ticket not found" });
   const cid = Number(req.params.commentId);
   const comment = (ticket.comments || []).find((c) => (c.id || 0) === cid);
-  if (!comment) return res.status(404).json({ error: "Comment not found" });
-  res.json(comment);
+  if (!comment || (req.user.id === ticket.submitterId && comment.isInternal))
+    return res.status(404).json({ error: "Comment not found" });
+  res.json({ ...comment, html: parseMentions(comment.text).highlighted });
 });
 
 // Delete a comment from a ticket
@@ -475,6 +585,7 @@ app.patch("/tickets/:id/comments/:commentId", (req, res) => {
   const { text } = req.body;
   if (!text) return res.status(400).json({ error: "text required" });
   comment.text = text;
+  comment.html = parseMentions(text).highlighted;
   comment.edited = new Date().toISOString();
   res.json(comment);
 });
@@ -828,6 +939,23 @@ app.get("/assets/assigned/:userId", (req, res) => {
   res.json(assets);
 });
 
+// Tickets and assets for a specific user
+app.get("/users/:id/tickets", (req, res) => {
+  const uid = Number(req.params.id);
+  const user = data.users.find((u) => u.id === uid);
+  if (!user) return res.status(404).json({ error: "User not found" });
+  const tickets = data.tickets.filter((t) => t.assigneeId === uid);
+  res.json(tickets);
+});
+
+app.get("/users/:id/assets", (req, res) => {
+  const uid = Number(req.params.id);
+  const user = data.users.find((u) => u.id === uid);
+  if (!user) return res.status(404).json({ error: "User not found" });
+  const assets = (data.assets || []).filter((a) => a.assignedTo === uid);
+  res.json(assets);
+});
+
 // List all unassigned assets
 app.get("/assets/unassigned", (req, res) => {
   const assets = (data.assets || []).filter((a) => !a.assignedTo);
@@ -1027,6 +1155,23 @@ app.post("/assets/:id/retire", (req, res) => {
     date: now,
   });
   res.json(asset);
+});
+
+// User-specific ticket filter presets
+app.get("/filters", (req, res) => {
+  const presets = filterPresets[req.user.id] || [];
+  res.json(presets);
+});
+
+app.post("/filters", (req, res) => {
+  const { name, filters } = req.body;
+  if (!name || !filters) {
+    return res.status(400).json({ error: "name and filters required" });
+  }
+  filterPresets[req.user.id] = filterPresets[req.user.id] || [];
+  const preset = { id: nextFilterId++, name, filters };
+  filterPresets[req.user.id].push(preset);
+  res.status(201).json(preset);
 });
 
 
