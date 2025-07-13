@@ -39,13 +39,39 @@
       <button id="voice" type="button" aria-label="Start voice input" class="border px-3">🎤</button>
       <button type="submit" class="border px-4">Send</button>
     </form>
+    <div id="suggestions" class="mt-2 space-x-2"></div>
   </main>
   <script>
+    const suggDiv = document.getElementById('suggestions');
     document.getElementById('chatForm').onsubmit = async e => {
       e.preventDefault();
       const input = document.getElementById('msg');
-      const text = input.value.trim();
+      let text = input.value.trim();
       if(!text) return;
+
+      if(text.startsWith('/ai')) {
+        text = text.slice(3).trim();
+        const res = await fetch('/ai', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})});
+        const data = await res.json();
+        const options = Array.isArray(data.suggestions) ? data.suggestions : (data.reply ? [data.reply] : []);
+        suggDiv.innerHTML = '';
+        options.forEach(opt => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.textContent = opt;
+          b.className = 'border px-2 py-1 mr-2 mb-2 hover:bg-gray-200';
+          b.onclick = () => {
+            input.value = opt;
+            suggDiv.innerHTML = '';
+          };
+          suggDiv.appendChild(b);
+        });
+        if(options.length === 0) {
+          suggDiv.textContent = 'No suggestions available.';
+        }
+        return;
+      }
+
       const messages = document.getElementById('messages');
       const userMsg = document.createElement('div');
       userMsg.textContent = 'You: ' + text;
