@@ -1,10 +1,8 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, Link } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Analytics from './pages/Analytics';
 
 import Settings from './pages/Settings';
-import ThemeToggle from './ThemeToggle';
-import CommandPalette from './components/CommandPalette';
 import ToastContainer from './components/ToastContainer';
 
 import UserProfile from './pages/UserProfile';
