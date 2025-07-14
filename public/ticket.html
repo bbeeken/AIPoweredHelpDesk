@@ -12,14 +12,14 @@
   <a href="#main" class="skip-link">Skip to content</a>
   <header class="flex justify-between items-center py-4">
     <div class="flex items-center gap-2">
-      <button id="menuToggle" aria-controls="sidebar" aria-expanded="false" class="border p-2 md:hidden">☰</button>
+      <button id="menuToggle" aria-controls="sidebar" aria-expanded="false" class="border p-2 md:hidden touch-target">☰</button>
       <h1 class="text-2xl font-bold">Ticket Details</h1>
     </div>
     <nav class="hidden md:block">
       <a href="/index.html" class="text-blue-600 hover:underline mr-4">Home</a>
       <a href="/realtime.html" class="text-blue-600 hover:underline">Real-Time</a>
     </nav>
-    <button id="themeToggle" type="button" aria-label="Toggle dark mode" class="ml-4">🌓</button>
+    <button id="themeToggle" type="button" aria-label="Toggle dark mode" class="ml-4 touch-target">🌓</button>
   </header>
 
   <nav id="sidebar" aria-label="Sidebar" class="fixed inset-y-0 left-0 w-56 bg-gray-100 dark:bg-gray-900 p-4 transform -translate-x-full transition-transform md:static md:translate-x-0 md:w-48">
@@ -68,11 +68,14 @@
       if (!res.ok) return;
       const t = await res.json();
       const d = document.getElementById('details');
+      const orig = t.originalQuestion && t.originalQuestion !== t.question
+        ? `<span class="text-sm text-gray-500">(Original: ${t.originalQuestion})</span>`
+        : '';
       d.innerHTML = `
         <h2>Ticket #${t.id}</h2>
         <p><strong>Status:</strong> ${t.status}</p>
         <p><strong>Priority:</strong> ${t.priority}</p>
-        <p>${t.question}</p>
+        <p>${t.question} ${orig}</p>
       `;
 
       try {
