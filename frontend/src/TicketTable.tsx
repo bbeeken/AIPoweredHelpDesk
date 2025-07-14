@@ -15,6 +15,7 @@ interface Ticket {
   question: string;
   status: string;
   priority: string;
+  sentiment?: { label: string; score: number };
 }
 
 interface Props {
@@ -99,9 +100,20 @@ export default function TicketTable({ filters }: Props) {
     }
   }
 
+  function emoji(label: string) {
+    if (label === 'positive') return '🙂';
+    if (label === 'negative') return '😠';
+    return '😐';
+  }
+
   const columns = [
     { title: 'ID', dataIndex: 'id', sorter: true },
     { title: 'Question', dataIndex: 'question', sorter: true },
+    {
+      title: 'Sentiment',
+      dataIndex: 'sentiment',
+      render: (s: Ticket['sentiment']) => (s ? emoji(s.label) : ''),
+    },
     { title: 'Status', dataIndex: 'status', sorter: true },
     { title: 'Priority', dataIndex: 'priority', sorter: true },
   ];
