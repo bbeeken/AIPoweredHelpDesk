@@ -1,4 +1,5 @@
-import { ChangeEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Select, Input, Button } from 'antd';
 
 export interface TicketFilter {
   status?: string;
@@ -16,6 +17,8 @@ interface Props {
   filters: TicketFilter;
   onChange: (f: TicketFilter) => void;
 }
+
+const { Option } = Select;
 
 export default function TicketFilters({ filters, onChange }: Props) {
   const [presets, setPresets] = useState<FilterPreset[]>([]);
@@ -69,6 +72,7 @@ export default function TicketFilters({ filters, onChange }: Props) {
     if (preset) onChange(preset.filters);
   }
 
+
   function handleStatus(e: ChangeEvent<HTMLSelectElement>) {
     onChange({ ...filters, status: e.target.value || undefined });
   }
@@ -102,23 +106,54 @@ export default function TicketFilters({ filters, onChange }: Props) {
           value={filters.tags || ''}
           onChange={handleTags}
         />
+
+  return (
+    <div className="flex flex-col gap-2 mb-2">
+      <div className="flex gap-2 items-center">
+        <Select
+          aria-label="Status"
+          value={filters.status || ''}
+          onChange={value => onChange({ ...filters, status: value || undefined })}
+          style={{ width: 140 }}
+        >
+          <Option value="">All statuses</Option>
+          <Option value="open">Open</Option>
+          <Option value="waiting">Waiting</Option>
+          <Option value="closed">Closed</Option>
+        </Select>
+        <Select
+          aria-label="Priority"
+          value={filters.priority || ''}
+          onChange={value => onChange({ ...filters, priority: value || undefined })}
+          style={{ width: 140 }}
+        >
+          <Option value="">All priorities</Option>
+          <Option value="low">Low</Option>
+          <Option value="medium">Medium</Option>
+          <Option value="high">High</Option>
+        </Select>
+
       </div>
-      <div className="flex gap-2">
-        <label htmlFor="viewSelect" className="sr-only">Saved views</label>
-        <select id="viewSelect" className="border p-2" value="" onChange={e => applyPreset(e.target.value)}>
-          <option value="">Saved views</option>
+      <div className="flex gap-2 items-center">
+        <Select
+          aria-label="Saved views"
+          value=""
+          onChange={applyPreset}
+          style={{ width: 160 }}
+        >
+          <Option value="">Saved views</Option>
           {presets.map(p => (
-            <option key={p.id} value={p.id}>{p.name}</option>
+            <Option key={p.id} value={String(p.id)}>{p.name}</Option>
           ))}
-        </select>
-        <input
+        </Select>
+        <Input
           aria-label="View name"
-          className="border p-2"
           value={name}
           onChange={e => setName(e.target.value)}
           placeholder="New view"
+          style={{ width: 160 }}
         />
-        <button className="border px-3" onClick={savePreset}>Save</button>
+        <Button onClick={savePreset}>Save</Button>
       </div>
     </div>
   );
