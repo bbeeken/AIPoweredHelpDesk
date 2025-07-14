@@ -68,11 +68,14 @@
       if (!res.ok) return;
       const t = await res.json();
       const d = document.getElementById('details');
+      const orig = t.originalQuestion && t.originalQuestion !== t.question
+        ? `<span class="text-sm text-gray-500">(Original: ${t.originalQuestion})</span>`
+        : '';
       d.innerHTML = `
         <h2>Ticket #${t.id}</h2>
         <p><strong>Status:</strong> ${t.status}</p>
         <p><strong>Priority:</strong> ${t.priority}</p>
-        <p>${t.question}</p>
+        <p>${t.question} ${orig}</p>
       `;
 
       try {

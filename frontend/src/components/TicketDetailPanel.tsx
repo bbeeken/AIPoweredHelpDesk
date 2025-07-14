@@ -49,7 +49,12 @@ export default function TicketDetailPanel({ ticketId, onClose }: Props) {
         <p>Loading...</p>
       ) : (
         <div>
-          <p className="mb-2">{ticket.question}</p>
+          <p className="mb-2">
+            {ticket.question}
+            {ticket.originalQuestion && ticket.originalQuestion !== ticket.question && (
+              <span className="block text-xs text-gray-500">(Original: {ticket.originalQuestion})</span>
+            )}
+          </p>
           <p className="mb-1">Status: {ticket.status}</p>
           <p className="mb-1">Priority: {ticket.priority}</p>
           {ticket.history && ticket.history.length > 0 && (
