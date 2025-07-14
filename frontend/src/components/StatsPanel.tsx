@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { io } from 'socket.io-client';
 import {
   Chart as ChartJS,
   registerables,
@@ -39,11 +40,10 @@ function StatusWidget({ onRemove }: { onRemove: () => void }) {
   }, []);
 
   useEffect(() => {
-    if (!window.EventSource) return;
-    const es = new EventSource('/events');
-    es.addEventListener('ticketCreated', loadStats);
-    es.addEventListener('ticketUpdated', loadStats);
-    return () => es.close();
+    const socket = io();
+    socket.on('ticketCreated', loadStats);
+    socket.on('ticketUpdated', loadStats);
+    return () => socket.disconnect();
   }, []);
 
   useEffect(() => {

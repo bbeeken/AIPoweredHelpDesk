@@ -7,9 +7,19 @@ const data = require("./data/mockData");
 const dataService = require("./utils/dataService");
 const auth = require("./utils/authService");
 const eventBus = require("./utils/eventBus");
+const http = require('http');
+const { Server } = require('socket.io');
 
 const fs = require('fs');
 const app = express();
+
+function attachSocket(server) {
+  const io = new Server(server);
+  eventBus.on('ticketCreated', (t) => io.emit('ticketCreated', t));
+  eventBus.on('ticketUpdated', (t) => io.emit('ticketUpdated', t));
+  server.on('close', () => io.close());
+  return io;
+}
 app.use(bodyParser.json());
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -1196,7 +1206,10 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  const server = http.createServer(app);
+  attachSocket(server);
+  server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
 module.exports = app;
+module.exports.attachSocket = attachSocket;
