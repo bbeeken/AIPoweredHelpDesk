@@ -9,8 +9,21 @@ const auth = require("./utils/authService");
 const eventBus = require("./utils/eventBus");
 const sentimentService = require("./utils/sentimentService");
 
+const assistant = require("./utils/assistant");
+
+const http = require('http');
+const { Server } = require('socket.io');
+
 const fs = require('fs');
 const app = express();
+
+function attachSocket(server) {
+  const io = new Server(server);
+  eventBus.on('ticketCreated', (t) => io.emit('ticketCreated', t));
+  eventBus.on('ticketUpdated', (t) => io.emit('ticketUpdated', t));
+  server.on('close', () => io.close());
+  return io;
+}
 app.use(bodyParser.json());
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -74,6 +87,25 @@ app.get("/events", (req, res) => {
     eventBus.off("ticketCreated", ticketCreated);
     eventBus.off("ticketUpdated", ticketUpdated);
   });
+});
+
+// Stream proactive assistance suggestions
+const assistClients = new Set();
+app.get("/assist", (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.write(": connected\n\n");
+  assistClients.add(res);
+  req.on("close", () => assistClients.delete(res));
+});
+
+app.post("/assist", (req, res) => {
+  const { text } = req.body || {};
+  const suggestions = assistant.generateSuggestions(text || "");
+  const payload = `data:${JSON.stringify(suggestions)}\n\n`;
+  assistClients.forEach((c) => c.write(payload));
+  res.json({ success: true });
 });
 
 // helper to track next ticket and asset ids
@@ -1231,7 +1263,10 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  const server = http.createServer(app);
+  attachSocket(server);
+  server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
 module.exports = app;
+module.exports.attachSocket = attachSocket;
