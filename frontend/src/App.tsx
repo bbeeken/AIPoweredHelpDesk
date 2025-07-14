@@ -24,12 +24,12 @@ export default function App() {
 
         <h1 className="text-2xl font-bold">AI Help Desk</h1>
         <nav>
-          <Link to="/" className="mr-4 text-blue-600 hover:underline">Dashboard</Link>
-          <Link to="/analytics" className="mr-4 text-blue-600 hover:underline">Analytics</Link>
+          <Link to="/" className="mr-4 text-primary dark:text-primary-dark hover:underline">Dashboard</Link>
+          <Link to="/analytics" className="mr-4 text-primary dark:text-primary-dark hover:underline">Analytics</Link>
 
-          <Link to="/settings" className="text-blue-600 hover:underline">Settings</Link>
+          <Link to="/settings" className="text-primary dark:text-primary-dark hover:underline">Settings</Link>
 
-          <Link to="/users/1" className="text-blue-600 hover:underline">Profile</Link>
+          <Link to="/users/1" className="text-primary dark:text-primary-dark hover:underline">Profile</Link>
 
         </nav>
         <ThemeToggle />
