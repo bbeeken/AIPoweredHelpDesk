@@ -83,7 +83,7 @@ function StatusWidget({ onRemove }: { onRemove: () => void }) {
     <div className="border rounded p-2 bg-white dark:bg-gray-800">
       <div className="flex justify-between items-center mb-1">
         <h3 className="font-semibold">Ticket Status</h3>
-        <button aria-label="Remove" onClick={onRemove} className="text-sm text-red-600">✕</button>
+        <button aria-label="Remove" onClick={onRemove} className="text-sm text-error dark:text-error-dark">✕</button>
       </div>
       {stats ? <canvas ref={ref} /> : <p>Loading...</p>}
     </div>
@@ -126,7 +126,7 @@ function ForecastWidget({ onRemove }: { onRemove: () => void }) {
     <div className="border rounded p-2 bg-white dark:bg-gray-800">
       <div className="flex justify-between items-center mb-1">
         <h3 className="font-semibold">Ticket Forecast</h3>
-        <button aria-label="Remove" onClick={onRemove} className="text-sm text-red-600">✕</button>
+        <button aria-label="Remove" onClick={onRemove} className="text-sm text-error dark:text-error-dark">✕</button>
       </div>
       {forecast != null ? <canvas ref={ref} /> : <p>Loading...</p>}
     </div>
@@ -181,7 +181,7 @@ export default function StatsPanel() {
                 <option key={w.id} value={w.id}>{w.label}</option>
               ))}
             </select>
-            <button onClick={addWidget} className="bg-blue-600 text-white px-2 py-0.5 rounded">
+            <button onClick={addWidget} className="bg-primary dark:bg-primary-dark text-white px-2 py-0.5 rounded">
               Add
             </button>
           </>

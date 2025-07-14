@@ -3,5 +3,5 @@
 @tailwind utilities;
 
 body {
-  @apply transition-colors duration-300;
+  @apply font-sans transition-colors duration-300;
 }
