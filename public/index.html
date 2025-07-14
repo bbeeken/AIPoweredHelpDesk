@@ -91,9 +91,12 @@
       tableBody.innerHTML = '';
       tickets.forEach(t => {
         const tr = document.createElement('tr');
+        const original = t.originalQuestion && t.originalQuestion !== t.question
+          ? `<div class="text-xs text-gray-500">(${t.originalQuestion})</div>`
+          : '';
         tr.innerHTML = `
           <td class="border px-2 py-1"><a href="/ticket.html?id=${t.id}" class="text-blue-600 hover:underline">${t.id}</a></td>
-          <td class="border px-2 py-1">${t.question}</td>
+          <td class="border px-2 py-1">${t.question}${original}</td>
           <td class="border px-2 py-1">${t.status}</td>
           <td class="border px-2 py-1">${t.priority}</td>`;
         tableBody.appendChild(tr);

@@ -1,16 +1,26 @@
+
 import { useCallback, useEffect, useState } from 'react';
 import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
 import { useSwipeable } from 'react-swipeable';
 import { Select, Button, Input } from 'antd';
+
+import { useEffect, useState, useCallback } from "react";
+import { io } from "socket.io-client";
+import TicketDetailPanel from "./components/TicketDetailPanel";
+
+import { useEffect, useState, useCallback } from 'react';
+import { Table, Select, Button, Input } from 'antd';
 import TicketDetailPanel from './components/TicketDetailPanel';
 import { TicketFilter } from './TicketFilters';
 import { showToast } from './components/toast';
+
 
 interface Ticket {
   id: number;
   question: string;
   status: string;
   priority: string;
+  sentiment?: { label: string; score: number };
 }
 
 interface Props {
@@ -31,6 +41,8 @@ export default function TicketTable({ filters, tickets: initial }: Props) {
 
   const loadTickets = useCallback(async () => {
     if (initial) return;
+
+
     const url = new URL('/tickets', window.location.origin);
     if (filters.status) url.searchParams.set('status', filters.status);
     if (filters.priority) url.searchParams.set('priority', filters.priority);
@@ -42,6 +54,17 @@ export default function TicketTable({ filters, tickets: initial }: Props) {
   }, [filters, sortField, sortOrder, initial]);
 
   useEffect(() => {
+
+    loadTickets().catch((err) => console.error("Error loading tickets", err));
+
+    const socket = io();
+    socket.on("ticketCreated", loadTickets);
+    socket.on("ticketUpdated", loadTickets);
+
+    return () => {
+      socket.disconnect();
+    };
+
     loadTickets().catch(err => console.error('Error loading tickets', err));
     if (!initial && window.EventSource) {
       const es = new EventSource('/events');
@@ -49,6 +72,7 @@ export default function TicketTable({ filters, tickets: initial }: Props) {
       es.addEventListener('ticketUpdated', loadTickets);
       return () => es.close();
     }
+y
   }, [loadTickets, initial]);
 
   async function closeTicket(id: number) {
@@ -66,6 +90,10 @@ export default function TicketTable({ filters, tickets: initial }: Props) {
       await loadTickets();
     }
   }
+
+
+  }, [loadTickets]);
+
 
   async function applyBulkStatus() {
     if (!bulkStatus) return;
@@ -101,6 +129,7 @@ export default function TicketTable({ filters, tickets: initial }: Props) {
     }
   }
 
+ty
   const sorted = [...tickets].sort((a, b) => {
     const x = a[sortField];
     const y = b[sortField];
@@ -140,6 +169,39 @@ export default function TicketTable({ filters, tickets: initial }: Props) {
       </div>
     );
   };
+
+  function emoji(label: string) {
+    if (label === 'positive') return '🙂';
+    if (label === 'negative') return '😠';
+    return '😐';
+  }
+
+  const columns = [
+   
+    {
+      title: 'Question',
+      dataIndex: 'question',
+      sorter: true,
+      render: (_: any, record: any) => (
+        <span>
+          {record.question}
+          {record.originalQuestion && record.originalQuestion !== record.question && (
+            <span className="block text-xs text-gray-500">({record.originalQuestion})</span>
+          )}
+        </span>
+      ),
+
+    { title: 'Question', dataIndex: 'question', sorter: true },
+    {
+      title: 'Sentiment',
+      dataIndex: 'sentiment',
+      render: (s: Ticket['sentiment']) => (s ? emoji(s.label) : ''),
+
+    },
+    { title: 'Status', dataIndex: 'status', sorter: true },
+    { title: 'Priority', dataIndex: 'priority', sorter: true },
+  ];
+
 
   return (
     <div className="relative" onMouseLeave={() => setActiveId(null)}>

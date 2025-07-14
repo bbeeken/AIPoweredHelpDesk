@@ -40,9 +40,31 @@
       <button type="submit" class="border px-4 touch-target">Send</button>
     </form>
     <div id="suggestions" class="mt-2 space-x-2"></div>
+    <div id="assist" class="mt-2 text-sm text-gray-600"></div>
   </main>
   <script>
     const suggDiv = document.getElementById('suggestions');
+    const assistDiv = document.getElementById('assist');
+    if (window.EventSource) {
+      const es = new EventSource('/assist');
+      es.onmessage = e => {
+        const tips = JSON.parse(e.data);
+        assistDiv.textContent = tips.join(' | ');
+      };
+    }
+
+    const msgInput = document.getElementById('msg');
+    let assistTimeout;
+    msgInput.addEventListener('input', () => {
+      clearTimeout(assistTimeout);
+      assistTimeout = setTimeout(() => {
+        fetch('/assist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: msgInput.value })
+        });
+      }, 300);
+    });
     document.getElementById('chatForm').onsubmit = async e => {
       e.preventDefault();
       const input = document.getElementById('msg');
@@ -79,7 +101,11 @@
       const res = await fetch('/ai', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})});
       const data = await res.json();
       const botMsg = document.createElement('div');
-      botMsg.textContent = 'AI: ' + (data.reply || JSON.stringify(data));
+      let reply = data.reply || JSON.stringify(data);
+      if (data.translation && data.translation.original && data.translation.text) {
+        reply += `\n(${data.translation.original})`;
+      }
+      botMsg.textContent = 'AI: ' + reply;
       messages.appendChild(botMsg);
       input.value = '';
       messages.scrollTop = messages.scrollHeight;
