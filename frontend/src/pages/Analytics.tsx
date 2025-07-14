@@ -1,9 +1,5 @@
 
 import { useEffect, useRef, useState } from 'react';
-import Chart from 'chart.js/auto';
-import type { ChartConfiguration } from 'chart.js';
-
-import { useEffect, useState } from 'react';
 
 
 interface PriorityStats {
@@ -29,6 +25,7 @@ export default function Analytics() {
   const [priorityStats, setPriorityStats] = useState<PriorityStats>({});
   const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesData[]>([]);
   const [teamPerformance, setTeamPerformance] = useState<TeamPerformance[]>([]);
+  const mainRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     document.title = 'Analytics - AI Help Desk';
@@ -78,7 +75,7 @@ export default function Analytics() {
 
   if (loading) {
     return (
-      <main className="p-6" id="main">
+      <main ref={mainRef} className="p-6" id="main">
         <div className="space-y-6">
           {/* Header skeleton */}
           <div>
@@ -104,7 +101,7 @@ export default function Analytics() {
   }
 
   return (
-    <main className="p-6 space-y-6" id="main">
+    <main ref={mainRef} className="p-6 space-y-6" id="main">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
