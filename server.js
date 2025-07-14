@@ -9,9 +9,23 @@ const auth = require("./utils/authService");
 const eventBus = require("./utils/eventBus");
 const aiService = require("./utils/aiService");
 const translation = require("./utils/translationService");
+const sentimentService = require("./utils/sentimentService");
+
+const assistant = require("./utils/assistant");
+
+const http = require('http');
+const { Server } = require('socket.io');
 
 const fs = require('fs');
 const app = express();
+
+function attachSocket(server) {
+  const io = new Server(server);
+  eventBus.on('ticketCreated', (t) => io.emit('ticketCreated', t));
+  eventBus.on('ticketUpdated', (t) => io.emit('ticketUpdated', t));
+  server.on('close', () => io.close());
+  return io;
+}
 app.use(bodyParser.json());
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -75,6 +89,25 @@ app.get("/events", (req, res) => {
     eventBus.off("ticketCreated", ticketCreated);
     eventBus.off("ticketUpdated", ticketUpdated);
   });
+});
+
+// Stream proactive assistance suggestions
+const assistClients = new Set();
+app.get("/assist", (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.write(": connected\n\n");
+  assistClients.add(res);
+  req.on("close", () => assistClients.delete(res));
+});
+
+app.post("/assist", (req, res) => {
+  const { text } = req.body || {};
+  const suggestions = assistant.generateSuggestions(text || "");
+  const payload = `data:${JSON.stringify(suggestions)}\n\n`;
+  assistClients.forEach((c) => c.write(payload));
+  res.json({ success: true });
 });
 
 // helper to track next ticket and asset ids
@@ -159,6 +192,9 @@ app.get("/tickets", async (req, res) => {
       return av > bv ? dir : av < bv ? -dir : 0;
     });
   }
+  tickets.forEach(t => {
+    if (!t.sentiment) t.sentiment = sentimentService.analyze(t.question);
+  });
   res.json(tickets);
 });
 
@@ -227,6 +263,8 @@ app.post("/tickets", async (req, res) => {
     originalQuestion: lang !== "en" ? question : undefined,
     language: lang,
     category: aiService.categorizeTicket(translated),
+    question,
+    sentiment: sentimentService.analyze(question),
     dueDate: dueDate || null,
     tags: Array.isArray(tags) ? tags : [],
     comments: [],
@@ -557,6 +595,7 @@ app.post("/tickets/:id/comments", (req, res) => {
     text,
     html: highlighted,
     mentions,
+    sentiment: sentimentService.analyze(text),
     isInternal: !!isInternal,
     date: new Date().toISOString(),
   };
@@ -611,6 +650,7 @@ app.patch("/tickets/:id/comments/:commentId", (req, res) => {
   if (!text) return res.status(400).json({ error: "text required" });
   comment.text = text;
   comment.html = parseMentions(text).highlighted;
+  comment.sentiment = sentimentService.analyze(text);
   comment.edited = new Date().toISOString();
   res.json(comment);
 });
@@ -710,6 +750,7 @@ app.get("/tickets/recent", (req, res) => {
 app.get("/tickets/:id", async (req, res) => {
   const ticket = await dataService.getTicketById(Number(req.params.id));
   if (!ticket) return res.status(404).json({ error: "Ticket not found" });
+  if (!ticket.sentiment) ticket.sentiment = sentimentService.analyze(ticket.question);
   res.json(ticket);
 });
 app.get("/stats", (req, res) => {
@@ -1212,6 +1253,14 @@ app.post("/ai", async (req, res) => {
   }
 });
 
+// Sentiment analysis endpoint
+app.post("/sentiment", (req, res) => {
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ error: "text required" });
+  const result = sentimentService.analyze(text);
+  res.json(result);
+});
+
 app.get('*', (req, res) => {
   if (fs.existsSync(reactDist)) {
     res.sendFile(path.join(reactDist, 'index.html'));
@@ -1222,7 +1271,10 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  const server = http.createServer(app);
+  attachSocket(server);
+  server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
 module.exports = app;
+module.exports.attachSocket = attachSocket;

@@ -1,14 +1,21 @@
+
+import { useEffect, useState, useCallback } from "react";
+import { io } from "socket.io-client";
+import TicketDetailPanel from "./components/TicketDetailPanel";
+
 import { useEffect, useState, useCallback } from 'react';
 import { Table, Select, Button, Input } from 'antd';
 import TicketDetailPanel from './components/TicketDetailPanel';
 import { TicketFilter } from './TicketFilters';
 import { showToast } from './components/toast';
 
+
 interface Ticket {
   id: number;
   question: string;
   status: string;
   priority: string;
+  sentiment?: { label: string; score: number };
 }
 
 interface Props {
@@ -38,6 +45,17 @@ export default function TicketTable({ filters }: Props) {
   }, [filters, sortField, sortOrder]);
 
   useEffect(() => {
+
+    loadTickets().catch((err) => console.error("Error loading tickets", err));
+
+    const socket = io();
+    socket.on("ticketCreated", loadTickets);
+    socket.on("ticketUpdated", loadTickets);
+
+    return () => {
+      socket.disconnect();
+    };
+
     loadTickets().catch(err => console.error('Error loading tickets', err));
     if (window.EventSource) {
       const es = new EventSource('/events');
@@ -45,6 +63,7 @@ export default function TicketTable({ filters }: Props) {
       es.addEventListener('ticketUpdated', loadTickets);
       return () => es.close();
     }
+
   }, [loadTickets]);
 
   async function applyBulkStatus() {
@@ -81,8 +100,14 @@ export default function TicketTable({ filters }: Props) {
     }
   }
 
+  function emoji(label: string) {
+    if (label === 'positive') return '🙂';
+    if (label === 'negative') return '😠';
+    return '😐';
+  }
+
   const columns = [
-    { title: 'ID', dataIndex: 'id', sorter: true },
+   
     {
       title: 'Question',
       dataIndex: 'question',
@@ -95,6 +120,13 @@ export default function TicketTable({ filters }: Props) {
           )}
         </span>
       ),
+
+    { title: 'Question', dataIndex: 'question', sorter: true },
+    {
+      title: 'Sentiment',
+      dataIndex: 'sentiment',
+      render: (s: Ticket['sentiment']) => (s ? emoji(s.label) : ''),
+
     },
     { title: 'Status', dataIndex: 'status', sorter: true },
     { title: 'Priority', dataIndex: 'priority', sorter: true },

@@ -13,6 +13,7 @@ For a summary of the modernization vision and design standards, read
 - **Ticket management API** for creating, updating and commenting on tickets. Ticket history records status, assignee, priority and due date changes.
 - **Asset management API** for tracking staff equipment.
 - **AI endpoint** that forwards natural language text to an n8n workflow for processing.
+- **Sentiment analysis** for tickets and comments using a simple NLP model.
 - Mock data for users, tickets and assets to simulate a database.
 - **Qdrant client script** for indexing ticket text in a vector database.
 - **Automatic Qdrant indexing** of newly created tickets when the server is running.
@@ -63,6 +64,11 @@ For a summary of the modernization vision and design standards, read
 - `GET /tickets/recent?limit=n` – list the most recently created tickets (default 5).
 - `GET /tickets/unassigned` – list tickets that have no assignee.
 - `GET /events` – subscribe to real-time ticket events via Server-Sent Events.
+
+- `POST /sentiment` – analyze text and return a sentiment score and label.
+
+- `GET /assist` – stream proactive assistance tips as you type. POST text to `/assist` to broadcast suggestions.
+
 - `GET /assets` – list all assets. Filter by tag with `?tag=value` or by assignee with `?assignedTo=userId`.
   Results may also be sorted with `?sortBy=field&order=asc|desc`.
 - `POST /assets` – create a new asset with `name`, optional `assignedTo` and optional `tags` array. Creation is recorded in the asset's history.
@@ -112,6 +118,11 @@ For a summary of the modernization vision and design standards, read
    ```bash
    npm start
    ```
+   You can test sentiment analysis with:
+   ```bash
+   curl -X POST -H "Content-Type: application/json" \
+        -d '{"text":"I love this"}' http://localhost:3000/sentiment
+   ```
 4. Run tests:
    ```bash
    npm test
@@ -149,6 +160,7 @@ Other useful environment variables include:
 
 After the first visit, the pages are cached for offline use via a service worker.
 An experimental `realtime.html` page demonstrates live ticket notifications using the `/events` SSE endpoint.
+The `chat.html` page now connects to `/assist` for streaming proactive suggestions.
 
 ### Authentication
 
