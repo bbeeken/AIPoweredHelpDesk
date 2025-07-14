@@ -3,6 +3,7 @@ import { ChangeEvent, useEffect, useState } from 'react';
 export interface TicketFilter {
   status?: string;
   priority?: string;
+  tags?: string;
 }
 
 interface FilterPreset {
@@ -74,6 +75,9 @@ export default function TicketFilters({ filters, onChange }: Props) {
   function handlePriority(e: ChangeEvent<HTMLSelectElement>) {
     onChange({ ...filters, priority: e.target.value || undefined });
   }
+  function handleTags(e: ChangeEvent<HTMLInputElement>) {
+    onChange({ ...filters, tags: e.target.value || undefined });
+  }
   return (
     <div className="flex flex-col gap-2 mb-2">
       <div className="flex gap-2">
@@ -91,6 +95,13 @@ export default function TicketFilters({ filters, onChange }: Props) {
           <option value="medium">Medium</option>
           <option value="high">High</option>
         </select>
+        <input
+          id="tagFilter"
+          className="border p-2 flex-1"
+          placeholder="Tags"
+          value={filters.tags || ''}
+          onChange={handleTags}
+        />
       </div>
       <div className="flex gap-2">
         <label htmlFor="viewSelect" className="sr-only">Saved views</label>

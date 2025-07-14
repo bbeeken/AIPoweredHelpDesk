@@ -175,6 +175,25 @@ app.get("/tickets/search", (req, res) => {
   res.json(tickets);
 });
 
+// Search using Qdrant vectors
+app.get("/tickets/vector-search", async (req, res) => {
+  const { q, limit } = req.query;
+  if (!q) return res.json([]);
+  try {
+    const result = await qdrant.searchTickets(String(q), Number(limit) || 5);
+    const ids = (result.result || []).map((p) => p.id);
+    const tickets = data.tickets.filter((t) => ids.includes(t.id));
+    res.json(tickets);
+  } catch (err) {
+    console.error("Qdrant search failed", err.message);
+    const query = String(q).toLowerCase();
+    const fallback = data.tickets.filter((t) =>
+      t.question.toLowerCase().includes(query)
+    );
+    res.json(fallback.slice(0, Number(limit) || 5));
+  }
+});
+
 // Tickets assigned to a specific user
 app.get("/tickets/assigned/:userId", (req, res) => {
   const uid = Number(req.params.userId);

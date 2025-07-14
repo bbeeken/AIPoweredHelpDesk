@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import TicketTimeline from "./TicketView/TicketTimeline";
 
 interface Ticket {
   id: number;
@@ -63,14 +64,7 @@ export default function TicketDetailPanel({ ticketId, onClose }: Props) {
           {ticket.history && ticket.history.length > 0 && (
             <div className="mt-3">
               <h4 className="font-semibold">History</h4>
-              <ul className="list-disc list-inside text-sm">
-                {ticket.history.map((h, i) => (
-                  <li key={i}>
-                    {h.date.slice(0, 10)} {h.action}
-                    {h.from && h.to ? `: ${h.from} → ${h.to}` : ""}
-                  </li>
-                ))}
-              </ul>
+              <TicketTimeline history={ticket.history} />
             </div>
           )}
           {ticket.comments && ticket.comments.length > 0 && (

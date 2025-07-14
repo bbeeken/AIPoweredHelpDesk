@@ -28,6 +28,7 @@ export default function TicketTable({ filters }: Props) {
     const url = new URL("/tickets", window.location.origin);
     if (filters.status) url.searchParams.set("status", filters.status);
     if (filters.priority) url.searchParams.set("priority", filters.priority);
+    if (filters.tags) url.searchParams.set("tag", filters.tags);
     url.searchParams.set("sortBy", sortField);
     url.searchParams.set("order", sortOrder);
     const res = await fetch(url.toString());
