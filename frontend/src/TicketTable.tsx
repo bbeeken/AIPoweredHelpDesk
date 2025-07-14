@@ -1,217 +1,241 @@
+
+import { useCallback, useEffect, useState } from 'react';
+import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
+import { useSwipeable } from 'react-swipeable';
+import { Select, Button, Input } from 'antd';
+
 import { useEffect, useState, useCallback } from "react";
+import { io } from "socket.io-client";
 import TicketDetailPanel from "./components/TicketDetailPanel";
-import { TicketFilter } from "./TicketFilters";
-import { showToast } from "./components/toast";
+
+import { useEffect, useState, useCallback } from 'react';
+import { Table, Select, Button, Input } from 'antd';
+import TicketDetailPanel from './components/TicketDetailPanel';
+import { TicketFilter } from './TicketFilters';
+import { showToast } from './components/toast';
+
 
 interface Ticket {
   id: number;
   question: string;
   status: string;
   priority: string;
+  sentiment?: { label: string; score: number };
 }
 
 interface Props {
   filters: TicketFilter;
+  tickets?: Ticket[];
 }
 
-export default function TicketTable({ filters }: Props) {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
+const ROW_HEIGHT = 56;
 
-  const [sortField, setSortField] = useState<keyof Ticket>("id");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [selected, setSelected] = useState<Set<number>>(new Set());
+export default function TicketTable({ filters, tickets: initial }: Props) {
+  const [tickets, setTickets] = useState<Ticket[]>(initial || []);
+  const [sortField, setSortField] = useState<keyof Ticket>('id');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [selected, setSelected] = useState<number[]>([]);
   const [activeId, setActiveId] = useState<number | null>(null);
-  const [bulkStatus, setBulkStatus] = useState("");
-  const [bulkAssignee, setBulkAssignee] = useState("");
+  const [bulkStatus, setBulkStatus] = useState('');
+  const [bulkAssignee, setBulkAssignee] = useState('');
 
   const loadTickets = useCallback(async () => {
-    const url = new URL("/tickets", window.location.origin);
-    if (filters.status) url.searchParams.set("status", filters.status);
-    if (filters.priority) url.searchParams.set("priority", filters.priority);
-    url.searchParams.set("sortBy", sortField);
-    url.searchParams.set("order", sortOrder);
+    if (initial) return;
+
+
+    const url = new URL('/tickets', window.location.origin);
+    if (filters.status) url.searchParams.set('status', filters.status);
+    if (filters.priority) url.searchParams.set('priority', filters.priority);
+    url.searchParams.set('sortBy', sortField);
+    url.searchParams.set('order', sortOrder);
     const res = await fetch(url.toString());
     const data = await res.json();
     setTickets(data);
-  }, [filters, sortField, sortOrder]);
+  }, [filters, sortField, sortOrder, initial]);
 
   useEffect(() => {
+
     loadTickets().catch((err) => console.error("Error loading tickets", err));
 
-    if (window.EventSource) {
-      const es = new EventSource("/events");
-      es.addEventListener("ticketCreated", loadTickets);
-      es.addEventListener("ticketUpdated", loadTickets);
+    const socket = io();
+    socket.on("ticketCreated", loadTickets);
+    socket.on("ticketUpdated", loadTickets);
+
+    return () => {
+      socket.disconnect();
+    };
+
+    loadTickets().catch(err => console.error('Error loading tickets', err));
+    if (!initial && window.EventSource) {
+      const es = new EventSource('/events');
+      es.addEventListener('ticketCreated', loadTickets);
+      es.addEventListener('ticketUpdated', loadTickets);
       return () => es.close();
     }
-  }, [loadTickets]);
+y
+  }, [loadTickets, initial]);
 
-  function toggleSort(field: keyof Ticket) {
-    if (sortField === field) {
-      setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
-    } else {
-      setSortField(field);
-      setSortOrder("asc");
+  async function closeTicket(id: number) {
+    const res = await fetch(`/tickets/${id}/close`, { method: 'POST' });
+    if (res.ok) {
+      showToast('Ticket closed');
+      await loadTickets();
     }
   }
 
-  function toggleSelect(id: number) {
-    setSelected((s) => {
-      const copy = new Set(s);
-      if (copy.has(id)) {
-        copy.delete(id);
-      } else {
-        copy.add(id);
-      }
-      return copy;
-    });
+  async function assignTicket(id: number) {
+    const res = await fetch(`/tickets/${id}/assign/1`, { method: 'POST' });
+    if (res.ok) {
+      showToast('Ticket assigned');
+      await loadTickets();
+    }
   }
 
-  const allSelected =
-    tickets.length > 0 && tickets.every((t) => selected.has(t.id));
 
-  function toggleSelectAll(checked: boolean) {
-    setSelected((s) => {
-      const copy = new Set(s);
-      if (checked) {
-        tickets.forEach((t) => copy.add(t.id));
-      } else {
-        tickets.forEach((t) => copy.delete(t.id));
-      }
-      return copy;
-    });
-  }
+  }, [loadTickets]);
+
 
   async function applyBulkStatus() {
     if (!bulkStatus) return;
-    const res = await fetch("/tickets/bulk-update", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ids: Array.from(selected), status: bulkStatus }),
+    const res = await fetch('/tickets/bulk-update', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: selected, status: bulkStatus }),
     });
     if (res.ok) {
-      showToast("Updated tickets");
-      setSelected(new Set());
-      setBulkStatus("");
+      showToast('Updated tickets');
+      setSelected([]);
+      setBulkStatus('');
       await loadTickets();
     } else {
-      showToast("Failed to update tickets");
+      showToast('Failed to update tickets');
     }
   }
 
   async function applyBulkAssign() {
     if (!bulkAssignee) return;
-    const res = await fetch("/tickets/bulk-assign", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ids: Array.from(selected),
-        assigneeId: Number(bulkAssignee),
-      }),
+    const res = await fetch('/tickets/bulk-assign', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: selected, assigneeId: Number(bulkAssignee) }),
     });
     if (res.ok) {
-      showToast("Assigned tickets");
-      setSelected(new Set());
-      setBulkAssignee("");
+      showToast('Assigned tickets');
+      setSelected([]);
+      setBulkAssignee('');
       await loadTickets();
     } else {
-      showToast("Failed to assign tickets");
+      showToast('Failed to assign tickets');
     }
   }
 
+ty
+  const sorted = [...tickets].sort((a, b) => {
+    const x = a[sortField];
+    const y = b[sortField];
+    if (x < y) return sortOrder === 'asc' ? -1 : 1;
+    if (x > y) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  function toggleSelect(id: number, on: boolean) {
+    setSelected(prev => (on ? [...prev, id] : prev.filter(i => i !== id)));
+  }
+
+  const Row = ({ index, style }: ListChildComponentProps) => {
+    const t = sorted[index];
+    const handlers = useSwipeable({
+      onSwipedLeft: () => closeTicket(t.id),
+      onSwipedRight: () => assignTicket(t.id),
+    });
+    return (
+      <div
+        {...handlers}
+        style={style}
+        className="grid grid-cols-[40px_60px_1fr_120px_120px] items-center border-b px-2"
+        onMouseEnter={() => setActiveId(t.id)}
+        onClick={() => setActiveId(t.id)}
+      >
+        <input
+          type="checkbox"
+          checked={selected.includes(t.id)}
+          onChange={e => toggleSelect(t.id, e.target.checked)}
+          className="mr-2"
+        />
+        <div>{t.id}</div>
+        <div className="truncate">{t.question}</div>
+        <div>{t.status}</div>
+        <div>{t.priority}</div>
+      </div>
+    );
+  };
+
+  function emoji(label: string) {
+    if (label === 'positive') return '🙂';
+    if (label === 'negative') return '😠';
+    return '😐';
+  }
+
+  const columns = [
+   
+    {
+      title: 'Question',
+      dataIndex: 'question',
+      sorter: true,
+      render: (_: any, record: any) => (
+        <span>
+          {record.question}
+          {record.originalQuestion && record.originalQuestion !== record.question && (
+            <span className="block text-xs text-gray-500">({record.originalQuestion})</span>
+          )}
+        </span>
+      ),
+
+    { title: 'Question', dataIndex: 'question', sorter: true },
+    {
+      title: 'Sentiment',
+      dataIndex: 'sentiment',
+      render: (s: Ticket['sentiment']) => (s ? emoji(s.label) : ''),
+
+    },
+    { title: 'Status', dataIndex: 'status', sorter: true },
+    { title: 'Priority', dataIndex: 'priority', sorter: true },
+  ];
+
+
   return (
     <div className="relative" onMouseLeave={() => setActiveId(null)}>
-      {selected.size > 0 && (
-        <div className="absolute top-0 left-0 right-0 bg-gray-200 dark:bg-gray-800 border-b p-2 flex flex-wrap gap-2 items-center">
-          <span>{selected.size} selected</span>
-          <select
-            className="border p-1"
-            value={bulkStatus}
-            onChange={(e) => setBulkStatus(e.target.value)}
-          >
-            <option value="">Status...</option>
-            <option value="open">Open</option>
-            <option value="waiting">Waiting</option>
-            <option value="closed">Closed</option>
-          </select>
-          <button className="border px-2" onClick={applyBulkStatus}>
-            Update
-          </button>
-          <input
-            className="border p-1"
+      {selected.length > 0 && (
+        <div className="absolute top-0 left-0 right-0 bg-gray-200 dark:bg-gray-800 border-b p-2 flex flex-wrap gap-2 items-center z-10">
+          <span>{selected.length} selected</span>
+          <Select value={bulkStatus} onChange={setBulkStatus} style={{ width: 120 }}>
+            <Select.Option value="">Status...</Select.Option>
+            <Select.Option value="open">Open</Select.Option>
+            <Select.Option value="waiting">Waiting</Select.Option>
+            <Select.Option value="closed">Closed</Select.Option>
+          </Select>
+          <Button onClick={applyBulkStatus} className="touch-target">Update</Button>
+          <Input
             placeholder="Assignee ID"
             type="number"
             value={bulkAssignee}
-            onChange={(e) => setBulkAssignee(e.target.value)}
+            onChange={e => setBulkAssignee(e.target.value)}
+            style={{ width: 120 }}
           />
-          <button className="border px-2" onClick={applyBulkAssign}>
-            Assign
-          </button>
+          <Button onClick={applyBulkAssign} className="touch-target">Assign</Button>
         </div>
       )}
-
-      <table className="table-auto border-collapse" style={{ width: "100%" }}>
-        <thead>
-          <tr>
-            <th>
-              <input
-                type="checkbox"
-                checked={allSelected}
-                onChange={(e) => toggleSelectAll(e.target.checked)}
-              />
-            </th>
-            <th onClick={() => toggleSort("id")} style={{ cursor: "pointer" }}>
-              ID
-            </th>
-            <th
-              onClick={() => toggleSort("question")}
-              style={{ cursor: "pointer" }}
-            >
-              Question
-            </th>
-            <th
-              onClick={() => toggleSort("status")}
-              style={{ cursor: "pointer" }}
-            >
-              Status
-            </th>
-            <th
-              onClick={() => toggleSort("priority")}
-              style={{ cursor: "pointer" }}
-            >
-              Priority
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {tickets.map((t) => (
-            <tr
-              key={t.id}
-              onMouseEnter={() => setActiveId(t.id)}
-              onFocus={() => setActiveId(t.id)}
-              onClick={() => setActiveId(t.id)}
-              tabIndex={0}
-              className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
-            >
-              <td>
-                <input
-                  type="checkbox"
-                  checked={selected.has(t.id)}
-                  onChange={() => toggleSelect(t.id)}
-                />
-              </td>
-              <td>{t.id}</td>
-              <td>{t.question}</td>
-              <td>{t.status}</td>
-              <td>{t.priority}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <TicketDetailPanel
-        ticketId={activeId}
-        onClose={() => setActiveId(null)}
-      />
+      <div className="grid grid-cols-[40px_60px_1fr_120px_120px] font-semibold border-b bg-gray-50 dark:bg-gray-700">
+        <div />
+        <button className="text-left touch-target" onClick={() => setSortField('id')}>{sortField === 'id' && (sortOrder === 'asc' ? '▲ ' : '▼ ')}ID</button>
+        <button className="text-left touch-target" onClick={() => setSortField('question')}>Question</button>
+        <button className="text-left touch-target" onClick={() => setSortField('status')}>Status</button>
+        <button className="text-left touch-target" onClick={() => setSortField('priority')}>Priority</button>
+      </div>
+      <List height={400} itemCount={sorted.length} itemSize={ROW_HEIGHT} width="100%">
+        {Row}
+      </List>
+      <TicketDetailPanel ticketId={activeId} onClose={() => setActiveId(null)} />
     </div>
   );
 }
