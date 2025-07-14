@@ -5,6 +5,33 @@ interface Toast {
   message: string;
 }
 
+function ToastItem({ toast, remove }: { toast: Toast; remove: () => void }) {
+  const [progress, setProgress] = useState(100);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setProgress(0));
+    const timer = setTimeout(remove, 4000);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+    };
+  }, [remove]);
+
+  return (
+    <div
+      role="status"
+      className="relative bg-black text-white px-3 py-2 rounded shadow overflow-hidden"
+    >
+      {toast.message}
+      <div
+        aria-hidden="true"
+        className="absolute bottom-0 left-0 h-1 bg-white"
+        style={{ width: `${progress}%`, transition: 'width 4s linear' }}
+      />
+    </div>
+  );
+}
+
 export default function ToastContainer() {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -31,9 +58,13 @@ export default function ToastContainer() {
   return (
     <div className="fixed bottom-4 right-4 space-y-2 z-50" aria-live="polite">
       {toasts.map(t => (
-        <div key={t.id} className="bg-black text-white px-3 py-2 rounded shadow">
-          {t.message}
-        </div>
+        <ToastItem
+          key={t.id}
+          toast={t}
+          remove={() =>
+            setToasts(current => current.filter(toast => toast.id !== t.id))
+          }
+        />
       ))}
     </div>
   );
