@@ -1,4 +1,10 @@
+
+import { useEffect, useRef, useState } from 'react';
+import Chart from 'chart.js/auto';
+import type { ChartConfiguration } from 'chart.js';
+
 import { useEffect, useState } from 'react';
+
 
 interface PriorityStats {
   [key: string]: number;
