@@ -1,4 +1,5 @@
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 export interface TicketFilter {
   status?: string;
@@ -20,22 +21,22 @@ export default function TicketFilters({ filters, onChange }: Props) {
   const [presets, setPresets] = useState<FilterPreset[]>([]);
   const [name, setName] = useState('');
 
-  useEffect(() => {
-    async function load() {
+  useQuery({
+    queryKey: ['filterPresets'],
+    queryFn: async () => {
       try {
         const res = await fetch('/filters');
         if (res.ok) {
-          setPresets(await res.json());
-          return;
+          return await res.json();
         }
       } catch {
         // ignore errors and fall back to localStorage
       }
       const stored = localStorage.getItem('ticketFilterPresets');
-      if (stored) setPresets(JSON.parse(stored));
-    }
-    load();
-  }, []);
+      return stored ? JSON.parse(stored) : [];
+    },
+    onSuccess: (data) => setPresets(data),
+  });
 
   async function savePreset() {
     if (!name.trim()) return;

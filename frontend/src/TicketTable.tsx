@@ -1,21 +1,16 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import TicketDetailPanel from "./components/TicketDetailPanel";
 import { TicketFilter } from "./TicketFilters";
 import { showToast } from "./components/toast";
-
-interface Ticket {
-  id: number;
-  question: string;
-  status: string;
-  priority: string;
-}
+import { useTicketStore, Ticket } from "./store";
 
 interface Props {
   filters: TicketFilter;
 }
 
 export default function TicketTable({ filters }: Props) {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const setTickets = useTicketStore((s) => s.setTickets);
 
   const [sortField, setSortField] = useState<keyof Ticket>("id");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -24,27 +19,30 @@ export default function TicketTable({ filters }: Props) {
   const [bulkStatus, setBulkStatus] = useState("");
   const [bulkAssignee, setBulkAssignee] = useState("");
 
-  const loadTickets = useCallback(async () => {
-    const url = new URL("/tickets", window.location.origin);
-    if (filters.status) url.searchParams.set("status", filters.status);
-    if (filters.priority) url.searchParams.set("priority", filters.priority);
-    url.searchParams.set("sortBy", sortField);
-    url.searchParams.set("order", sortOrder);
-    const res = await fetch(url.toString());
-    const data = await res.json();
-    setTickets(data);
-  }, [filters, sortField, sortOrder]);
+  const queryClient = useQueryClient();
+  const { data: tickets = [], refetch } = useQuery({
+    queryKey: ["tickets", filters, sortField, sortOrder],
+    queryFn: async () => {
+      const url = new URL("/tickets", window.location.origin);
+      if (filters.status) url.searchParams.set("status", filters.status);
+      if (filters.priority) url.searchParams.set("priority", filters.priority);
+      url.searchParams.set("sortBy", sortField);
+      url.searchParams.set("order", sortOrder);
+      const res = await fetch(url.toString());
+      return (await res.json()) as Ticket[];
+    },
+    onSuccess: setTickets,
+  });
 
   useEffect(() => {
-    loadTickets().catch((err) => console.error("Error loading tickets", err));
-
-    if (window.EventSource) {
-      const es = new EventSource("/events");
-      es.addEventListener("ticketCreated", loadTickets);
-      es.addEventListener("ticketUpdated", loadTickets);
-      return () => es.close();
-    }
-  }, [loadTickets]);
+    if (!window.EventSource) return;
+    const es = new EventSource("/events");
+    const invalidate = () =>
+      queryClient.invalidateQueries({ queryKey: ["tickets"] });
+    es.addEventListener("ticketCreated", invalidate);
+    es.addEventListener("ticketUpdated", invalidate);
+    return () => es.close();
+  }, [queryClient]);
 
   function toggleSort(field: keyof Ticket) {
     if (sortField === field) {
@@ -93,7 +91,7 @@ export default function TicketTable({ filters }: Props) {
       showToast("Updated tickets");
       setSelected(new Set());
       setBulkStatus("");
-      await loadTickets();
+      await refetch();
     } else {
       showToast("Failed to update tickets");
     }
@@ -113,7 +111,7 @@ export default function TicketTable({ filters }: Props) {
       showToast("Assigned tickets");
       setSelected(new Set());
       setBulkAssignee("");
-      await loadTickets();
+      await refetch();
     } else {
       showToast("Failed to assign tickets");
     }

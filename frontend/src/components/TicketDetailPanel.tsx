@@ -1,19 +1,5 @@
-import { useEffect, useState } from "react";
-
-interface Ticket {
-  id: number;
-  question: string;
-  status: string;
-  priority: string;
-  history?: {
-    action: string;
-    from?: string;
-    to?: string;
-    by: number;
-    date: string;
-  }[];
-  comments?: { id: number; userId: number; text: string; date: string }[];
-}
+import { useQuery } from "@tanstack/react-query";
+import { Ticket } from "../store";
 
 interface Props {
   ticketId: number | null;
@@ -21,22 +7,14 @@ interface Props {
 }
 
 export default function TicketDetailPanel({ ticketId, onClose }: Props) {
-  const [ticket, setTicket] = useState<Ticket | null>(null);
-
-  useEffect(() => {
-    if (ticketId === null) return;
-    setTicket(null);
-    async function load() {
-      try {
-        const res = await fetch(`/tickets/${ticketId}`);
-        const data: Ticket = await res.json();
-        setTicket(data);
-      } catch (err) {
-        console.error("Failed to load ticket", err);
-      }
-    }
-    load();
-  }, [ticketId]);
+  const { data: ticket } = useQuery({
+    queryKey: ["ticket", ticketId],
+    enabled: ticketId !== null,
+    queryFn: async () => {
+      const res = await fetch(`/tickets/${ticketId}`);
+      return (await res.json()) as Ticket;
+    },
+  });
 
   if (ticketId === null) return null;
 
