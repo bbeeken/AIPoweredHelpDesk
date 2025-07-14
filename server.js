@@ -7,6 +7,7 @@ const data = require("./data/mockData");
 const dataService = require("./utils/dataService");
 const auth = require("./utils/authService");
 const eventBus = require("./utils/eventBus");
+const assistant = require("./utils/assistant");
 
 const fs = require('fs');
 const app = express();
@@ -73,6 +74,25 @@ app.get("/events", (req, res) => {
     eventBus.off("ticketCreated", ticketCreated);
     eventBus.off("ticketUpdated", ticketUpdated);
   });
+});
+
+// Stream proactive assistance suggestions
+const assistClients = new Set();
+app.get("/assist", (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.write(": connected\n\n");
+  assistClients.add(res);
+  req.on("close", () => assistClients.delete(res));
+});
+
+app.post("/assist", (req, res) => {
+  const { text } = req.body || {};
+  const suggestions = assistant.generateSuggestions(text || "");
+  const payload = `data:${JSON.stringify(suggestions)}\n\n`;
+  assistClients.forEach((c) => c.write(payload));
+  res.json({ success: true });
 });
 
 // helper to track next ticket and asset ids
