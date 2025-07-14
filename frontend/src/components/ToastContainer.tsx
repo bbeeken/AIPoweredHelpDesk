@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 interface Toast {
   id: number;
@@ -36,27 +36,44 @@ export default function ToastContainer() {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   useEffect(() => {
-    if (!window.EventSource) return;
-    const es = new EventSource('/events');
-
     function addToast(message: string) {
       const id = Date.now() + Math.random();
-      setToasts(t => [...t, { id, message }]);
+      setToasts((t) => [...t, { id, message }]);
       setTimeout(() => {
-        setToasts(t => t.filter(toast => toast.id !== id));
+        setToasts((t) => t.filter((toast) => toast.id !== id));
       }, 4000);
     }
 
-    es.addEventListener('ticketCreated', e => addToast('Ticket created: ' + e.data));
-    es.addEventListener('ticketUpdated', e => addToast('Ticket updated: ' + e.data));
+    const cleanup: (() => void)[] = [];
 
-    return () => es.close();
+    const toastHandler = (e: Event) => {
+      const msg = (e as CustomEvent<string>).detail;
+      if (msg) addToast(msg);
+    };
+    window.addEventListener("toast", toastHandler);
+    cleanup.push(() => window.removeEventListener("toast", toastHandler));
+
+    let es: EventSource | null = null;
+    if (window.EventSource) {
+      es = new EventSource("/events");
+      es.addEventListener("ticketCreated", (e) =>
+        addToast("Ticket created: " + (e as MessageEvent).data),
+      );
+      es.addEventListener("ticketUpdated", (e) =>
+        addToast("Ticket updated: " + (e as MessageEvent).data),
+      );
+      cleanup.push(() => es && es.close());
+    }
+    return () => {
+      cleanup.forEach((fn) => fn());
+    };
   }, []);
 
   if (toasts.length === 0) return null;
 
   return (
     <div className="fixed bottom-4 right-4 space-y-2 z-50" aria-live="polite">
+
       {toasts.map(t => (
         <ToastItem
           key={t.id}
@@ -65,6 +82,7 @@ export default function ToastContainer() {
             setToasts(current => current.filter(toast => toast.id !== t.id))
           }
         />
+
       ))}
     </div>
   );
