@@ -639,8 +639,14 @@ app.delete("/tickets/:id/attachments/:attachmentId", (req, res) => {
 function parseMentions(text) {
   const regex = /@([a-zA-Z0-9_]+)/g;
   const mentions = [];
-  const highlighted = text.replace(regex, (m, name) => {
-    const user = data.users.find((u) => u.name.toLowerCase() === name.toLowerCase());
+  const escaped = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  const highlighted = escaped.replace(regex, (m, name) => {
+    const user = data.users.find(
+      (u) => u.name.toLowerCase() === name.toLowerCase(),
+    );
     if (user) mentions.push(user.id);
     return `<mark>@${name}</mark>`;
   });
