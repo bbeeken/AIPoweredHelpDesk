@@ -908,6 +908,33 @@ app.get("/stats/workload", (req, res) => {
   res.json(workload);
 });
 
+// Ticket volume trends for the last N days with simple anomaly detection
+app.get("/stats/trends", (req, res) => {
+  const days = Number(req.query.days) || 30;
+  const now = new Date();
+  const counts = {};
+  data.tickets.forEach((t) => {
+    const created = (t.history || []).find((h) => h.action === "created");
+    if (!created) return;
+    const d = new Date(created.date);
+    const diff = Math.floor((now.getTime() - d.getTime()) / 86400000);
+    if (diff < days) {
+      const key = d.toISOString().slice(0, 10);
+      counts[key] = (counts[key] || 0) + 1;
+    }
+  });
+  const series = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * 86400000)
+      .toISOString()
+      .slice(0, 10);
+    series.push({ date: d, tickets: counts[d] || 0 });
+  }
+  const avg = series.reduce((s, r) => s + r.tickets, 0) / days;
+  const anomalies = series.filter((r) => r.tickets > avg * 1.5).map((r) => r.date);
+  res.json({ series, forecast: avg * days, anomalies });
+});
+
 // Ticket counts per priority across all tickets
 app.get("/stats/priorities", (req, res) => {
   const counts = {};
@@ -1300,12 +1327,21 @@ app.post("/ai", async (req, res) => {
   }
 });
 
+
+// Basic sentiment analysis for a text string
+app.post("/ai/sentiment", (req, res) => {
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ error: "text required" });
+  const sentiment = aiService.analyzeSentiment(text);
+  res.json({ sentiment });
+
 // Sentiment analysis endpoint
 app.post("/sentiment", (req, res) => {
   const { text } = req.body;
   if (!text) return res.status(400).json({ error: "text required" });
   const result = sentimentService.analyze(text);
   res.json(result);
+
 });
 
 app.get('*', (req, res) => {
