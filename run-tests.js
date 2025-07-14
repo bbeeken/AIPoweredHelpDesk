@@ -8,7 +8,10 @@ async function run() {
     .sort();
   for (const file of tests) {
     await new Promise((resolve, reject) => {
-      const child = fork(path.join(__dirname, 'tests', file), { stdio: 'inherit' });
+      const child = fork(path.join(__dirname, 'tests', file), {
+        stdio: 'inherit',
+        execArgv: ['-r', path.join(__dirname, 'tests', 'authHeader.js')],
+      });
       child.on('exit', code => {
         if (code !== 0) {
           reject(new Error(`${file} failed`));
