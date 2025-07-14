@@ -83,7 +83,11 @@ function StatusWidget({ onRemove }: { onRemove: () => void }) {
     <div className="border rounded p-2 bg-white dark:bg-gray-800">
       <div className="flex justify-between items-center mb-1">
         <h3 className="font-semibold">Ticket Status</h3>
+
         <Button type="text" danger size="small" onClick={onRemove} aria-label="Remove">✕</Button>
+
+        <button aria-label="Remove" onClick={onRemove} className="text-sm text-error dark:text-error-dark">✕</button>
+
       </div>
       {stats ? <canvas ref={ref} /> : <p>Loading...</p>}
     </div>
@@ -126,7 +130,9 @@ function ForecastWidget({ onRemove }: { onRemove: () => void }) {
     <div className="border rounded p-2 bg-white dark:bg-gray-800">
       <div className="flex justify-between items-center mb-1">
         <h3 className="font-semibold">Ticket Forecast</h3>
-        <Button type="text" danger size="small" onClick={onRemove} aria-label="Remove">✕</Button>
+
+        <button aria-label="Remove" onClick={onRemove} className="text-sm text-error dark:text-error-dark">✕</button>
+
       </div>
       {forecast != null ? <canvas ref={ref} /> : <p>Loading...</p>}
     </div>
@@ -180,8 +186,12 @@ export default function StatsPanel() {
               {available.map(w => (
                 <Select.Option key={w.id} value={w.id}>{w.label}</Select.Option>
               ))}
-            </Select>
-            <Button type="primary" className="ml-2" onClick={addWidget}>Add</Button>
+
+            </select>
+            <button onClick={addWidget} className="bg-primary dark:bg-primary-dark text-white px-2 py-0.5 rounded">
+              Add
+            </button>
+
           </>
         )}
       </div>
