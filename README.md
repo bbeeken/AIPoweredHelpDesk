@@ -156,6 +156,7 @@ Other useful environment variables include:
 
 - `N8N_URL` – n8n workflow webhook URL.
 - `QDRANT_URL` – base address of the Qdrant server.
+- `OPENAI_API_KEY` – API key for calling OpenAI services used by `aiService`.
 
 - `OPENAI_API_KEY` – API key for calling OpenAI services used by `aiService`.
 

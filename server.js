@@ -7,6 +7,7 @@ const data = require("./data/mockData");
 const dataService = require("./utils/dataService");
 const auth = require("./utils/authService");
 const eventBus = require("./utils/eventBus");
+const ai = require("./utils/aiService");
 
 const ai = require("./utils/aiService");
 
@@ -250,7 +251,9 @@ app.get("/tickets/unassigned", (req, res) => {
 });
 
 
+
 // Create a new ticket
+
 
 app.post("/tickets", async (req, res) => {
   const { question, assigneeId, priority, dueDate, tags } = req.body;
@@ -282,12 +285,18 @@ app.post("/tickets", async (req, res) => {
     originalQuestion: language === "en" ? undefined : question,
     language,
 
+
+    question: text,
+    originalQuestion: language === "en" ? undefined : question,
+    language,
+
     question: translated,
     originalQuestion: lang !== "en" ? question : undefined,
     language: lang,
     category: aiService.categorizeTicket(translated),
     question,
     sentiment: sentimentService.analyze(question),
+
 
     dueDate: dueDate || null,
     tags: Array.isArray(tags) ? tags : [],
