@@ -1,18 +1,17 @@
-import TicketTable from '../TicketTable';
 import StatsPanel from '../components/StatsPanel';
-import TicketFilters, { TicketFilter } from '../TicketFilters';
-import { useEffect, useState } from 'react';
+import TicketSplitView from '../components/TicketView/TicketSplitView';
+import SmartSearch from '../components/SmartSearch';
+import { useEffect } from 'react';
 
 export default function Dashboard() {
-  const [filters, setFilters] = useState<TicketFilter>({});
   useEffect(() => {
     document.title = 'Dashboard - AI Help Desk';
   }, []);
   return (
     <main className="p-4" id="main">
       <StatsPanel />
-      <TicketFilters filters={filters} onChange={setFilters} />
-      <TicketTable filters={filters} />
+      <TicketSplitView />
+      <SmartSearch />
     </main>
   );
 }
