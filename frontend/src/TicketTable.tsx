@@ -1,8 +1,14 @@
+
+import { useEffect, useState, useCallback } from "react";
+import { io } from "socket.io-client";
+import TicketDetailPanel from "./components/TicketDetailPanel";
+
 import { useEffect, useState, useCallback } from 'react';
 import { Table, Select, Button, Input } from 'antd';
 import TicketDetailPanel from './components/TicketDetailPanel';
 import { TicketFilter } from './TicketFilters';
 import { showToast } from './components/toast';
+
 
 interface Ticket {
   id: number;
@@ -38,6 +44,17 @@ export default function TicketTable({ filters }: Props) {
   }, [filters, sortField, sortOrder]);
 
   useEffect(() => {
+
+    loadTickets().catch((err) => console.error("Error loading tickets", err));
+
+    const socket = io();
+    socket.on("ticketCreated", loadTickets);
+    socket.on("ticketUpdated", loadTickets);
+
+    return () => {
+      socket.disconnect();
+    };
+
     loadTickets().catch(err => console.error('Error loading tickets', err));
     if (window.EventSource) {
       const es = new EventSource('/events');
@@ -45,6 +62,7 @@ export default function TicketTable({ filters }: Props) {
       es.addEventListener('ticketUpdated', loadTickets);
       return () => es.close();
     }
+
   }, [loadTickets]);
 
   async function applyBulkStatus() {
