@@ -27,6 +27,8 @@ const { Server } = require('socket.io');
 
 
 const fs = require('fs');
+const http = require('http');
+const { Server: IOServer } = require('socket.io');
 const app = express();
 
 function attachSocket(server) {
@@ -1323,6 +1325,66 @@ app.post("/ai", async (req, res) => {
 });
 
 
+// AI-powered ticket routing
+app.post("/ai/route-ticket", (req, res) => {
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ error: "text required" });
+  const lower = text.toLowerCase();
+  let priority = "medium";
+  if (/(urgent|immediately|asap)/.test(lower)) priority = "high";
+  const suggestions = [
+    { team: "support", keywords: ["password", "login", "account"] },
+    { team: "operations", keywords: ["error", "failure", "bug"] },
+  ];
+  let team = "general";
+  for (const s of suggestions) {
+    if (s.keywords.some((k) => lower.includes(k))) {
+      team = s.team;
+      break;
+    }
+  }
+  res.json({ priority, team, confidence: 0.8 });
+});
+
+// Predict ticket volume for next N days
+app.get("/ai/predict-volume", (req, res) => {
+  const days = Number(req.query.days) || 7;
+  const counts = {};
+  data.tickets.forEach((t) => {
+    const created = (t.history || []).find((h) => h.action === "created");
+    if (!created) return;
+    const d = new Date(created.date).toISOString().slice(0, 10);
+    counts[d] = (counts[d] || 0) + 1;
+  });
+  const total = Object.values(counts).reduce((sum, c) => sum + c, 0);
+  const avg = Object.keys(counts).length ? total / Object.keys(counts).length : 0;
+  res.json({ forecast: avg * days });
+});
+
+// Agent workload optimization
+app.get("/ai/agent-workload", (req, res) => {
+  const workload = data.users.map((u) => ({
+    userId: u.id,
+    open: data.tickets.filter((t) => t.assigneeId === u.id && t.status !== "closed").length,
+  }));
+  const recommended = workload.reduce((a, b) => (a.open < b.open ? a : b), workload[0]);
+  res.json({ workload, recommendedAssigneeId: recommended.userId });
+});
+
+// Estimate escalation risk
+app.get("/ai/escalation-risk", (req, res) => {
+  const now = Date.now();
+  const risks = data.tickets
+    .filter((t) => t.status !== "closed")
+    .map((t) => {
+      let score = 0.1;
+      if (t.priority === "high") score += 0.5;
+      if (t.dueDate && new Date(t.dueDate).getTime() < now) score += 0.4;
+      return { ticketId: t.id, risk: Math.min(score, 1) };
+    });
+  res.json(risks);
+
+
 // Basic sentiment analysis for a text string
 app.post("/ai/sentiment", (req, res) => {
   const { text } = req.body;
@@ -1348,7 +1410,21 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+
+let io;
+function attachSocket(server) {
+  if (io) return;
+  io = new IOServer(server);
+  eventBus.on('ticketCreated', (t) => io.emit('ticketCreated', t));
+  eventBus.on('ticketUpdated', (t) => io.emit('ticketUpdated', t));
+}
+
 if (require.main === module) {
+
+  const server = http.createServer(app);
+  attachSocket(server);
+  server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 sServer.setupWebSocket(server);
 
   const server = http.createServer(app);

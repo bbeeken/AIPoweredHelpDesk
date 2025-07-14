@@ -3,7 +3,11 @@ import { useEffect, useState, lazy, Suspense } from 'react';
 import { Select } from 'antd';
 
 import { useEffect, useRef, useState } from 'react';
+
+import useRealtime from '../hooks/useRealtime';
+
 import { io } from 'socket.io-client';
+
 import {
   Chart as ChartJS,
   registerables,
@@ -40,12 +44,17 @@ function StatusWidget({ onRemove }: { onRemove: () => void }) {
     loadStats();
   }, []);
 
+
+  useRealtime('ticketCreated', loadStats);
+  useRealtime('ticketUpdated', loadStats);
+
   useEffect(() => {
     const socket = io();
     socket.on('ticketCreated', loadStats);
     socket.on('ticketUpdated', loadStats);
     return () => socket.disconnect();
   }, []);
+
 
   useEffect(() => {
     async function load() {

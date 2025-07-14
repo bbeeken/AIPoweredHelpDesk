@@ -5,7 +5,11 @@ import { useSwipeable } from 'react-swipeable';
 import { Select, Button, Input } from 'antd';
 
 import { useEffect, useState, useCallback } from "react";
+
+import useRealtime from "./hooks/useRealtime";
+
 import { io } from "socket.io-client";
+
 import TicketDetailPanel from "./components/TicketDetailPanel";
 
 import { useEffect, useState, useCallback } from 'react';
@@ -57,6 +61,19 @@ export default function TicketTable({ filters, tickets: initial }: Props) {
 
     loadTickets().catch((err) => console.error("Error loading tickets", err));
 
+  }, [loadTickets]);
+
+  useRealtime("ticketCreated", loadTickets);
+  useRealtime("ticketUpdated", loadTickets);
+
+  function toggleSort(field: keyof Ticket) {
+    if (sortField === field) {
+      setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortOrder("asc");
+
+
     const socket = io();
     socket.on("ticketCreated", loadTickets);
     socket.on("ticketUpdated", loadTickets);
@@ -80,6 +97,7 @@ y
     if (res.ok) {
       showToast('Ticket closed');
       await loadTickets();
+
     }
   }
 

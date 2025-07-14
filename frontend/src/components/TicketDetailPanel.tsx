@@ -1,8 +1,12 @@
 
+import { useEffect, useState } from "react";
+import AIAssistant from "./AIAssistant";
+
 import TicketTimeline from "./TicketView/TicketTimeline";
 
 import { useEffect, useState } from 'react';
 import { Drawer } from 'antd';
+
 
 
 interface Ticket {
@@ -84,6 +88,11 @@ export default function TicketDetailPanel({ ticketId, onClose }: Props) {
           )}
         </div>
       )}
+
+      <AIAssistant ticket={ticket} />
+    </aside>
+
     </Drawer>
+
   );
 }
