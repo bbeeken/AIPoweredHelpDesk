@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import Chart from 'chart.js/auto';
-import type { ChartConfiguration } from 'chart.js';
+import {
+  Chart as ChartJS,
+  registerables,
+  type ChartConfiguration,
+} from 'chart.js';
+
+ChartJS.register(...registerables);
 
 type WidgetId = 'status' | 'forecast';
 
@@ -70,7 +75,7 @@ function StatusWidget({ onRemove }: { onRemove: () => void }) {
       },
       options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } },
     };
-    const chart = new Chart(ref.current, cfg);
+    const chart = new ChartJS(ref.current, cfg);
     return () => chart.destroy();
   }, [stats]);
 
@@ -113,7 +118,7 @@ function ForecastWidget({ onRemove }: { onRemove: () => void }) {
       data: { labels, datasets: [{ data: dataset, borderColor: '#3b82f6', fill: false }] },
       options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } },
     };
-    const chart = new Chart(ref.current, cfg);
+    const chart = new ChartJS(ref.current, cfg);
     return () => chart.destroy();
   }, [forecast]);
 
