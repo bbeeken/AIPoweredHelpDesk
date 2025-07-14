@@ -1,22 +1,22 @@
 import { BrowserRouter, Route, Routes, Link } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
-import Dashboard from './pages/Dashboard';
-import Analytics from './pages/Analytics';
-import Settings from './pages/Settings';
+import { lazy, Suspense } from 'react';
 import ToastContainer from './components/ToastContainer';
-import UserProfile from './pages/UserProfile';
 import ThemeToggle from './ThemeToggle';
 import CommandPalette from './components/CommandPalette';
 import Sidebar from './components/Sidebar';
 import { useTheme } from './hooks/useTheme';
 
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Analytics = lazy(() => import('./pages/Analytics'));
+const Settings = lazy(() => import('./pages/Settings'));
+const UserProfile = lazy(() => import('./pages/UserProfile'));
+
 export default function App() {
   const { algorithm } = useTheme();
   return (
-
     <ConfigProvider theme={{ algorithm }}>
-     
-    <BrowserRouter>
+      <BrowserRouter>
       <a href="#main" className="skip-link">Skip to content</a>
       <header className="flex justify-between items-center py-4">
 
@@ -37,18 +37,17 @@ export default function App() {
         </nav>
         <ThemeToggle />
       </header>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/analytics" element={<Analytics />} />
-
-        <Route path="/settings" element={<Settings />} />
-
-        <Route path="/users/:id" element={<UserProfile />} />
-
-      </Routes>
+      <Suspense fallback={<p>Loading...</p>}>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/users/:id" element={<UserProfile />} />
+        </Routes>
+      </Suspense>
       <CommandPalette />
       <ToastContainer />
-    </BrowserRouter>
-
+      </BrowserRouter>
+    </ConfigProvider>
   );
 }

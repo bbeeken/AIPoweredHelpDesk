@@ -57,7 +57,7 @@ export default function CommandPalette() {
         dataSource={filtered}
         renderItem={item => (
           <List.Item>
-            <button className="w-full text-left" onClick={() => handleSelect(item)}>
+            <button className="w-full text-left touch-target" onClick={() => handleSelect(item)}>
               {item.label}
             </button>
           </List.Item>

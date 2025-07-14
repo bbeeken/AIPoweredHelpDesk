@@ -1,4 +1,9 @@
+
+import { useEffect, useState, lazy, Suspense } from 'react';
+import { Select } from 'antd';
+
 import { useEffect, useRef, useState } from 'react';
+import { io } from 'socket.io-client';
 import {
   Chart as ChartJS,
   registerables,
@@ -6,19 +11,16 @@ import {
 } from 'chart.js';
 import { Select, Button } from 'antd';
 
-ChartJS.register(...registerables);
+const StatusWidget = lazy(() => import('./widgets/StatusWidget'));
+const ForecastWidget = lazy(() => import('./widgets/ForecastWidget'));
 
 type WidgetId = 'status' | 'forecast';
-
-interface ForecastData { forecast: number; }
-interface DashboardStats {
-  tickets: { open: number; waiting: number; closed: number };
-}
 
 const AVAILABLE_WIDGETS: { id: WidgetId; label: string }[] = [
   { id: 'status', label: 'Ticket Status' },
   { id: 'forecast', label: 'Ticket Forecast' },
 ];
+
 
 function StatusWidget({ onRemove }: { onRemove: () => void }) {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -39,11 +41,10 @@ function StatusWidget({ onRemove }: { onRemove: () => void }) {
   }, []);
 
   useEffect(() => {
-    if (!window.EventSource) return;
-    const es = new EventSource('/events');
-    es.addEventListener('ticketCreated', loadStats);
-    es.addEventListener('ticketUpdated', loadStats);
-    return () => es.close();
+    const socket = io();
+    socket.on('ticketCreated', loadStats);
+    socket.on('ticketUpdated', loadStats);
+    return () => socket.disconnect();
   }, []);
 
   useEffect(() => {
@@ -139,6 +140,7 @@ function ForecastWidget({ onRemove }: { onRemove: () => void }) {
   );
 }
 
+
 function Widget({ id, onRemove }: { id: WidgetId; onRemove: () => void }) {
   switch (id) {
     case 'forecast':
@@ -186,9 +188,8 @@ export default function StatsPanel() {
               {available.map(w => (
                 <Select.Option key={w.id} value={w.id}>{w.label}</Select.Option>
               ))}
-
-            </select>
-            <button onClick={addWidget} className="bg-primary dark:bg-primary-dark text-white px-2 py-0.5 rounded">
+            </Select>
+            <button onClick={addWidget} className="bg-primary dark:bg-primary-dark text-white px-2 py-0.5 rounded touch-target">
               Add
             </button>
 
@@ -197,7 +198,9 @@ export default function StatsPanel() {
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         {widgets.map(id => (
-          <Widget key={id} id={id} onRemove={() => removeWidget(id)} />
+          <Suspense key={id} fallback={<p>Loading...</p>}>
+            <Widget id={id} onRemove={() => removeWidget(id)} />
+          </Suspense>
         ))}
       </div>
     </section>

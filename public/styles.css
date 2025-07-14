@@ -58,6 +58,13 @@ a {
 }
 button {
   padding: 0.5em 1em;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
 }
 #themeToggle {
   margin-left: 1em;
