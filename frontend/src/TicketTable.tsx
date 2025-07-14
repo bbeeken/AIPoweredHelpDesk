@@ -25,6 +25,8 @@ export default function TicketTable({ filters }: Props) {
   const [bulkAssignee, setBulkAssignee] = useState('');
 
   const loadTickets = useCallback(async () => {
+
+ 
     const url = new URL('/tickets', window.location.origin);
     if (filters.status) url.searchParams.set('status', filters.status);
     if (filters.priority) url.searchParams.set('priority', filters.priority);

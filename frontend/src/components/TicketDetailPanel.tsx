@@ -1,5 +1,9 @@
+
+import TicketTimeline from "./TicketView/TicketTimeline";
+
 import { useEffect, useState } from 'react';
 import { Drawer } from 'antd';
+
 
 interface Ticket {
   id: number;
@@ -51,6 +55,8 @@ export default function TicketDetailPanel({ ticketId, onClose }: Props) {
           {ticket.history && ticket.history.length > 0 && (
             <div className="mt-3">
               <h4 className="font-semibold">History</h4>
+
+              <TicketTimeline history={ticket.history} />
               <ul className="list-disc list-inside text-sm">
                 {ticket.history.map((h, i) => (
                   <li key={i}>
