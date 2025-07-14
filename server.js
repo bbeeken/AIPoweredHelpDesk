@@ -7,6 +7,7 @@ const data = require("./data/mockData");
 const dataService = require("./utils/dataService");
 const auth = require("./utils/authService");
 const eventBus = require("./utils/eventBus");
+const wsServer = require("./utils/websocketServer");
 
 const analytics = require("./utils/analyticsEngine");
 
@@ -126,6 +127,8 @@ let nextAssetId =
 // store saved ticket filter presets per user
 let nextFilterId = 1;
 const filterPresets = {};
+// in-memory notification preferences per user
+const notificationPrefs = {};
 
 // choose user with fewest open tickets
 function getLeastBusyUserId() {
@@ -1260,6 +1263,34 @@ app.post("/filters", (req, res) => {
   res.status(201).json(preset);
 });
 
+// Notification preference CRUD
+app.get("/notifications/preferences", (req, res) => {
+  res.json(notificationPrefs[req.user.id] || {});
+});
+
+app.post("/notifications/preferences", (req, res) => {
+  notificationPrefs[req.user.id] = req.body || {};
+  res.status(201).json(notificationPrefs[req.user.id]);
+});
+
+app.patch("/notifications/preferences", (req, res) => {
+  notificationPrefs[req.user.id] = {
+    ...(notificationPrefs[req.user.id] || {}),
+    ...(req.body || {}),
+  };
+  res.json(notificationPrefs[req.user.id]);
+});
+
+app.delete("/notifications/preferences", (req, res) => {
+  delete notificationPrefs[req.user.id];
+  res.json({ success: true });
+});
+
+// Presence listing
+app.get("/presence/agents", (req, res) => {
+  res.json(wsServer.getPresence());
+});
+
 
 // AI endpoint for natural language commands
 app.post("/ai", async (req, res) => {
@@ -1300,9 +1331,12 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
+sServer.setupWebSocket(server);
+
   const server = http.createServer(app);
   attachSocket(server);
   server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 }
 
 module.exports = app;

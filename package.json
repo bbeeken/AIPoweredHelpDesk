@@ -18,11 +18,16 @@
     "jsonwebtoken": "^9.0.0",
     "mssql": "^10.0.0",
 
+    "uuid": "^9.0.0",
+    "ws": "^8.18.3"
+
+
     "sentiment": "^5.0.2",
 
     "socket.io": "^4.8.1",
 
     "uuid": "^9.0.0"
+
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
