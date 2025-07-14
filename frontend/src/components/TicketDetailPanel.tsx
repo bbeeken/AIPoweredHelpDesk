@@ -1,5 +1,13 @@
+
 import { useEffect, useState } from "react";
 import AIAssistant from "./AIAssistant";
+
+import TicketTimeline from "./TicketView/TicketTimeline";
+
+import { useEffect, useState } from 'react';
+import { Drawer } from 'antd';
+
+
 
 interface Ticket {
   id: number;
@@ -33,42 +41,36 @@ export default function TicketDetailPanel({ ticketId, onClose }: Props) {
         const data: Ticket = await res.json();
         setTicket(data);
       } catch (err) {
-        console.error("Failed to load ticket", err);
+        console.error('Failed to load ticket', err);
       }
     }
     load();
   }, [ticketId]);
 
-  if (ticketId === null) return null;
-
   return (
-    <aside
-      className="absolute top-0 right-0 w-80 h-full bg-white dark:bg-gray-800 border-l shadow-lg p-4 overflow-y-auto"
-      aria-label={`Details for ticket ${ticketId}`}
-    >
-      <button
-        className="float-right"
-        aria-label="Close panel"
-        onClick={onClose}
-      >
-        ✖
-      </button>
+    <Drawer placement="right" width={320} onClose={onClose} open={ticketId !== null} title={`Ticket ${ticketId}`}> 
       {!ticket ? (
         <p>Loading...</p>
       ) : (
         <div>
-          <h3 className="font-semibold mb-2">Ticket {ticket.id}</h3>
-          <p className="mb-2">{ticket.question}</p>
+          <p className="mb-2">
+            {ticket.question}
+            {ticket.originalQuestion && ticket.originalQuestion !== ticket.question && (
+              <span className="block text-xs text-gray-500">(Original: {ticket.originalQuestion})</span>
+            )}
+          </p>
           <p className="mb-1">Status: {ticket.status}</p>
           <p className="mb-1">Priority: {ticket.priority}</p>
           {ticket.history && ticket.history.length > 0 && (
             <div className="mt-3">
               <h4 className="font-semibold">History</h4>
+
+              <TicketTimeline history={ticket.history} />
               <ul className="list-disc list-inside text-sm">
                 {ticket.history.map((h, i) => (
                   <li key={i}>
                     {h.date.slice(0, 10)} {h.action}
-                    {h.from && h.to ? `: ${h.from} → ${h.to}` : ""}
+                    {h.from && h.to ? `: ${h.from} → ${h.to}` : ''}
                   </li>
                 ))}
               </ul>
@@ -78,7 +80,7 @@ export default function TicketDetailPanel({ ticketId, onClose }: Props) {
             <div className="mt-3">
               <h4 className="font-semibold">Comments</h4>
               <ul className="list-disc list-inside text-sm">
-                {ticket.comments.map((c) => (
+                {ticket.comments.map(c => (
                   <li key={c.id}>{c.text}</li>
                 ))}
               </ul>
@@ -86,7 +88,11 @@ export default function TicketDetailPanel({ ticketId, onClose }: Props) {
           )}
         </div>
       )}
+
       <AIAssistant ticket={ticket} />
     </aside>
+
+    </Drawer>
+
   );
 }

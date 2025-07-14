@@ -1,16 +1,19 @@
 const assert = require('assert');
+const ioClient = require('socket.io-client');
 const http = require('http');
 const app = require('../server');
+const { attachSocket } = require('../server');
 
-const server = app.listen(0, () => {
+const server = http.createServer(app);
+attachSocket(server);
+server.listen(0, () => {
   const port = server.address().port;
-  const req = http.get({ port, path: '/events' }, res => {
-    assert.strictEqual(res.statusCode, 200);
-    assert.strictEqual(res.headers['content-type'], 'text/event-stream');
-    res.destroy();
-    server.close(() => console.log('Events endpoint test passed'));
+  const socket = ioClient(`http://localhost:${port}`);
+  socket.on('connect', () => {
+    socket.close();
+    server.close(() => console.log('Socket.IO connection test passed'));
   });
-  req.on('error', err => {
+  socket.on('connect_error', err => {
     server.close(() => { throw err; });
   });
 });
