@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import useRealtime from "./hooks/useRealtime";
 import TicketDetailPanel from "./components/TicketDetailPanel";
 import { TicketFilter } from "./TicketFilters";
 import { showToast } from "./components/toast";
@@ -37,14 +38,10 @@ export default function TicketTable({ filters }: Props) {
 
   useEffect(() => {
     loadTickets().catch((err) => console.error("Error loading tickets", err));
-
-    if (window.EventSource) {
-      const es = new EventSource("/events");
-      es.addEventListener("ticketCreated", loadTickets);
-      es.addEventListener("ticketUpdated", loadTickets);
-      return () => es.close();
-    }
   }, [loadTickets]);
+
+  useRealtime("ticketCreated", loadTickets);
+  useRealtime("ticketUpdated", loadTickets);
 
   function toggleSort(field: keyof Ticket) {
     if (sortField === field) {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import useRealtime from "../hooks/useRealtime";
 
 interface Toast {
   id: number;
@@ -35,15 +36,18 @@ function ToastItem({ toast, remove }: { toast: Toast; remove: () => void }) {
 export default function ToastContainer() {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  useEffect(() => {
-    function addToast(message: string) {
-      const id = Date.now() + Math.random();
-      setToasts((t) => [...t, { id, message }]);
-      setTimeout(() => {
-        setToasts((t) => t.filter((toast) => toast.id !== id));
-      }, 4000);
-    }
+  function addToast(message: string) {
+    const id = Date.now() + Math.random();
+    setToasts((t) => [...t, { id, message }]);
+    setTimeout(() => {
+      setToasts((t) => t.filter((toast) => toast.id !== id));
+    }, 4000);
+  }
 
+  useRealtime("ticketCreated", (data: any) => addToast("Ticket created: " + data));
+  useRealtime("ticketUpdated", (data: any) => addToast("Ticket updated: " + data));
+
+  useEffect(() => {
     const cleanup: (() => void)[] = [];
 
     const toastHandler = (e: Event) => {
@@ -53,17 +57,6 @@ export default function ToastContainer() {
     window.addEventListener("toast", toastHandler);
     cleanup.push(() => window.removeEventListener("toast", toastHandler));
 
-    let es: EventSource | null = null;
-    if (window.EventSource) {
-      es = new EventSource("/events");
-      es.addEventListener("ticketCreated", (e) =>
-        addToast("Ticket created: " + (e as MessageEvent).data),
-      );
-      es.addEventListener("ticketUpdated", (e) =>
-        addToast("Ticket updated: " + (e as MessageEvent).data),
-      );
-      cleanup.push(() => es && es.close());
-    }
     return () => {
       cleanup.forEach((fn) => fn());
     };

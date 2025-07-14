@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import useRealtime from '../hooks/useRealtime';
 import {
   Chart as ChartJS,
   registerables,
@@ -38,13 +39,8 @@ function StatusWidget({ onRemove }: { onRemove: () => void }) {
     loadStats();
   }, []);
 
-  useEffect(() => {
-    if (!window.EventSource) return;
-    const es = new EventSource('/events');
-    es.addEventListener('ticketCreated', loadStats);
-    es.addEventListener('ticketUpdated', loadStats);
-    return () => es.close();
-  }, []);
+  useRealtime('ticketCreated', loadStats);
+  useRealtime('ticketUpdated', loadStats);
 
   useEffect(() => {
     async function load() {

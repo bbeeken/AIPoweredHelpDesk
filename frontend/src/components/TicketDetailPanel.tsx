@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import AIAssistant from "./AIAssistant";
 
 interface Ticket {
   id: number;
@@ -85,6 +86,7 @@ export default function TicketDetailPanel({ ticketId, onClose }: Props) {
           )}
         </div>
       )}
+      <AIAssistant ticket={ticket} />
     </aside>
   );
 }
