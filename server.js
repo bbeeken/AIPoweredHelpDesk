@@ -7,6 +7,9 @@ const data = require("./data/mockData");
 const dataService = require("./utils/dataService");
 const auth = require("./utils/authService");
 const eventBus = require("./utils/eventBus");
+
+const ai = require("./utils/aiService");
+
 const aiService = require("./utils/aiService");
 const translation = require("./utils/translationService");
 const sentimentService = require("./utils/sentimentService");
@@ -15,6 +18,7 @@ const assistant = require("./utils/assistant");
 
 const http = require('http');
 const { Server } = require('socket.io');
+
 
 const fs = require('fs');
 const app = express();
@@ -245,7 +249,9 @@ app.get("/tickets/unassigned", (req, res) => {
   res.json(tickets);
 });
 
+
 // Create a new ticket
+
 app.post("/tickets", async (req, res) => {
   const { question, assigneeId, priority, dueDate, tags } = req.body;
   if (!question) return res.status(400).json({ error: "question required" });
@@ -253,18 +259,36 @@ app.post("/tickets", async (req, res) => {
   const { translated, lang } = await translation.translateToDefault(question);
   const assignedId =
     assigneeId !== undefined ? assigneeId : getLeastBusyUserId();
+
+  let language = "en";
+  let text = question;
+  try {
+    language = await ai.detectLanguage(question);
+    if (language !== "en") {
+      text = await ai.translateText(question, "en");
+    }
+  } catch (err) {
+    console.error("Language processing failed:", err.message);
+  }
+
   const ticket = {
     id: nextTicketId++,
     assigneeId: assignedId,
     submitterId: req.user.id,
     status: "open",
     priority: priority || "medium",
+
+    question: text,
+    originalQuestion: language === "en" ? undefined : question,
+    language,
+
     question: translated,
     originalQuestion: lang !== "en" ? question : undefined,
     language: lang,
     category: aiService.categorizeTicket(translated),
     question,
     sentiment: sentimentService.analyze(question),
+
     dueDate: dueDate || null,
     tags: Array.isArray(tags) ? tags : [],
     comments: [],
@@ -272,6 +296,20 @@ app.post("/tickets", async (req, res) => {
       { action: "created", by: req.user.id, date: new Date().toISOString() },
     ],
   };
+
+  try {
+    const [sentiment, suggested] = await Promise.all([
+      ai.analyzeSentiment(text),
+      ai.suggestTags(text),
+    ]);
+    ticket.sentiment = sentiment;
+    suggested.forEach((t) => {
+      if (!ticket.tags.includes(t)) ticket.tags.push(t);
+    });
+  } catch (err) {
+    console.error("AI processing failed:", err.message);
+  }
+
   data.tickets.push(ticket);
   eventBus.emit("ticketCreated", ticket);
   res.status(201).json(ticket);
