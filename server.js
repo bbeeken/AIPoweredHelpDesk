@@ -7,6 +7,7 @@ const data = require("./data/mockData");
 const dataService = require("./utils/dataService");
 const auth = require("./utils/authService");
 const eventBus = require("./utils/eventBus");
+const sentimentService = require("./utils/sentimentService");
 
 const fs = require('fs');
 const app = express();
@@ -157,6 +158,9 @@ app.get("/tickets", async (req, res) => {
       return av > bv ? dir : av < bv ? -dir : 0;
     });
   }
+  tickets.forEach(t => {
+    if (!t.sentiment) t.sentiment = sentimentService.analyze(t.question);
+  });
   res.json(tickets);
 });
 
@@ -220,6 +224,7 @@ app.post("/tickets", (req, res) => {
     status: "open",
     priority: priority || "medium",
     question,
+    sentiment: sentimentService.analyze(question),
     dueDate: dueDate || null,
     tags: Array.isArray(tags) ? tags : [],
     comments: [],
@@ -550,6 +555,7 @@ app.post("/tickets/:id/comments", (req, res) => {
     text,
     html: highlighted,
     mentions,
+    sentiment: sentimentService.analyze(text),
     isInternal: !!isInternal,
     date: new Date().toISOString(),
   };
@@ -604,6 +610,7 @@ app.patch("/tickets/:id/comments/:commentId", (req, res) => {
   if (!text) return res.status(400).json({ error: "text required" });
   comment.text = text;
   comment.html = parseMentions(text).highlighted;
+  comment.sentiment = sentimentService.analyze(text);
   comment.edited = new Date().toISOString();
   res.json(comment);
 });
@@ -703,6 +710,7 @@ app.get("/tickets/recent", (req, res) => {
 app.get("/tickets/:id", async (req, res) => {
   const ticket = await dataService.getTicketById(Number(req.params.id));
   if (!ticket) return res.status(404).json({ error: "Ticket not found" });
+  if (!ticket.sentiment) ticket.sentiment = sentimentService.analyze(ticket.question);
   res.json(ticket);
 });
 app.get("/stats", (req, res) => {
@@ -1203,6 +1211,14 @@ app.post("/ai", async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Failed to process text" });
   }
+});
+
+// Sentiment analysis endpoint
+app.post("/sentiment", (req, res) => {
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ error: "text required" });
+  const result = sentimentService.analyze(text);
+  res.json(result);
 });
 
 app.get('*', (req, res) => {

@@ -17,6 +17,7 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
     "mssql": "^10.0.0",
+    "sentiment": "^5.0.2",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
