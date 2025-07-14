@@ -14,14 +14,14 @@
 
   <header class="flex justify-between items-center py-4">
     <div class="flex items-center gap-2">
-      <button id="menuToggle" aria-controls="sidebar" aria-expanded="false" class="border p-2 md:hidden">☰</button>
+      <button id="menuToggle" aria-controls="sidebar" aria-expanded="false" class="border p-2 md:hidden touch-target">☰</button>
       <h1 class="text-2xl font-bold">AI Chat</h1>
     </div>
     <nav class="hidden md:block">
       <a href="/index.html" class="text-blue-600 hover:underline mr-4">Home</a>
       <a href="/realtime.html" class="text-blue-600 hover:underline">Real-Time</a>
     </nav>
-    <button id="themeToggle" type="button" aria-label="Toggle dark mode" class="ml-4">🌓</button>
+    <button id="themeToggle" type="button" aria-label="Toggle dark mode" class="ml-4 touch-target">🌓</button>
   </header>
 
   <nav id="sidebar" aria-label="Sidebar" class="fixed inset-y-0 left-0 w-56 bg-gray-100 dark:bg-gray-900 p-4 transform -translate-x-full transition-transform md:static md:translate-x-0 md:w-48">
@@ -36,8 +36,8 @@
     <form id="chatForm" class="flex gap-2">
       <label for="msg" class="visually-hidden">Message</label>
       <input id="msg" placeholder="Ask a question..." size="50" class="border flex-grow p-2" />
-      <button id="voice" type="button" aria-label="Start voice input" class="border px-3">🎤</button>
-      <button type="submit" class="border px-4">Send</button>
+      <button id="voice" type="button" aria-label="Start voice input" class="border px-3 touch-target">🎤</button>
+      <button type="submit" class="border px-4 touch-target">Send</button>
     </form>
     <div id="suggestions" class="mt-2 space-x-2"></div>
   </main>

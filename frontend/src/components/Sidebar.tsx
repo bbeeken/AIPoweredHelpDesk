@@ -12,7 +12,7 @@ export default function Sidebar() {
         type="text"
         icon={<MenuOutlined />}
         aria-label="Toggle navigation"
-        className="md:hidden"
+        className="md:hidden touch-target"
         onClick={() => setOpen(true)}
       />
       <Drawer
