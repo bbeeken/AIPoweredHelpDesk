@@ -153,7 +153,7 @@ export default function TicketFilters({ filters, onChange }: Props) {
           placeholder="New view"
           style={{ width: 160 }}
         />
-        <Button onClick={savePreset}>Save</Button>
+        <Button onClick={savePreset} className="touch-target">Save</Button>
       </div>
     </div>
   );
