@@ -7,6 +7,7 @@ const data = require("./data/mockData");
 const dataService = require("./utils/dataService");
 const auth = require("./utils/authService");
 const eventBus = require("./utils/eventBus");
+const ai = require("./utils/aiService");
 
 const fs = require('fs');
 const app = express();
@@ -188,19 +189,33 @@ app.get("/tickets/unassigned", (req, res) => {
   res.json(tickets);
 });
 
-// Create a new ticket
-app.post("/tickets", (req, res) => {
+// Create a new ticket with language detection and AI tagging
+app.post("/tickets", async (req, res) => {
   const { question, assigneeId, priority, dueDate, tags } = req.body;
   if (!question) return res.status(400).json({ error: "question required" });
   const assignedId =
     assigneeId !== undefined ? assigneeId : getLeastBusyUserId();
+
+  let language = "en";
+  let text = question;
+  try {
+    language = await ai.detectLanguage(question);
+    if (language !== "en") {
+      text = await ai.translateText(question, "en");
+    }
+  } catch (err) {
+    console.error("Language processing failed:", err.message);
+  }
+
   const ticket = {
     id: nextTicketId++,
     assigneeId: assignedId,
     submitterId: req.user.id,
     status: "open",
     priority: priority || "medium",
-    question,
+    question: text,
+    originalQuestion: language === "en" ? undefined : question,
+    language,
     dueDate: dueDate || null,
     tags: Array.isArray(tags) ? tags : [],
     comments: [],
@@ -208,6 +223,20 @@ app.post("/tickets", (req, res) => {
       { action: "created", by: req.user.id, date: new Date().toISOString() },
     ],
   };
+
+  try {
+    const [sentiment, suggested] = await Promise.all([
+      ai.analyzeSentiment(text),
+      ai.suggestTags(text),
+    ]);
+    ticket.sentiment = sentiment;
+    suggested.forEach((t) => {
+      if (!ticket.tags.includes(t)) ticket.tags.push(t);
+    });
+  } catch (err) {
+    console.error("AI processing failed:", err.message);
+  }
+
   data.tickets.push(ticket);
   eventBus.emit("ticketCreated", ticket);
   res.status(201).json(ticket);

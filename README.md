@@ -16,6 +16,7 @@ For a summary of the modernization vision and design standards, read
 - Mock data for users, tickets and assets to simulate a database.
 - **Qdrant client script** for indexing ticket text in a vector database.
 - **Automatic Qdrant indexing** of newly created tickets when the server is running.
+- **Language detection and translation** for new tickets with sentiment-based tag suggestions.
 - **Ticket escalation endpoint** for quickly setting priority to high.
 - **Offline-capable UI** using a service worker and web app manifest.
 
@@ -143,6 +144,7 @@ Other useful environment variables include:
 
 - `N8N_URL` – n8n workflow webhook URL.
 - `QDRANT_URL` – base address of the Qdrant server.
+- `OPENAI_API_KEY` – API key for calling OpenAI services used by `aiService`.
 
 After the first visit, the pages are cached for offline use via a service worker.
 An experimental `realtime.html` page demonstrates live ticket notifications using the `/events` SSE endpoint.
