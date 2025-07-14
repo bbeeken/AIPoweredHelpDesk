@@ -8,6 +8,27 @@ module.exports = {
   ],
   theme: {
     extend: {
+
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+      },
+      colors: {
+        primary: '#1F73B7',
+        success: '#10B981',
+        warning: '#F59E0B',
+        error: '#EF4444',
+        neutral: {
+          50: '#F9FAFB',
+          100: '#F3F4F6',
+          200: '#E5E7EB',
+          300: '#D1D5DB',
+          400: '#9CA3AF',
+          500: '#6B7280',
+          600: '#4B5563',
+          700: '#374151',
+          800: '#1F2937',
+          900: '#111827',
+
       colors: {
         primary: {
           DEFAULT: '#1F73B7',
@@ -24,6 +45,7 @@ module.exports = {
         error: {
           DEFAULT: '#DC2626',
           dark: '#B91C1C',
+
         },
       },
       spacing: {
@@ -31,6 +53,10 @@ module.exports = {
         2: '8px',
         3: '12px',
         4: '16px',
+        6: '24px',
+        8: '32px',
+        12: '48px',
+        16: '64px',
         5: '20px',
         6: '24px',
         7: '28px',
@@ -59,6 +85,7 @@ module.exports = {
       },
       fontFamily: {
         sans: ['Inter', ...defaultTheme.fontFamily.sans],
+
       },
     },
   },
