@@ -99,9 +99,21 @@ function getLeastBusyUserId() {
   return chosen.id;
 }
 
-// Middleware to simulate authentication
+// Authentication middleware
 app.use((req, res, next) => {
-  req.user = data.users[0];
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1];
+  const payload = token && auth.verifyToken(token);
+  if (!payload) {
+    res.status(401).json({ error: 'Invalid token' });
+    return;
+  }
+  const user = data.users.find((u) => u.id === payload.id);
+  if (!user) {
+    res.status(401).json({ error: 'Invalid token' });
+    return;
+  }
+  req.user = user;
   next();
 });
 
