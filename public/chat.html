@@ -101,7 +101,11 @@
       const res = await fetch('/ai', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})});
       const data = await res.json();
       const botMsg = document.createElement('div');
-      botMsg.textContent = 'AI: ' + (data.reply || JSON.stringify(data));
+      let reply = data.reply || JSON.stringify(data);
+      if (data.translation && data.translation.original && data.translation.text) {
+        reply += `\n(${data.translation.original})`;
+      }
+      botMsg.textContent = 'AI: ' + reply;
       messages.appendChild(botMsg);
       input.value = '';
       messages.scrollTop = messages.scrollHeight;

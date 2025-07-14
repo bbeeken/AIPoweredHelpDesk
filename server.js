@@ -7,6 +7,8 @@ const data = require("./data/mockData");
 const dataService = require("./utils/dataService");
 const auth = require("./utils/authService");
 const eventBus = require("./utils/eventBus");
+const aiService = require("./utils/aiService");
+const translation = require("./utils/translationService");
 const sentimentService = require("./utils/sentimentService");
 
 const assistant = require("./utils/assistant");
@@ -244,9 +246,11 @@ app.get("/tickets/unassigned", (req, res) => {
 });
 
 // Create a new ticket
-app.post("/tickets", (req, res) => {
+app.post("/tickets", async (req, res) => {
   const { question, assigneeId, priority, dueDate, tags } = req.body;
   if (!question) return res.status(400).json({ error: "question required" });
+
+  const { translated, lang } = await translation.translateToDefault(question);
   const assignedId =
     assigneeId !== undefined ? assigneeId : getLeastBusyUserId();
   const ticket = {
@@ -255,6 +259,10 @@ app.post("/tickets", (req, res) => {
     submitterId: req.user.id,
     status: "open",
     priority: priority || "medium",
+    question: translated,
+    originalQuestion: lang !== "en" ? question : undefined,
+    language: lang,
+    category: aiService.categorizeTicket(translated),
     question,
     sentiment: sentimentService.analyze(question),
     dueDate: dueDate || null,

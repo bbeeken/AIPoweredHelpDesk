@@ -107,12 +107,26 @@ export default function TicketTable({ filters }: Props) {
   }
 
   const columns = [
-    { title: 'ID', dataIndex: 'id', sorter: true },
+   
+    {
+      title: 'Question',
+      dataIndex: 'question',
+      sorter: true,
+      render: (_: any, record: any) => (
+        <span>
+          {record.question}
+          {record.originalQuestion && record.originalQuestion !== record.question && (
+            <span className="block text-xs text-gray-500">({record.originalQuestion})</span>
+          )}
+        </span>
+      ),
+
     { title: 'Question', dataIndex: 'question', sorter: true },
     {
       title: 'Sentiment',
       dataIndex: 'sentiment',
       render: (s: Ticket['sentiment']) => (s ? emoji(s.label) : ''),
+
     },
     { title: 'Status', dataIndex: 'status', sorter: true },
     { title: 'Priority', dataIndex: 'priority', sorter: true },

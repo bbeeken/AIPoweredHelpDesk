@@ -19,6 +19,7 @@ For a summary of the modernization vision and design standards, read
 - **Automatic Qdrant indexing** of newly created tickets when the server is running.
 - **Ticket escalation endpoint** for quickly setting priority to high.
 - **Offline-capable UI** using a service worker and web app manifest.
+- **Automatic translation** of new tickets into English with original text preserved.
 
 - **Real-time updates** via a Server-Sent Events endpoint.
 - **Toast notifications** for ticket events with auto-refreshing stats.
@@ -154,6 +155,8 @@ Other useful environment variables include:
 
 - `N8N_URL` – n8n workflow webhook URL.
 - `QDRANT_URL` – base address of the Qdrant server.
+- `TRANSLATE_URL` – HTTP endpoint for the translation service.
+- `TRANSLATE_API_KEY` – API key used when contacting the translation provider.
 
 After the first visit, the pages are cached for offline use via a service worker.
 An experimental `realtime.html` page demonstrates live ticket notifications using the `/events` SSE endpoint.
@@ -174,6 +177,13 @@ usually mean the `frontend/dist` directory is missing or the server could not
 find it. During development you can run `npm run dev` for hot reloading. The dashboard includes
 ticket tables, real-time updates via Server-Sent Events and a new analytics
 page rendered with Chart.js.
+
+### Translation
+
+When a ticket is submitted in a non-English language, the server attempts to
+translate the text to English using the provider configured via `TRANSLATE_URL`.
+The original text and detected language are stored on the ticket so the
+dashboard and chat views can display both versions when they differ.
 
 ### DevOps
 
