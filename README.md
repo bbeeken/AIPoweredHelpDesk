@@ -4,6 +4,9 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 
 For the long-term roadmap, see [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md).
 
+For a summary of the modernization vision and design standards, read
+[docs/TRANSFORMATION_GUIDE.md](docs/TRANSFORMATION_GUIDE.md).
+
 ## Features
 
 - **Dashboard** route that greets the logged in user and summarizes their assigned tickets.
