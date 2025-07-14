@@ -23,7 +23,22 @@ async function addTicketText(id, text, collection = 'tickets', qdrantUrl = proce
   });
 }
 
+async function searchTickets(text, limit = 5, collection = 'tickets', qdrantUrl = process.env.QDRANT_URL || 'http://localhost:6333') {
+  const vector = textToVector(text);
+  const body = { vector, limit };
+  const res = await fetch(`${qdrantUrl}/collections/${collection}/points/search`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    throw new Error('search failed');
+  }
+  return res.json();
+}
+
 module.exports = {
   addTicketText,
-  textToVector
+  textToVector,
+  searchTickets
 };
