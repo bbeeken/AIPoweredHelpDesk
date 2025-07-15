@@ -299,6 +299,9 @@ app.post("/tickets", async (req, res) => {
 
   const { translated, lang } = await translation.translateToDefault(question);
 
+  const text = translated;
+
+
   const ticket = {
     id: nextTicketId++,
     assigneeId: assignedId,
