@@ -1,0 +1,26 @@
+# Ignore node dependencies
+node_modules
+frontend/node_modules
+
+# Ignore tests and docs
+tests
+docs
+
+# Ignore git files and logs
+.git
+*.log
+logs
+
+# Ignore coverage and build artifacts
+coverage
+.nyc_output
+*.tsbuildinfo
+
+# Ignore environment files
+.env*
+
+# Ignore local development directories
+.vscode
+dist
+frontend/dist
+

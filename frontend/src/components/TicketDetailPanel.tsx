@@ -1,4 +1,15 @@
-import { useEffect, useState } from 'react';
+
+
+import { useQuery } from "@tanstack/react-query";
+import { Ticket } from "../store";
+
+
+import { useEffect, useState } from "react";
+import AIAssistant from "./AIAssistant";
+
+import TicketTimeline from "./TicketView/TicketTimeline";
+
+
 import { Drawer } from 'antd';
 import AIAssistant from './AIAssistant';
 import TicketTimeline from './TicketView/TicketTimeline';
