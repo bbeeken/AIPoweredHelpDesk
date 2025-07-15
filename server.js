@@ -298,8 +298,6 @@ app.post("/tickets", async (req, res) => {
   if (finalPriority === undefined) finalPriority = "medium";
 
   const { translated, lang } = await translation.translateToDefault(question);
-  const assignedId =
-    assigneeId !== undefined ? assigneeId : getLeastBusyUserId();
 
   let language = "en";
   let text = question;
@@ -1394,18 +1392,18 @@ app.get("/ai/agent-workload", (req, res) => {
 });
 
 // Estimate escalation risk
-app.get("/ai/escalation-risk", (req, res) => {
-  const now = Date.now();
-  const risks = data.tickets
-    .filter((t) => t.status !== "closed")
-    .map((t) => {
-      let score = 0.1;
-      if (t.priority === "high") score += 0.5;
-      if (t.dueDate && new Date(t.dueDate).getTime() < now) score += 0.4;
-      return { ticketId: t.id, risk: Math.min(score, 1) };
-    });
-  res.json(risks);
-
+  app.get("/ai/escalation-risk", (req, res) => {
+    const now = Date.now();
+    const risks = data.tickets
+      .filter((t) => t.status !== "closed")
+      .map((t) => {
+        let score = 0.1;
+        if (t.priority === "high") score += 0.5;
+        if (t.dueDate && new Date(t.dueDate).getTime() < now) score += 0.4;
+        return { ticketId: t.id, risk: Math.min(score, 1) };
+      });
+    res.json(risks);
+  });
 
 // Basic sentiment analysis for a text string
 app.post("/ai/sentiment", (req, res) => {
@@ -1413,6 +1411,7 @@ app.post("/ai/sentiment", (req, res) => {
   if (!text) return res.status(400).json({ error: "text required" });
   const sentiment = aiService.analyzeSentiment(text);
   res.json({ sentiment });
+});
 
 // Sentiment analysis endpoint
 app.post("/sentiment", (req, res) => {
