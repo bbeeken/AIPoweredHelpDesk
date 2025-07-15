@@ -29,6 +29,27 @@ This document outlines a proposed eleven phase roadmap for evolving the existing
 - Introduce scalability features such as load balancing, caching and message queues.
 - Offer advanced reporting, AI/ML capabilities and governance tools.
 
+
+## Phase 6 – Knowledge Base & Self‑Service
+- Build an article management system powering a searchable knowledge base.
+- Surface AI-curated suggestions when users create or view tickets.
+- Launch a self-service portal for browsing articles and opening requests.
+
+## Phase 7 – Community & Peer Support
+- Provide discussion forums and community Q&A linked to tickets.
+- Allow upvoting of solutions and marking accepted answers.
+- Encourage contributions with badges and leaderboards.
+
+## Phase 8 – Workflow Automation & AI Bots
+- Expand the visual workflow engine to orchestrate cross-team hand‑offs.
+- Introduce chat bots for routine requests and guided self-service.
+- Offer pluggable automations with usage analytics.
+
+## Phase 9 – Observability & Compliance
+- Implement centralized logging and performance monitoring dashboards.
+- Add audit trails and compliance reporting features.
+- Optimize CI/CD pipelines for automated testing and deployment.
+
 ## Phase 6 – AI-Augmented Workflow Automation
 - Expand the workflow engine with machine learning based triggers.
 - Provide scriptable actions for custom business rules.
@@ -59,5 +80,6 @@ This document outlines a proposed eleven phase roadmap for evolving the existing
 - Add threaded discussions with rich media attachments.
 - Provide integrated voice or video calls for resolving issues.
 - Display presence and availability indicators for agents.
+
 
 This phased approach ensures incremental improvements while maintaining compatibility with the current system.
