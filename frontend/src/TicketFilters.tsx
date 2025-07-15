@@ -1,10 +1,6 @@
-
-import { ChangeEvent, useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-
-import { useEffect, useState } from 'react';
 import { Select, Input, Button } from 'antd';
-
 
 export interface TicketFilter {
   status?: string;
@@ -43,7 +39,7 @@ export default function TicketFilters({ filters, onChange }: Props) {
       const stored = localStorage.getItem('ticketFilterPresets');
       return stored ? JSON.parse(stored) : [];
     },
-    onSuccess: (data) => setPresets(data),
+    onSuccess: data => setPresets(data),
   });
 
   async function savePreset() {
@@ -77,41 +73,6 @@ export default function TicketFilters({ filters, onChange }: Props) {
     if (preset) onChange(preset.filters);
   }
 
-
-  function handleStatus(e: ChangeEvent<HTMLSelectElement>) {
-    onChange({ ...filters, status: e.target.value || undefined });
-  }
-  function handlePriority(e: ChangeEvent<HTMLSelectElement>) {
-    onChange({ ...filters, priority: e.target.value || undefined });
-  }
-  function handleTags(e: ChangeEvent<HTMLInputElement>) {
-    onChange({ ...filters, tags: e.target.value || undefined });
-  }
-  return (
-    <div className="flex flex-col gap-2 mb-2">
-      <div className="flex gap-2">
-        <label htmlFor="statusFilter" className="sr-only">Status</label>
-        <select id="statusFilter" className="border p-2" value={filters.status || ''} onChange={handleStatus}>
-          <option value="">All statuses</option>
-          <option value="open">Open</option>
-          <option value="waiting">Waiting</option>
-          <option value="closed">Closed</option>
-        </select>
-        <label htmlFor="priorityFilter" className="sr-only">Priority</label>
-        <select id="priorityFilter" className="border p-2" value={filters.priority || ''} onChange={handlePriority}>
-          <option value="">All priorities</option>
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-        </select>
-        <input
-          id="tagFilter"
-          className="border p-2 flex-1"
-          placeholder="Tags"
-          value={filters.tags || ''}
-          onChange={handleTags}
-        />
-
   return (
     <div className="flex flex-col gap-2 mb-2">
       <div className="flex gap-2 items-center">
@@ -137,7 +98,6 @@ export default function TicketFilters({ filters, onChange }: Props) {
           <Option value="medium">Medium</Option>
           <Option value="high">High</Option>
         </Select>
-
       </div>
       <div className="flex gap-2 items-center">
         <Select
@@ -148,7 +108,9 @@ export default function TicketFilters({ filters, onChange }: Props) {
         >
           <Option value="">Saved views</Option>
           {presets.map(p => (
-            <Option key={p.id} value={String(p.id)}>{p.name}</Option>
+            <Option key={p.id} value={String(p.id)}>
+              {p.name}
+            </Option>
           ))}
         </Select>
         <Input
@@ -158,7 +120,9 @@ export default function TicketFilters({ filters, onChange }: Props) {
           placeholder="New view"
           style={{ width: 160 }}
         />
-        <Button onClick={savePreset} className="touch-target">Save</Button>
+        <Button onClick={savePreset} className="touch-target">
+          Save
+        </Button>
       </div>
     </div>
   );
