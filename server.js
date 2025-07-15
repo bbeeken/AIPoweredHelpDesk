@@ -14,11 +14,6 @@ const wsServer = require("./utils/websocketServer");
 
 const analytics = require("./utils/analyticsEngine");
 
-const ai = require("./utils/aiService");
-
-const ai = require("./utils/aiService");
-
-const aiService = require("./utils/aiService");
 const translation = require("./utils/translationService");
 const sentimentService = require("./utils/sentimentService");
 
@@ -30,7 +25,6 @@ const { Server } = require('socket.io');
 
 
 const fs = require('fs');
-const http = require('http');
 const { Server: IOServer } = require('socket.io');
 const app = express();
 
@@ -1453,11 +1447,7 @@ if (require.main === module) {
   attachSocket(server);
   server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-sServer.setupWebSocket(server);
-
-  const server = http.createServer(app);
-  attachSocket(server);
-  server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  wsServer.setupWebSocket(server);
 
 }
 
