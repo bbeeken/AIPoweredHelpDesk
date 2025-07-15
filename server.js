@@ -7,9 +7,37 @@ const data = require("./data/mockData");
 const dataService = require("./utils/dataService");
 const auth = require("./utils/authService");
 const eventBus = require("./utils/eventBus");
+const wsServer = require("./utils/websocketServer");
+
+const analytics = require("./utils/analyticsEngine");
+
+const ai = require("./utils/aiService");
+
+const ai = require("./utils/aiService");
+
+const aiService = require("./utils/aiService");
+const translation = require("./utils/translationService");
+const sentimentService = require("./utils/sentimentService");
+
+const assistant = require("./utils/assistant");
+
+const http = require('http');
+const { Server } = require('socket.io');
+
+
 
 const fs = require('fs');
+const http = require('http');
+const { Server: IOServer } = require('socket.io');
 const app = express();
+
+function attachSocket(server) {
+  const io = new Server(server);
+  eventBus.on('ticketCreated', (t) => io.emit('ticketCreated', t));
+  eventBus.on('ticketUpdated', (t) => io.emit('ticketUpdated', t));
+  server.on('close', () => io.close());
+  return io;
+}
 app.use(bodyParser.json());
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -75,6 +103,25 @@ app.get("/events", (req, res) => {
   });
 });
 
+// Stream proactive assistance suggestions
+const assistClients = new Set();
+app.get("/assist", (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.write(": connected\n\n");
+  assistClients.add(res);
+  req.on("close", () => assistClients.delete(res));
+});
+
+app.post("/assist", (req, res) => {
+  const { text } = req.body || {};
+  const suggestions = assistant.generateSuggestions(text || "");
+  const payload = `data:${JSON.stringify(suggestions)}\n\n`;
+  assistClients.forEach((c) => c.write(payload));
+  res.json({ success: true });
+});
+
 // helper to track next ticket and asset ids
 let nextTicketId = data.tickets.reduce((m, t) => Math.max(m, t.id), 0) + 1;
 let nextAssetId =
@@ -82,6 +129,8 @@ let nextAssetId =
 // store saved ticket filter presets per user
 let nextFilterId = 1;
 const filterPresets = {};
+// in-memory notification preferences per user
+const notificationPrefs = {};
 
 // choose user with fewest open tickets
 function getLeastBusyUserId() {
@@ -99,9 +148,21 @@ function getLeastBusyUserId() {
   return chosen.id;
 }
 
-// Middleware to simulate authentication
+// Authentication middleware
 app.use((req, res, next) => {
-  req.user = data.users[0];
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1];
+  const payload = token && auth.verifyToken(token);
+  if (!payload) {
+    res.status(401).json({ error: 'Invalid token' });
+    return;
+  }
+  const user = data.users.find((u) => u.id === payload.id);
+  if (!user) {
+    res.status(401).json({ error: 'Invalid token' });
+    return;
+  }
+  req.user = user;
   next();
 });
 
@@ -157,6 +218,9 @@ app.get("/tickets", async (req, res) => {
       return av > bv ? dir : av < bv ? -dir : 0;
     });
   }
+  tickets.forEach(t => {
+    if (!t.sentiment) t.sentiment = sentimentService.analyze(t.question);
+  });
   res.json(tickets);
 });
 
@@ -175,6 +239,25 @@ app.get("/tickets/search", (req, res) => {
   res.json(tickets);
 });
 
+// Search using Qdrant vectors
+app.get("/tickets/vector-search", async (req, res) => {
+  const { q, limit } = req.query;
+  if (!q) return res.json([]);
+  try {
+    const result = await qdrant.searchTickets(String(q), Number(limit) || 5);
+    const ids = (result.result || []).map((p) => p.id);
+    const tickets = data.tickets.filter((t) => ids.includes(t.id));
+    res.json(tickets);
+  } catch (err) {
+    console.error("Qdrant search failed", err.message);
+    const query = String(q).toLowerCase();
+    const fallback = data.tickets.filter((t) =>
+      t.question.toLowerCase().includes(query)
+    );
+    res.json(fallback.slice(0, Number(limit) || 5));
+  }
+});
+
 // Tickets assigned to a specific user
 app.get("/tickets/assigned/:userId", (req, res) => {
   const uid = Number(req.params.userId);
@@ -188,19 +271,54 @@ app.get("/tickets/unassigned", (req, res) => {
   res.json(tickets);
 });
 
+
+
 // Create a new ticket
-app.post("/tickets", (req, res) => {
+
+
+app.post("/tickets", async (req, res) => {
   const { question, assigneeId, priority, dueDate, tags } = req.body;
   if (!question) return res.status(400).json({ error: "question required" });
+
+  const { translated, lang } = await translation.translateToDefault(question);
   const assignedId =
     assigneeId !== undefined ? assigneeId : getLeastBusyUserId();
+
+  let language = "en";
+  let text = question;
+  try {
+    language = await ai.detectLanguage(question);
+    if (language !== "en") {
+      text = await ai.translateText(question, "en");
+    }
+  } catch (err) {
+    console.error("Language processing failed:", err.message);
+  }
+
   const ticket = {
     id: nextTicketId++,
     assigneeId: assignedId,
     submitterId: req.user.id,
     status: "open",
     priority: priority || "medium",
+
+    question: text,
+    originalQuestion: language === "en" ? undefined : question,
+    language,
+
+
+    question: text,
+    originalQuestion: language === "en" ? undefined : question,
+    language,
+
+    question: translated,
+    originalQuestion: lang !== "en" ? question : undefined,
+    language: lang,
+    category: aiService.categorizeTicket(translated),
     question,
+    sentiment: sentimentService.analyze(question),
+
+
     dueDate: dueDate || null,
     tags: Array.isArray(tags) ? tags : [],
     comments: [],
@@ -208,6 +326,20 @@ app.post("/tickets", (req, res) => {
       { action: "created", by: req.user.id, date: new Date().toISOString() },
     ],
   };
+
+  try {
+    const [sentiment, suggested] = await Promise.all([
+      ai.analyzeSentiment(text),
+      ai.suggestTags(text),
+    ]);
+    ticket.sentiment = sentiment;
+    suggested.forEach((t) => {
+      if (!ticket.tags.includes(t)) ticket.tags.push(t);
+    });
+  } catch (err) {
+    console.error("AI processing failed:", err.message);
+  }
+
   data.tickets.push(ticket);
   eventBus.emit("ticketCreated", ticket);
   res.status(201).json(ticket);
@@ -509,8 +641,14 @@ app.delete("/tickets/:id/attachments/:attachmentId", (req, res) => {
 function parseMentions(text) {
   const regex = /@([a-zA-Z0-9_]+)/g;
   const mentions = [];
-  const highlighted = text.replace(regex, (m, name) => {
-    const user = data.users.find((u) => u.name.toLowerCase() === name.toLowerCase());
+  const escaped = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  const highlighted = escaped.replace(regex, (m, name) => {
+    const user = data.users.find(
+      (u) => u.name.toLowerCase() === name.toLowerCase(),
+    );
     if (user) mentions.push(user.id);
     return `<mark>@${name}</mark>`;
   });
@@ -531,6 +669,7 @@ app.post("/tickets/:id/comments", (req, res) => {
     text,
     html: highlighted,
     mentions,
+    sentiment: sentimentService.analyze(text),
     isInternal: !!isInternal,
     date: new Date().toISOString(),
   };
@@ -585,6 +724,7 @@ app.patch("/tickets/:id/comments/:commentId", (req, res) => {
   if (!text) return res.status(400).json({ error: "text required" });
   comment.text = text;
   comment.html = parseMentions(text).highlighted;
+  comment.sentiment = sentimentService.analyze(text);
   comment.edited = new Date().toISOString();
   res.json(comment);
 });
@@ -684,6 +824,7 @@ app.get("/tickets/recent", (req, res) => {
 app.get("/tickets/:id", async (req, res) => {
   const ticket = await dataService.getTicketById(Number(req.params.id));
   if (!ticket) return res.status(404).json({ error: "Ticket not found" });
+  if (!ticket.sentiment) ticket.sentiment = sentimentService.analyze(ticket.question);
   res.json(ticket);
 });
 app.get("/stats", (req, res) => {
@@ -702,79 +843,21 @@ app.get("/stats", (req, res) => {
 
 // Consolidated stats for dashboard UI
 app.get("/stats/dashboard", (req, res) => {
-  const tickets = {
-    open: data.tickets.filter((t) => t.status === "open").length,
-    waiting: data.tickets.filter((t) => t.status === "waiting").length,
-    closed: data.tickets.filter((t) => t.status === "closed").length,
-  };
-
-  const counts = {};
-  data.tickets.forEach((t) => {
-    const created = (t.history || []).find((h) => h.action === "created");
-    if (!created) return;
-    const d = new Date(created.date).toISOString().slice(0, 10);
-    counts[d] = (counts[d] || 0) + 1;
-  });
-  const total = Object.values(counts).reduce((sum, c) => sum + c, 0);
-  const avgDaily = Object.keys(counts).length
-    ? total / Object.keys(counts).length
-    : 0;
-
-  const durations = data.tickets
-    .filter((t) => t.status === "closed")
-    .map((t) => {
-      const created = (t.history || []).find((h) => h.action === "created");
-      const closed = (t.history || []).find(
-        (h) => h.action === "status" && h.to === "closed",
-      );
-      if (!created || !closed) return null;
-      return new Date(closed.date).getTime() - new Date(created.date).getTime();
-    })
-    .filter((d) => d !== null);
-  const avgMs = durations.length
-    ? durations.reduce((sum, d) => sum + d, 0) / durations.length
-    : 0;
-
-  res.json({
-    tickets,
-    forecast: avgDaily * 7,
-    mttr: avgMs / 3600000,
-    assets: { total: (data.assets || []).length },
-  });
+  const insights = analytics.generateInsights(data.tickets, data.assets || []);
+  res.json(insights);
 });
 
 // Mean Time To Resolution in hours
 app.get("/stats/mttr", (req, res) => {
-  const durations = data.tickets
-    .filter((t) => t.status === "closed")
-    .map((t) => {
-      const created = (t.history || []).find((h) => h.action === "created");
-      const closed = (t.history || []).find(
-        (h) => h.action === "status" && h.to === "closed",
-      );
-      if (!created || !closed) return null;
-      return new Date(closed.date).getTime() - new Date(created.date).getTime();
-    })
-    .filter((d) => d !== null);
-  const avg = durations.length
-    ? durations.reduce((sum, d) => sum + d, 0) / durations.length
-    : 0;
-  res.json({ mttr: avg / 3600000 });
+  const mttr = analytics.calculateMTTR(data.tickets);
+  res.json({ mttr });
 });
 
 // Predict ticket creation volume for the next N days (default 7)
 app.get("/stats/forecast", (req, res) => {
   const days = Number(req.query.days) || 7;
-  const counts = {};
-  data.tickets.forEach((t) => {
-    const created = (t.history || []).find((h) => h.action === "created");
-    if (!created) return;
-    const d = new Date(created.date).toISOString().slice(0, 10);
-    counts[d] = (counts[d] || 0) + 1;
-  });
-  const total = Object.values(counts).reduce((sum, c) => sum + c, 0);
-  const avg = Object.keys(counts).length ? total / Object.keys(counts).length : 0;
-  res.json({ forecast: avg * days });
+  const forecast = analytics.predictTicketVolume(data.tickets, days);
+  res.json({ forecast });
 });
 
 // Ticket counts per user by status
@@ -792,6 +875,33 @@ app.get("/stats/workload", (req, res) => {
     ).length,
   }));
   res.json(workload);
+});
+
+// Ticket volume trends for the last N days with simple anomaly detection
+app.get("/stats/trends", (req, res) => {
+  const days = Number(req.query.days) || 30;
+  const now = new Date();
+  const counts = {};
+  data.tickets.forEach((t) => {
+    const created = (t.history || []).find((h) => h.action === "created");
+    if (!created) return;
+    const d = new Date(created.date);
+    const diff = Math.floor((now.getTime() - d.getTime()) / 86400000);
+    if (diff < days) {
+      const key = d.toISOString().slice(0, 10);
+      counts[key] = (counts[key] || 0) + 1;
+    }
+  });
+  const series = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * 86400000)
+      .toISOString()
+      .slice(0, 10);
+    series.push({ date: d, tickets: counts[d] || 0 });
+  }
+  const avg = series.reduce((s, r) => s + r.tickets, 0) / days;
+  const anomalies = series.filter((r) => r.tickets > avg * 1.5).map((r) => r.date);
+  res.json({ series, forecast: avg * days, anomalies });
 });
 
 // Ticket counts per priority across all tickets
@@ -1173,6 +1283,34 @@ app.post("/filters", (req, res) => {
   res.status(201).json(preset);
 });
 
+// Notification preference CRUD
+app.get("/notifications/preferences", (req, res) => {
+  res.json(notificationPrefs[req.user.id] || {});
+});
+
+app.post("/notifications/preferences", (req, res) => {
+  notificationPrefs[req.user.id] = req.body || {};
+  res.status(201).json(notificationPrefs[req.user.id]);
+});
+
+app.patch("/notifications/preferences", (req, res) => {
+  notificationPrefs[req.user.id] = {
+    ...(notificationPrefs[req.user.id] || {}),
+    ...(req.body || {}),
+  };
+  res.json(notificationPrefs[req.user.id]);
+});
+
+app.delete("/notifications/preferences", (req, res) => {
+  delete notificationPrefs[req.user.id];
+  res.json({ success: true });
+});
+
+// Presence listing
+app.get("/presence/agents", (req, res) => {
+  res.json(wsServer.getPresence());
+});
+
 
 // AI endpoint for natural language commands
 app.post("/ai", async (req, res) => {
@@ -1186,6 +1324,83 @@ app.post("/ai", async (req, res) => {
   }
 });
 
+
+// AI-powered ticket routing
+app.post("/ai/route-ticket", (req, res) => {
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ error: "text required" });
+  const lower = text.toLowerCase();
+  let priority = "medium";
+  if (/(urgent|immediately|asap)/.test(lower)) priority = "high";
+  const suggestions = [
+    { team: "support", keywords: ["password", "login", "account"] },
+    { team: "operations", keywords: ["error", "failure", "bug"] },
+  ];
+  let team = "general";
+  for (const s of suggestions) {
+    if (s.keywords.some((k) => lower.includes(k))) {
+      team = s.team;
+      break;
+    }
+  }
+  res.json({ priority, team, confidence: 0.8 });
+});
+
+// Predict ticket volume for next N days
+app.get("/ai/predict-volume", (req, res) => {
+  const days = Number(req.query.days) || 7;
+  const counts = {};
+  data.tickets.forEach((t) => {
+    const created = (t.history || []).find((h) => h.action === "created");
+    if (!created) return;
+    const d = new Date(created.date).toISOString().slice(0, 10);
+    counts[d] = (counts[d] || 0) + 1;
+  });
+  const total = Object.values(counts).reduce((sum, c) => sum + c, 0);
+  const avg = Object.keys(counts).length ? total / Object.keys(counts).length : 0;
+  res.json({ forecast: avg * days });
+});
+
+// Agent workload optimization
+app.get("/ai/agent-workload", (req, res) => {
+  const workload = data.users.map((u) => ({
+    userId: u.id,
+    open: data.tickets.filter((t) => t.assigneeId === u.id && t.status !== "closed").length,
+  }));
+  const recommended = workload.reduce((a, b) => (a.open < b.open ? a : b), workload[0]);
+  res.json({ workload, recommendedAssigneeId: recommended.userId });
+});
+
+// Estimate escalation risk
+app.get("/ai/escalation-risk", (req, res) => {
+  const now = Date.now();
+  const risks = data.tickets
+    .filter((t) => t.status !== "closed")
+    .map((t) => {
+      let score = 0.1;
+      if (t.priority === "high") score += 0.5;
+      if (t.dueDate && new Date(t.dueDate).getTime() < now) score += 0.4;
+      return { ticketId: t.id, risk: Math.min(score, 1) };
+    });
+  res.json(risks);
+
+
+// Basic sentiment analysis for a text string
+app.post("/ai/sentiment", (req, res) => {
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ error: "text required" });
+  const sentiment = aiService.analyzeSentiment(text);
+  res.json({ sentiment });
+
+// Sentiment analysis endpoint
+app.post("/sentiment", (req, res) => {
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ error: "text required" });
+  const result = sentimentService.analyze(text);
+  res.json(result);
+
+});
+
 app.get('*', (req, res) => {
   if (fs.existsSync(reactDist)) {
     res.sendFile(path.join(reactDist, 'index.html'));
@@ -1195,8 +1410,28 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+
+let io;
+function attachSocket(server) {
+  if (io) return;
+  io = new IOServer(server);
+  eventBus.on('ticketCreated', (t) => io.emit('ticketCreated', t));
+  eventBus.on('ticketUpdated', (t) => io.emit('ticketUpdated', t));
+}
+
 if (require.main === module) {
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+  const server = http.createServer(app);
+  attachSocket(server);
+  server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+sServer.setupWebSocket(server);
+
+  const server = http.createServer(app);
+  attachSocket(server);
+  server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 }
 
 module.exports = app;
+module.exports.attachSocket = attachSocket;

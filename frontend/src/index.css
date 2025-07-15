@@ -1,7 +1,18 @@
+@import './styles/tokens.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .touch-target {
+    @apply min-w-11 min-h-11 flex items-center justify-center;
+  }
+}
+
 body {
-  @apply transition-colors duration-300;
+
+  @apply transition-colors duration-300 font-sans;
+
+  @apply font-sans transition-colors duration-300;
+
 }
