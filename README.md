@@ -4,17 +4,29 @@ This project is a simple Node.js/Express application that demonstrates how an AI
 
 For the long-term roadmap, see [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md).
 
+For a summary of the modernization vision and design standards, read
+[docs/TRANSFORMATION_GUIDE.md](docs/TRANSFORMATION_GUIDE.md).
+
 ## Features
 
 - **Dashboard** route that greets the logged in user and summarizes their assigned tickets.
 - **Ticket management API** for creating, updating and commenting on tickets. Ticket history records status, assignee, priority and due date changes.
 - **Asset management API** for tracking staff equipment.
 - **AI endpoint** that forwards natural language text to an n8n workflow for processing.
+
+- **NLP-based routing** automatically assigns and prioritizes new tickets based on their content when no assignee or priority is provided.
+
+- **Sentiment analysis** for tickets and comments using a simple NLP model.
+
 - Mock data for users, tickets and assets to simulate a database.
 - **Qdrant client script** for indexing ticket text in a vector database.
 - **Automatic Qdrant indexing** of newly created tickets when the server is running.
+- **Language detection and translation** for new tickets with sentiment-based tag suggestions.
 - **Ticket escalation endpoint** for quickly setting priority to high.
 - **Offline-capable UI** using a service worker and web app manifest.
+- **Automatic translation** of new tickets into English with original text preserved.
+
+- **Third-party integrations** placeholders for Slack, Microsoft Teams, Jira and Salesforce connectors.
 
 - **Real-time updates** via a Server-Sent Events endpoint.
 - **Toast notifications** for ticket events with auto-refreshing stats.
@@ -22,6 +34,9 @@ For the long-term roadmap, see [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.
 - **Wildcard routing** using `*` to match any path.
 
 - **Stats dashboard** showing ticket counts, mean resolution time and a 7-day ticket forecast.
+- **Knowledge base integration** with AI-suggested articles.
+- **Self-service portal** for users to search articles and track tickets.
+- **Community forums** to share solutions and ideas.
 
 
 ### API Endpoints
@@ -33,7 +48,9 @@ For the long-term roadmap, see [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.
     `GET /tickets?status=open&priority=high&tag=urgent&assignee=1&submitter=2`.
     Results may also be sorted with `?sortBy=field&order=asc|desc`.
 - `GET /tickets/:id` – view a specific ticket.
-- `POST /tickets` – create a new ticket. Requires a `question` field in the body.
+- `POST /tickets` – create a new ticket. Requires a `question` field. When
+  `assigneeId` or `priority` are omitted, the text is analyzed and defaults are
+  chosen based on the detected category.
 - `PATCH /tickets/:id` – update ticket status, assignee, priority or `dueDate`.
 - `DELETE /tickets/:id` – remove a ticket completely.
 - `POST /tickets/:id/reassign-least-busy` – automatically assign the ticket to the agent with the fewest open tickets.
@@ -59,6 +76,11 @@ For the long-term roadmap, see [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.
 - `GET /tickets/recent?limit=n` – list the most recently created tickets (default 5).
 - `GET /tickets/unassigned` – list tickets that have no assignee.
 - `GET /events` – subscribe to real-time ticket events via Server-Sent Events.
+
+- `POST /sentiment` – analyze text and return a sentiment score and label.
+
+- `GET /assist` – stream proactive assistance tips as you type. POST text to `/assist` to broadcast suggestions.
+
 - `GET /assets` – list all assets. Filter by tag with `?tag=value` or by assignee with `?assignedTo=userId`.
   Results may also be sorted with `?sortBy=field&order=asc|desc`.
 - `POST /assets` – create a new asset with `name`, optional `assignedTo` and optional `tags` array. Creation is recorded in the asset's history.
@@ -108,6 +130,11 @@ For the long-term roadmap, see [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.
    ```bash
    npm start
    ```
+   You can test sentiment analysis with:
+   ```bash
+   curl -X POST -H "Content-Type: application/json" \
+        -d '{"text":"I love this"}' http://localhost:3000/sentiment
+   ```
 4. Run tests:
    ```bash
    npm test
@@ -140,9 +167,15 @@ Other useful environment variables include:
 
 - `N8N_URL` – n8n workflow webhook URL.
 - `QDRANT_URL` – base address of the Qdrant server.
+- `OPENAI_API_KEY` – API key for calling OpenAI services used by `aiService`.
+- `TRANSLATE_URL` – HTTP endpoint for the translation service.
+- `TRANSLATE_API_KEY` – API key used when contacting the translation provider.
+- `CORS_ORIGIN` – allowed origin for the React frontend.
+- `DEFAULT_LANGUAGE` – default language code for translations.
 
 After the first visit, the pages are cached for offline use via a service worker.
 An experimental `realtime.html` page demonstrates live ticket notifications using the `/events` SSE endpoint.
+The `chat.html` page now connects to `/assist` for streaming proactive suggestions.
 
 ### Authentication
 
@@ -154,11 +187,19 @@ the session.
 
 The user interface has moved to a React application in the `frontend` directory.
 Before starting the server, run `npm install && npm run build` in that folder to
-produce the `dist` directory. A blank page or MIME type errors in the browser
+produce the `dist` directory. This build now compiles the knowledge base,
+self-service portal and community pages. A blank page or MIME type errors in the browser
 usually mean the `frontend/dist` directory is missing or the server could not
 find it. During development you can run `npm run dev` for hot reloading. The dashboard includes
 ticket tables, real-time updates via Server-Sent Events and a new analytics
 page rendered with Chart.js.
+
+### Translation
+
+When a ticket is submitted in a non-English language, the server attempts to
+translate the text to English using the provider configured via `TRANSLATE_URL`.
+The original text and detected language are stored on the ticket so the
+dashboard and chat views can display both versions when they differ.
 
 ### DevOps
 

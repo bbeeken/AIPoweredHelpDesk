@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Modal, Input, List } from 'antd';
 
 interface Option {
   label: string;
@@ -21,8 +22,6 @@ export default function CommandPalette() {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setOpen(o => !o);
-      } else if (e.key === 'Escape') {
-        setOpen(false);
       }
     }
     window.addEventListener('keydown', handleKey);
@@ -39,39 +38,32 @@ export default function CommandPalette() {
     o.label.toLowerCase().includes(query.toLowerCase())
   );
 
-  if (!open) return null;
-
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center pt-24 z-50"
-      role="dialog"
-      aria-modal="true"
+    <Modal
+      open={open}
+      onCancel={() => setOpen(false)}
+      footer={null}
+      title="Commands"
+      afterOpenChange={open => !open && setQuery('')}
     >
-      <div className="bg-white dark:bg-gray-800 rounded shadow p-4 w-80">
-        <input
-          autoFocus
-          type="text"
-          className="border p-2 mb-2 w-full"
-          placeholder="Type a command..."
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-        />
-        <ul>
-          {filtered.map(opt => (
-            <li key={opt.path}>
-              <button
-                className="w-full text-left p-2 hover:bg-gray-200 dark:hover:bg-gray-700"
-                onClick={() => handleSelect(opt)}
-              >
-                {opt.label}
-              </button>
-            </li>
-          ))}
-          {filtered.length === 0 && (
-            <li className="p-2 text-gray-500">No results</li>
-          )}
-        </ul>
-      </div>
-    </div>
+      <Input
+        autoFocus
+        placeholder="Type a command..."
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+        className="mb-2"
+      />
+      <List
+        dataSource={filtered}
+        renderItem={item => (
+          <List.Item>
+            <button className="w-full text-left touch-target" onClick={() => handleSelect(item)}>
+              {item.label}
+            </button>
+          </List.Item>
+        )}
+        locale={{ emptyText: 'No results' }}
+      />
+    </Modal>
   );
 }
