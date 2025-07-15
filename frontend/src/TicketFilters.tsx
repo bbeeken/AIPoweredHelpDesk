@@ -1,5 +1,10 @@
+
+import { ChangeEvent, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+
 import { useEffect, useState } from 'react';
 import { Select, Input, Button } from 'antd';
+
 
 export interface TicketFilter {
   status?: string;
@@ -24,22 +29,22 @@ export default function TicketFilters({ filters, onChange }: Props) {
   const [presets, setPresets] = useState<FilterPreset[]>([]);
   const [name, setName] = useState('');
 
-  useEffect(() => {
-    async function load() {
+  useQuery({
+    queryKey: ['filterPresets'],
+    queryFn: async () => {
       try {
         const res = await fetch('/filters');
         if (res.ok) {
-          setPresets(await res.json());
-          return;
+          return await res.json();
         }
       } catch {
         // ignore errors and fall back to localStorage
       }
       const stored = localStorage.getItem('ticketFilterPresets');
-      if (stored) setPresets(JSON.parse(stored));
-    }
-    load();
-  }, []);
+      return stored ? JSON.parse(stored) : [];
+    },
+    onSuccess: (data) => setPresets(data),
+  });
 
   async function savePreset() {
     if (!name.trim()) return;
@@ -153,7 +158,7 @@ export default function TicketFilters({ filters, onChange }: Props) {
           placeholder="New view"
           style={{ width: 160 }}
         />
-        <Button onClick={savePreset}>Save</Button>
+        <Button onClick={savePreset} className="touch-target">Save</Button>
       </div>
     </div>
   );

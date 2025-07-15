@@ -1,8 +1,16 @@
 
+import { useQuery } from "@tanstack/react-query";
+import { Ticket } from "../store";
+
+
+import { useEffect, useState } from "react";
+import AIAssistant from "./AIAssistant";
+
 import TicketTimeline from "./TicketView/TicketTimeline";
 
 import { useEffect, useState } from 'react';
 import { Drawer } from 'antd';
+
 
 
 interface Ticket {
@@ -20,12 +28,23 @@ interface Ticket {
   comments?: { id: number; userId: number; text: string; date: string }[];
 }
 
+
 interface Props {
   ticketId: number | null;
   onClose: () => void;
 }
 
 export default function TicketDetailPanel({ ticketId, onClose }: Props) {
+
+  const { data: ticket } = useQuery({
+    queryKey: ["ticket", ticketId],
+    enabled: ticketId !== null,
+    queryFn: async () => {
+      const res = await fetch(`/tickets/${ticketId}`);
+      return (await res.json()) as Ticket;
+    },
+  });
+
   const [ticket, setTicket] = useState<Ticket | null>(null);
 
   useEffect(() => {
@@ -43,13 +62,19 @@ export default function TicketDetailPanel({ ticketId, onClose }: Props) {
     load();
   }, [ticketId]);
 
+
   return (
     <Drawer placement="right" width={320} onClose={onClose} open={ticketId !== null} title={`Ticket ${ticketId}`}> 
       {!ticket ? (
         <p>Loading...</p>
       ) : (
         <div>
-          <p className="mb-2">{ticket.question}</p>
+          <p className="mb-2">
+            {ticket.question}
+            {ticket.originalQuestion && ticket.originalQuestion !== ticket.question && (
+              <span className="block text-xs text-gray-500">(Original: {ticket.originalQuestion})</span>
+            )}
+          </p>
           <p className="mb-1">Status: {ticket.status}</p>
           <p className="mb-1">Priority: {ticket.priority}</p>
           {ticket.history && ticket.history.length > 0 && (
@@ -79,6 +104,11 @@ export default function TicketDetailPanel({ ticketId, onClose }: Props) {
           )}
         </div>
       )}
+
+      <AIAssistant ticket={ticket} />
+    </aside>
+
     </Drawer>
+
   );
 }
