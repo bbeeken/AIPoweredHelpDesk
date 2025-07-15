@@ -306,6 +306,7 @@ app.post("/tickets", async (req, res) => {
 
   const { translated, lang } = await translation.translateToDefault(question);
 
+
   const text = translated;
 
 
@@ -329,9 +330,11 @@ app.post("/tickets", async (req, res) => {
   };
 
   try {
+
     const [sentimentLabel, suggested] = await Promise.all([
       ai.analyzeSentiment(translated),
       ai.suggestTags(translated),
+
     ]);
     if (ticket.sentiment && typeof ticket.sentiment === "object") {
       ticket.sentiment.label = sentimentLabel;

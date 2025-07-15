@@ -49,6 +49,7 @@ async function callOpenAI(messages) {
   return data.choices?.[0]?.message?.content?.trim();
 }
 
+
 function analyzeSentiment(text) {
   text = text.toLowerCase();
   const positiveWords = [
@@ -80,6 +81,7 @@ function analyzeSentiment(text) {
   if (score < 0) return 'negative';
   return 'neutral';
 }
+
 
 
 
