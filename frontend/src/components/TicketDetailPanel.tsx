@@ -8,7 +8,6 @@ import AIAssistant from "./AIAssistant";
 
 import TicketTimeline from "./TicketView/TicketTimeline";
 
-import { useEffect, useState } from 'react';
 import { Drawer } from 'antd';
 
 
