@@ -68,15 +68,12 @@ app.post("/auth/login", (req, res) => {
   const { username, password } = req.body;
   const result = auth.authenticate(username, password);
   if (!result) return res.status(401).json({ error: "Invalid credentials" });
-  res.json(result);
+  res.json({ user: result.user });
 });
 
 app.get("/auth/verify", (req, res) => {
-  const token =
-    req.headers.authorization && req.headers.authorization.split(" ")[1];
-  const user = token && auth.verifyToken(token);
-  if (!user) return res.status(401).json({ error: "Invalid token" });
-  res.json({ user });
+  // Tokens are disabled; always return the first user
+  res.json({ user: data.users[0] });
 });
 
 // Basic health check endpoint
@@ -154,19 +151,8 @@ function getLeastBusyUserId() {
 
 // Authentication middleware
 app.use((req, res, next) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1];
-  const payload = token && auth.verifyToken(token);
-  if (!payload) {
-    res.status(401).json({ error: 'Invalid token' });
-    return;
-  }
-  const user = data.users.find((u) => u.id === payload.id);
-  if (!user) {
-    res.status(401).json({ error: 'Invalid token' });
-    return;
-  }
-  req.user = user;
+  // Tokens are disabled; always use the first user
+  req.user = data.users[0];
   next();
 });
 
