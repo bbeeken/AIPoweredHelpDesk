@@ -26,6 +26,8 @@ For a summary of the modernization vision and design standards, read
 - **Offline-capable UI** using a service worker and web app manifest.
 - **Automatic translation** of new tickets into English with original text preserved.
 
+- **Third-party integrations** placeholders for Slack, Microsoft Teams, Jira and Salesforce connectors.
+
 - **Real-time updates** via a Server-Sent Events endpoint.
 - **Toast notifications** for ticket events with auto-refreshing stats.
 - **Notification settings** page to opt into email or push alerts for future AI triage.
