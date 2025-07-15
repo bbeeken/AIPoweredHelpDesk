@@ -42,6 +42,13 @@ const reactDist = path.join(__dirname, 'frontend', 'dist');
 if (fs.existsSync(reactDist)) {
   app.use(express.static(reactDist));
 }
+// return 404 for missing static assets instead of triggering auth
+app.use((req, res, next) => {
+  if (req.method === 'GET' && path.extname(req.path)) {
+    return res.status(404).end();
+  }
+  next();
+});
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
