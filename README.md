@@ -13,7 +13,11 @@ For a summary of the modernization vision and design standards, read
 - **Ticket management API** for creating, updating and commenting on tickets. Ticket history records status, assignee, priority and due date changes.
 - **Asset management API** for tracking staff equipment.
 - **AI endpoint** that forwards natural language text to an n8n workflow for processing.
+
+- **NLP-based routing** automatically assigns and prioritizes new tickets based on their content when no assignee or priority is provided.
+
 - **Sentiment analysis** for tickets and comments using a simple NLP model.
+
 - Mock data for users, tickets and assets to simulate a database.
 - **Qdrant client script** for indexing ticket text in a vector database.
 - **Automatic Qdrant indexing** of newly created tickets when the server is running.
@@ -39,7 +43,9 @@ For a summary of the modernization vision and design standards, read
     `GET /tickets?status=open&priority=high&tag=urgent&assignee=1&submitter=2`.
     Results may also be sorted with `?sortBy=field&order=asc|desc`.
 - `GET /tickets/:id` – view a specific ticket.
-- `POST /tickets` – create a new ticket. Requires a `question` field in the body.
+- `POST /tickets` – create a new ticket. Requires a `question` field. When
+  `assigneeId` or `priority` are omitted, the text is analyzed and defaults are
+  chosen based on the detected category.
 - `PATCH /tickets/:id` – update ticket status, assignee, priority or `dueDate`.
 - `DELETE /tickets/:id` – remove a ticket completely.
 - `POST /tickets/:id/reassign-least-busy` – automatically assign the ticket to the agent with the fewest open tickets.

@@ -7,6 +7,9 @@ const data = require("./data/mockData");
 const dataService = require("./utils/dataService");
 const auth = require("./utils/authService");
 const eventBus = require("./utils/eventBus");
+
+const aiService = require("./utils/aiService");
+
 const wsServer = require("./utils/websocketServer");
 
 const analytics = require("./utils/analyticsEngine");
@@ -280,6 +283,26 @@ app.post("/tickets", async (req, res) => {
   const { question, assigneeId, priority, dueDate, tags } = req.body;
   if (!question) return res.status(400).json({ error: "question required" });
 
+  let assignedId = assigneeId;
+  let finalPriority = priority;
+
+  if (assignedId === undefined || finalPriority === undefined) {
+    const category = aiService.categorizeTicket(question);
+    const defaults = aiService.categoryDefaults[category] || {};
+    if (assignedId === undefined) {
+      assignedId =
+        defaults.assigneeId !== undefined
+          ? defaults.assigneeId
+          : getLeastBusyUserId();
+    }
+    if (finalPriority === undefined && defaults.priority) {
+      finalPriority = defaults.priority;
+    }
+  }
+
+  if (assignedId === undefined) assignedId = getLeastBusyUserId();
+  if (finalPriority === undefined) finalPriority = "medium";
+
   const { translated, lang } = await translation.translateToDefault(question);
   const assignedId =
     assigneeId !== undefined ? assigneeId : getLeastBusyUserId();
@@ -295,11 +318,15 @@ app.post("/tickets", async (req, res) => {
     console.error("Language processing failed:", err.message);
   }
 
+
   const ticket = {
     id: nextTicketId++,
     assigneeId: assignedId,
     submitterId: req.user.id,
     status: "open",
+
+    priority: finalPriority,
+
     priority: priority || "medium",
 
     question: text,
@@ -315,6 +342,7 @@ app.post("/tickets", async (req, res) => {
     originalQuestion: lang !== "en" ? question : undefined,
     language: lang,
     category: aiService.categorizeTicket(translated),
+
     question,
     sentiment: sentimentService.analyze(question),
 
