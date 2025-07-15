@@ -1377,6 +1377,7 @@ app.get("/ai/agent-workload", (req, res) => {
 });
 
 // Estimate escalation risk
+
 app.get("/ai/escalation-risk", (req, res) => {
   const now = Date.now();
   const risks = data.tickets
@@ -1389,6 +1390,7 @@ app.get("/ai/escalation-risk", (req, res) => {
     });
   res.json(risks);
 });
+
 
 // Basic sentiment analysis for a text string
 app.post("/ai/sentiment", (req, res) => {
