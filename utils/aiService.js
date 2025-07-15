@@ -49,6 +49,38 @@ async function callOpenAI(messages) {
   return data.choices?.[0]?.message?.content?.trim();
 }
 
+function analyzeSentiment(text) {
+  text = text.toLowerCase();
+  const positiveWords = [
+    'good',
+    'great',
+    'excellent',
+    'love',
+    'awesome',
+    'thank',
+    'thanks',
+  ];
+  const negativeWords = [
+    'bad',
+    'terrible',
+    'awful',
+    'hate',
+    'slow',
+    'broken',
+    'error',
+  ];
+  let score = 0;
+  positiveWords.forEach((w) => {
+    if (text.includes(w)) score++;
+  });
+  negativeWords.forEach((w) => {
+    if (text.includes(w)) score--;
+  });
+  if (score > 0) return 'positive';
+  if (score < 0) return 'negative';
+  return 'neutral';
+}
+
 
 
 function simpleDetect(text) {
