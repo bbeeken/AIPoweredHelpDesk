@@ -163,12 +163,8 @@ Other useful environment variables include:
 - `N8N_URL` – n8n workflow webhook URL.
 - `QDRANT_URL` – base address of the Qdrant server.
 - `OPENAI_API_KEY` – API key for calling OpenAI services used by `aiService`.
-
-- `OPENAI_API_KEY` – API key for calling OpenAI services used by `aiService`.
-
 - `TRANSLATE_URL` – HTTP endpoint for the translation service.
 - `TRANSLATE_API_KEY` – API key used when contacting the translation provider.
-
 
 After the first visit, the pages are cached for offline use via a service worker.
 An experimental `realtime.html` page demonstrates live ticket notifications using the `/events` SSE endpoint.
