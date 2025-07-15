@@ -7,6 +7,7 @@ const data = require("./data/mockData");
 const dataService = require("./utils/dataService");
 const auth = require("./utils/authService");
 const eventBus = require("./utils/eventBus");
+const aiService = require("./utils/aiService");
 
 const fs = require('fs');
 const app = express();
@@ -211,14 +212,32 @@ app.get("/tickets/unassigned", (req, res) => {
 app.post("/tickets", (req, res) => {
   const { question, assigneeId, priority, dueDate, tags } = req.body;
   if (!question) return res.status(400).json({ error: "question required" });
-  const assignedId =
-    assigneeId !== undefined ? assigneeId : getLeastBusyUserId();
+
+  let assignedId = assigneeId;
+  let finalPriority = priority;
+
+  if (assignedId === undefined || finalPriority === undefined) {
+    const category = aiService.categorizeTicket(question);
+    const defaults = aiService.categoryDefaults[category] || {};
+    if (assignedId === undefined) {
+      assignedId =
+        defaults.assigneeId !== undefined
+          ? defaults.assigneeId
+          : getLeastBusyUserId();
+    }
+    if (finalPriority === undefined && defaults.priority) {
+      finalPriority = defaults.priority;
+    }
+  }
+
+  if (assignedId === undefined) assignedId = getLeastBusyUserId();
+  if (finalPriority === undefined) finalPriority = "medium";
   const ticket = {
     id: nextTicketId++,
     assigneeId: assignedId,
     submitterId: req.user.id,
     status: "open",
-    priority: priority || "medium",
+    priority: finalPriority,
     question,
     dueDate: dueDate || null,
     tags: Array.isArray(tags) ? tags : [],
