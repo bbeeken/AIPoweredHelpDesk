@@ -1,4 +1,12 @@
 
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import TicketDetailPanel from "./components/TicketDetailPanel";
+import { TicketFilter } from "./TicketFilters";
+import { showToast } from "./components/toast";
+import { useTicketStore, Ticket } from "./store";
+
+
 import { useCallback, useEffect, useState } from 'react';
 import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
 import { useSwipeable } from 'react-swipeable';
@@ -27,12 +35,18 @@ interface Ticket {
   sentiment?: { label: string; score: number };
 }
 
+
 interface Props {
   filters: TicketFilter;
   tickets?: Ticket[];
 }
 
+
+export default function TicketTable({ filters }: Props) {
+  const setTickets = useTicketStore((s) => s.setTickets);
+
 const ROW_HEIGHT = 56;
+
 
 export default function TicketTable({ filters, tickets: initial }: Props) {
   const [tickets, setTickets] = useState<Ticket[]>(initial || []);
@@ -42,6 +56,32 @@ export default function TicketTable({ filters, tickets: initial }: Props) {
   const [activeId, setActiveId] = useState<number | null>(null);
   const [bulkStatus, setBulkStatus] = useState('');
   const [bulkAssignee, setBulkAssignee] = useState('');
+
+
+  const queryClient = useQueryClient();
+  const { data: tickets = [], refetch } = useQuery({
+    queryKey: ["tickets", filters, sortField, sortOrder],
+    queryFn: async () => {
+      const url = new URL("/tickets", window.location.origin);
+      if (filters.status) url.searchParams.set("status", filters.status);
+      if (filters.priority) url.searchParams.set("priority", filters.priority);
+      url.searchParams.set("sortBy", sortField);
+      url.searchParams.set("order", sortOrder);
+      const res = await fetch(url.toString());
+      return (await res.json()) as Ticket[];
+    },
+    onSuccess: setTickets,
+  });
+
+  useEffect(() => {
+    if (!window.EventSource) return;
+    const es = new EventSource("/events");
+    const invalidate = () =>
+      queryClient.invalidateQueries({ queryKey: ["tickets"] });
+    es.addEventListener("ticketCreated", invalidate);
+    es.addEventListener("ticketUpdated", invalidate);
+    return () => es.close();
+  }, [queryClient]);
 
   const loadTickets = useCallback(async () => {
     if (initial) return;
@@ -62,6 +102,7 @@ export default function TicketTable({ filters, tickets: initial }: Props) {
     loadTickets().catch((err) => console.error("Error loading tickets", err));
 
   }, [loadTickets]);
+
 
   useRealtime("ticketCreated", loadTickets);
   useRealtime("ticketUpdated", loadTickets);
@@ -121,10 +162,17 @@ y
       body: JSON.stringify({ ids: selected, status: bulkStatus }),
     });
     if (res.ok) {
+
+      showToast("Updated tickets");
+      setSelected(new Set());
+      setBulkStatus("");
+      await refetch();
+
       showToast('Updated tickets');
       setSelected([]);
       setBulkStatus('');
       await loadTickets();
+
     } else {
       showToast('Failed to update tickets');
     }
@@ -138,10 +186,17 @@ y
       body: JSON.stringify({ ids: selected, assigneeId: Number(bulkAssignee) }),
     });
     if (res.ok) {
+
+      showToast("Assigned tickets");
+      setSelected(new Set());
+      setBulkAssignee("");
+      await refetch();
+
       showToast('Assigned tickets');
       setSelected([]);
       setBulkAssignee('');
       await loadTickets();
+
     } else {
       showToast('Failed to assign tickets');
     }

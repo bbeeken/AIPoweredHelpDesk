@@ -4,9 +4,13 @@ import { Select } from 'antd';
 
 import { useEffect, useRef, useState } from 'react';
 
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+
+
 import useRealtime from '../hooks/useRealtime';
 
 import { io } from 'socket.io-client';
+
 
 import {
   Chart as ChartJS,
@@ -27,28 +31,37 @@ const AVAILABLE_WIDGETS: { id: WidgetId; label: string }[] = [
 
 
 function StatusWidget({ onRemove }: { onRemove: () => void }) {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
   const ref = useRef<HTMLCanvasElement>(null);
+
+  const queryClient = useQueryClient();
+  const { data: stats } = useQuery({
+    queryKey: ['stats', 'dashboard'],
+    queryFn: async () => {
+
 
   async function loadStats() {
     try {
-      const res = await fetch('/stats/dashboard');
-      const data: DashboardStats = await res.json();
-      setStats(data);
-    } catch (err) {
-      console.error('Error loading stats', err);
-    }
-  }
 
-  useEffect(() => {
-    loadStats();
-  }, []);
+      const res = await fetch('/stats/dashboard');
+      return (await res.json()) as DashboardStats;
+    },
+  });
 
 
   useRealtime('ticketCreated', loadStats);
   useRealtime('ticketUpdated', loadStats);
 
   useEffect(() => {
+
+    if (!window.EventSource) return;
+    const es = new EventSource('/events');
+    const invalidate = () =>
+      queryClient.invalidateQueries({ queryKey: ['stats', 'dashboard'] });
+    es.addEventListener('ticketCreated', invalidate);
+    es.addEventListener('ticketUpdated', invalidate);
+    return () => es.close();
+  }, [queryClient]);
+
     const socket = io();
     socket.on('ticketCreated', loadStats);
     socket.on('ticketUpdated', loadStats);
@@ -68,6 +81,7 @@ function StatusWidget({ onRemove }: { onRemove: () => void }) {
     }
     load();
   }, []);
+
 
   useEffect(() => {
     if (!stats || !ref.current) return;
@@ -105,22 +119,16 @@ function StatusWidget({ onRemove }: { onRemove: () => void }) {
 }
 
 function ForecastWidget({ onRemove }: { onRemove: () => void }) {
-  const [forecast, setForecast] = useState<number | null>(null);
   const ref = useRef<HTMLCanvasElement>(null);
   const days = 14;
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch(`/stats/forecast?days=${days}`);
-        const data: ForecastData = await res.json();
-        setForecast(data.forecast);
-      } catch (err) {
-        console.error('Failed to load forecast', err);
-      }
-    }
-    load();
-  }, []);
+  const { data: forecast } = useQuery({
+    queryKey: ['forecast', days],
+    queryFn: async () => {
+      const res = await fetch(`/stats/forecast?days=${days}`);
+      const data: ForecastData = await res.json();
+      return data.forecast;
+    },
+  });
 
   useEffect(() => {
     if (forecast == null || !ref.current) return;

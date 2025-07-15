@@ -1,4 +1,8 @@
 
+import { useQuery } from "@tanstack/react-query";
+import { Ticket } from "../store";
+
+
 import { useEffect, useState } from "react";
 import AIAssistant from "./AIAssistant";
 
@@ -24,12 +28,23 @@ interface Ticket {
   comments?: { id: number; userId: number; text: string; date: string }[];
 }
 
+
 interface Props {
   ticketId: number | null;
   onClose: () => void;
 }
 
 export default function TicketDetailPanel({ ticketId, onClose }: Props) {
+
+  const { data: ticket } = useQuery({
+    queryKey: ["ticket", ticketId],
+    enabled: ticketId !== null,
+    queryFn: async () => {
+      const res = await fetch(`/tickets/${ticketId}`);
+      return (await res.json()) as Ticket;
+    },
+  });
+
   const [ticket, setTicket] = useState<Ticket | null>(null);
 
   useEffect(() => {
@@ -46,6 +61,7 @@ export default function TicketDetailPanel({ ticketId, onClose }: Props) {
     }
     load();
   }, [ticketId]);
+
 
   return (
     <Drawer placement="right" width={320} onClose={onClose} open={ticketId !== null} title={`Ticket ${ticketId}`}> 
