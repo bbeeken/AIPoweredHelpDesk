@@ -298,6 +298,7 @@ app.post("/tickets", async (req, res) => {
   if (finalPriority === undefined) finalPriority = "medium";
 
   const { translated, lang } = await translation.translateToDefault(question);
+
   const text = translated;
 
 
@@ -312,8 +313,6 @@ app.post("/tickets", async (req, res) => {
     language: lang,
     category: aiService.categorizeTicket(translated),
     sentiment: sentimentService.analyze(question),
-
-
     dueDate: dueDate || null,
     tags: Array.isArray(tags) ? tags : [],
     comments: [],
@@ -323,11 +322,15 @@ app.post("/tickets", async (req, res) => {
   };
 
   try {
-    const [sentiment, suggested] = await Promise.all([
-      ai.analyzeSentiment(text),
-      ai.suggestTags(text),
+    const [sentimentLabel, suggested] = await Promise.all([
+      ai.analyzeSentiment(translated),
+      ai.suggestTags(translated),
     ]);
-    ticket.sentiment = sentiment;
+    if (ticket.sentiment && typeof ticket.sentiment === "object") {
+      ticket.sentiment.label = sentimentLabel;
+    } else {
+      ticket.sentiment = { label: sentimentLabel };
+    }
     suggested.forEach((t) => {
       if (!ticket.tags.includes(t)) ticket.tags.push(t);
     });
