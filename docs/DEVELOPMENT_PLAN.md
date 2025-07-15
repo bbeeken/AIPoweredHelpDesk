@@ -15,6 +15,8 @@ This document outlines a proposed five phase roadmap for evolving the existing h
 ## Phase 3 – Advanced Analytics & AI Intelligence
 - Build analytics dashboards with predictive metrics such as MTTR and ticket volume forecasts.
 - Enhance the AI service to support intelligent routing, sentiment analysis and anomaly detection.
+- An initial Naive Bayes classifier now selects default assignees and priorities
+  for new tickets based on their text content.
 - Add interactive visualization components and machine learning pipelines.
 
 ## Phase 4 – Mobile & Integration Platform
