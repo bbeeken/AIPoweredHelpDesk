@@ -28,7 +28,6 @@ function categorizeTicket(text) {
   }
 }
 
-module.exports = { categorizeTicket, categoryDefaults };
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
@@ -50,40 +49,6 @@ async function callOpenAI(messages) {
   return data.choices?.[0]?.message?.content?.trim();
 }
 
-
-function analyzeSentiment(text) {
-  text = text.toLowerCase();
-  const positiveWords = [
-    'good',
-    'great',
-    'excellent',
-    'love',
-    'awesome',
-    'thank',
-    'thanks',
-  ];
-  const negativeWords = [
-    'bad',
-    'terrible',
-    'awful',
-    'hate',
-    'slow',
-    'broken',
-    'error',
-  ];
-  let score = 0;
-  positiveWords.forEach((w) => {
-    if (text.includes(w)) score++;
-  });
-  negativeWords.forEach((w) => {
-    if (text.includes(w)) score--;
-  });
-  if (score > 0) return 'positive';
-  if (score < 0) return 'negative';
-  return 'neutral';
-}
-
-module.exports = { categorizeTicket, analyzeSentiment };
 
 function simpleDetect(text) {
   const lower = text.toLowerCase();
@@ -147,6 +112,8 @@ async function suggestTags(text) {
 }
 
 module.exports = {
+  categorizeTicket,
+  categoryDefaults,
   analyzeSentiment,
   suggestTags,
   detectLanguage,

@@ -298,19 +298,6 @@ app.post("/tickets", async (req, res) => {
   if (finalPriority === undefined) finalPriority = "medium";
 
   const { translated, lang } = await translation.translateToDefault(question);
-  const assignedId =
-    assigneeId !== undefined ? assigneeId : getLeastBusyUserId();
-
-  let language = "en";
-  let text = question;
-  try {
-    language = await ai.detectLanguage(question);
-    if (language !== "en") {
-      text = await ai.translateText(question, "en");
-    }
-  } catch (err) {
-    console.error("Language processing failed:", err.message);
-  }
 
 
   const ticket = {
@@ -318,26 +305,11 @@ app.post("/tickets", async (req, res) => {
     assigneeId: assignedId,
     submitterId: req.user.id,
     status: "open",
-
     priority: finalPriority,
-
-    priority: priority || "medium",
-
-    question: text,
-    originalQuestion: language === "en" ? undefined : question,
-    language,
-
-
-    question: text,
-    originalQuestion: language === "en" ? undefined : question,
-    language,
-
     question: translated,
     originalQuestion: lang !== "en" ? question : undefined,
     language: lang,
     category: aiService.categorizeTicket(translated),
-
-    question,
     sentiment: sentimentService.analyze(question),
 
 
@@ -351,8 +323,8 @@ app.post("/tickets", async (req, res) => {
 
   try {
     const [sentiment, suggested] = await Promise.all([
-      ai.analyzeSentiment(text),
-      ai.suggestTags(text),
+      aiService.analyzeSentiment(translated),
+      aiService.suggestTags(translated),
     ]);
     ticket.sentiment = sentiment;
     suggested.forEach((t) => {
@@ -1405,7 +1377,7 @@ app.get("/ai/escalation-risk", (req, res) => {
       return { ticketId: t.id, risk: Math.min(score, 1) };
     });
   res.json(risks);
-
+});
 
 // Basic sentiment analysis for a text string
 app.post("/ai/sentiment", (req, res) => {
@@ -1413,6 +1385,7 @@ app.post("/ai/sentiment", (req, res) => {
   if (!text) return res.status(400).json({ error: "text required" });
   const sentiment = aiService.analyzeSentiment(text);
   res.json({ sentiment });
+});
 
 // Sentiment analysis endpoint
 app.post("/sentiment", (req, res) => {
