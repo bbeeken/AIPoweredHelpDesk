@@ -1,20 +1,15 @@
 
-import { useEffect, useState, lazy, Suspense } from 'react';
-import { Select } from 'antd';
-
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState, useRef, lazy, Suspense } from 'react';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 
 import useRealtime from '../hooks/useRealtime';
 
-import { io } from 'socket.io-client';
 
 
 import {
   Chart as ChartJS,
-  registerables,
   type ChartConfiguration,
 } from 'chart.js';
 import { Select, Button } from 'antd';
@@ -61,12 +56,6 @@ function StatusWidget({ onRemove }: { onRemove: () => void }) {
     es.addEventListener('ticketUpdated', invalidate);
     return () => es.close();
   }, [queryClient]);
-
-    const socket = io();
-    socket.on('ticketCreated', loadStats);
-    socket.on('ticketUpdated', loadStats);
-    return () => socket.disconnect();
-  }, []);
 
 
   useEffect(() => {
