@@ -31,6 +31,12 @@ This guide summarizes the key themes from the proposed modernization plan to evo
 3. **Advanced Analytics & AI** – introduce predictive metrics, intelligent routing and visualization dashboards.
 4. **Mobile & Integrations** – deliver a React Native app, integration hub and expanded API gateway.
 5. **Enterprise Scale** – provide multi-tenancy, security framework and scalability features.
+6. **AI-Augmented Automation** – extend workflows with ML triggers and custom scripting.
+7. **Security & Compliance** – enforce SSO, MFA and detailed audits with regulatory support.
+8. **Microservices & Cloud** – transition to containerized services with Kubernetes and CI/CD.
+9. **Custom Reporting** – allow user-defined metrics, exports and real-time dashboards.
+10. **Virtual Agent** – integrate conversational AI for self-service ticket creation and escalation.
+11. **Advanced Collaboration & Communication** – enable co-editing, threaded discussions and integrated calls.
 
 For a detailed schedule, see [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md).
 
