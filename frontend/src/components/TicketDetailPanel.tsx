@@ -1,23 +1,14 @@
-
-import { useQuery } from "@tanstack/react-query";
-import { Ticket } from "../store";
-
-
-import { useEffect, useState } from "react";
-import AIAssistant from "./AIAssistant";
-
-import TicketTimeline from "./TicketView/TicketTimeline";
-
 import { useEffect, useState } from 'react';
 import { Drawer } from 'antd';
-
-
+import AIAssistant from './AIAssistant';
+import TicketTimeline from './TicketView/TicketTimeline';
 
 interface Ticket {
   id: number;
   question: string;
   status: string;
   priority: string;
+  originalQuestion?: string;
   history?: {
     action: string;
     from?: string;
@@ -28,23 +19,12 @@ interface Ticket {
   comments?: { id: number; userId: number; text: string; date: string }[];
 }
 
-
 interface Props {
   ticketId: number | null;
   onClose: () => void;
 }
 
 export default function TicketDetailPanel({ ticketId, onClose }: Props) {
-
-  const { data: ticket } = useQuery({
-    queryKey: ["ticket", ticketId],
-    enabled: ticketId !== null,
-    queryFn: async () => {
-      const res = await fetch(`/tickets/${ticketId}`);
-      return (await res.json()) as Ticket;
-    },
-  });
-
   const [ticket, setTicket] = useState<Ticket | null>(null);
 
   useEffect(() => {
@@ -62,9 +42,14 @@ export default function TicketDetailPanel({ ticketId, onClose }: Props) {
     load();
   }, [ticketId]);
 
-
   return (
-    <Drawer placement="right" width={320} onClose={onClose} open={ticketId !== null} title={`Ticket ${ticketId}`}> 
+    <Drawer
+      placement="right"
+      width={320}
+      onClose={onClose}
+      open={ticketId !== null}
+      title={`Ticket ${ticketId}`}
+    >
       {!ticket ? (
         <p>Loading...</p>
       ) : (
@@ -80,7 +65,6 @@ export default function TicketDetailPanel({ ticketId, onClose }: Props) {
           {ticket.history && ticket.history.length > 0 && (
             <div className="mt-3">
               <h4 className="font-semibold">History</h4>
-
               <TicketTimeline history={ticket.history} />
               <ul className="list-disc list-inside text-sm">
                 {ticket.history.map((h, i) => (
@@ -104,11 +88,7 @@ export default function TicketDetailPanel({ ticketId, onClose }: Props) {
           )}
         </div>
       )}
-
       <AIAssistant ticket={ticket} />
-    </aside>
-
     </Drawer>
-
   );
 }

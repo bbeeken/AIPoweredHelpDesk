@@ -1,33 +1,14 @@
-
-import { useEffect, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import TicketDetailPanel from "./components/TicketDetailPanel";
-import { TicketFilter } from "./TicketFilters";
-import { showToast } from "./components/toast";
-import { useTicketStore, Ticket } from "./store";
-
-
 import { useCallback, useEffect, useState } from 'react';
 import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
 import { useSwipeable } from 'react-swipeable';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Select, Button, Input } from 'antd';
-
-import { useEffect, useState, useCallback } from "react";
-
-import useRealtime from "./hooks/useRealtime";
-
-import { io } from "socket.io-client";
-
-import TicketDetailPanel from "./components/TicketDetailPanel";
-
-import { useEffect, useState, useCallback } from 'react';
-import { Table, Select, Button, Input } from 'antd';
 import TicketDetailPanel from './components/TicketDetailPanel';
 import { TicketFilter } from './TicketFilters';
 import { showToast } from './components/toast';
+import useRealtime from './hooks/useRealtime';
 
-
-interface Ticket {
+export interface Ticket {
   id: number;
   question: string;
   status: string;
@@ -35,18 +16,12 @@ interface Ticket {
   sentiment?: { label: string; score: number };
 }
 
-
 interface Props {
   filters: TicketFilter;
   tickets?: Ticket[];
 }
 
-
-export default function TicketTable({ filters }: Props) {
-  const setTickets = useTicketStore((s) => s.setTickets);
-
 const ROW_HEIGHT = 56;
-
 
 export default function TicketTable({ filters, tickets: initial }: Props) {
   const [tickets, setTickets] = useState<Ticket[]>(initial || []);
@@ -57,36 +32,24 @@ export default function TicketTable({ filters, tickets: initial }: Props) {
   const [bulkStatus, setBulkStatus] = useState('');
   const [bulkAssignee, setBulkAssignee] = useState('');
 
-
   const queryClient = useQueryClient();
-  const { data: tickets = [], refetch } = useQuery({
-    queryKey: ["tickets", filters, sortField, sortOrder],
+  const { refetch } = useQuery({
+    queryKey: ['tickets', filters, sortField, sortOrder],
+    enabled: initial == null,
     queryFn: async () => {
-      const url = new URL("/tickets", window.location.origin);
-      if (filters.status) url.searchParams.set("status", filters.status);
-      if (filters.priority) url.searchParams.set("priority", filters.priority);
-      url.searchParams.set("sortBy", sortField);
-      url.searchParams.set("order", sortOrder);
+      const url = new URL('/tickets', window.location.origin);
+      if (filters.status) url.searchParams.set('status', filters.status);
+      if (filters.priority) url.searchParams.set('priority', filters.priority);
+      url.searchParams.set('sortBy', sortField);
+      url.searchParams.set('order', sortOrder);
       const res = await fetch(url.toString());
       return (await res.json()) as Ticket[];
     },
-    onSuccess: setTickets,
+    onSuccess: data => setTickets(data),
   });
-
-  useEffect(() => {
-    if (!window.EventSource) return;
-    const es = new EventSource("/events");
-    const invalidate = () =>
-      queryClient.invalidateQueries({ queryKey: ["tickets"] });
-    es.addEventListener("ticketCreated", invalidate);
-    es.addEventListener("ticketUpdated", invalidate);
-    return () => es.close();
-  }, [queryClient]);
 
   const loadTickets = useCallback(async () => {
     if (initial) return;
-
-
     const url = new URL('/tickets', window.location.origin);
     if (filters.status) url.searchParams.set('status', filters.status);
     if (filters.priority) url.searchParams.set('priority', filters.priority);
@@ -98,47 +61,38 @@ export default function TicketTable({ filters, tickets: initial }: Props) {
   }, [filters, sortField, sortOrder, initial]);
 
   useEffect(() => {
-
-    loadTickets().catch((err) => console.error("Error loading tickets", err));
-
+    loadTickets().catch(err => console.error('Error loading tickets', err));
   }, [loadTickets]);
 
+  useEffect(() => {
+    if (!window.EventSource) return;
+    const es = new EventSource('/events');
+    const invalidate = () =>
+      queryClient.invalidateQueries({
+        queryKey: ['tickets', filters, sortField, sortOrder],
+      });
+    es.addEventListener('ticketCreated', invalidate);
+    es.addEventListener('ticketUpdated', invalidate);
+    return () => es.close();
+  }, [queryClient, filters, sortField, sortOrder]);
 
-  useRealtime("ticketCreated", loadTickets);
-  useRealtime("ticketUpdated", loadTickets);
+  useRealtime('ticketCreated', loadTickets);
+  useRealtime('ticketUpdated', loadTickets);
 
   function toggleSort(field: keyof Ticket) {
     if (sortField === field) {
-      setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
+      setSortOrder(o => (o === 'asc' ? 'desc' : 'asc'));
     } else {
       setSortField(field);
-      setSortOrder("asc");
-
-
-    const socket = io();
-    socket.on("ticketCreated", loadTickets);
-    socket.on("ticketUpdated", loadTickets);
-
-    return () => {
-      socket.disconnect();
-    };
-
-    loadTickets().catch(err => console.error('Error loading tickets', err));
-    if (!initial && window.EventSource) {
-      const es = new EventSource('/events');
-      es.addEventListener('ticketCreated', loadTickets);
-      es.addEventListener('ticketUpdated', loadTickets);
-      return () => es.close();
+      setSortOrder('asc');
     }
-y
-  }, [loadTickets, initial]);
+  }
 
   async function closeTicket(id: number) {
     const res = await fetch(`/tickets/${id}/close`, { method: 'POST' });
     if (res.ok) {
       showToast('Ticket closed');
       await loadTickets();
-
     }
   }
 
@@ -150,10 +104,6 @@ y
     }
   }
 
-
-  }, [loadTickets]);
-
-
   async function applyBulkStatus() {
     if (!bulkStatus) return;
     const res = await fetch('/tickets/bulk-update', {
@@ -162,17 +112,10 @@ y
       body: JSON.stringify({ ids: selected, status: bulkStatus }),
     });
     if (res.ok) {
-
-      showToast("Updated tickets");
-      setSelected(new Set());
-      setBulkStatus("");
-      await refetch();
-
       showToast('Updated tickets');
       setSelected([]);
       setBulkStatus('');
-      await loadTickets();
-
+      initial ? await refetch() : await loadTickets();
     } else {
       showToast('Failed to update tickets');
     }
@@ -186,23 +129,15 @@ y
       body: JSON.stringify({ ids: selected, assigneeId: Number(bulkAssignee) }),
     });
     if (res.ok) {
-
-      showToast("Assigned tickets");
-      setSelected(new Set());
-      setBulkAssignee("");
-      await refetch();
-
       showToast('Assigned tickets');
       setSelected([]);
       setBulkAssignee('');
-      await loadTickets();
-
+      initial ? await refetch() : await loadTickets();
     } else {
       showToast('Failed to assign tickets');
     }
   }
 
-ty
   const sorted = [...tickets].sort((a, b) => {
     const x = a[sortField];
     const y = b[sortField];
@@ -243,39 +178,6 @@ ty
     );
   };
 
-  function emoji(label: string) {
-    if (label === 'positive') return '🙂';
-    if (label === 'negative') return '😠';
-    return '😐';
-  }
-
-  const columns = [
-   
-    {
-      title: 'Question',
-      dataIndex: 'question',
-      sorter: true,
-      render: (_: any, record: any) => (
-        <span>
-          {record.question}
-          {record.originalQuestion && record.originalQuestion !== record.question && (
-            <span className="block text-xs text-gray-500">({record.originalQuestion})</span>
-          )}
-        </span>
-      ),
-
-    { title: 'Question', dataIndex: 'question', sorter: true },
-    {
-      title: 'Sentiment',
-      dataIndex: 'sentiment',
-      render: (s: Ticket['sentiment']) => (s ? emoji(s.label) : ''),
-
-    },
-    { title: 'Status', dataIndex: 'status', sorter: true },
-    { title: 'Priority', dataIndex: 'priority', sorter: true },
-  ];
-
-
   return (
     <div className="relative" onMouseLeave={() => setActiveId(null)}>
       {selected.length > 0 && (
@@ -300,10 +202,18 @@ ty
       )}
       <div className="grid grid-cols-[40px_60px_1fr_120px_120px] font-semibold border-b bg-gray-50 dark:bg-gray-700">
         <div />
-        <button className="text-left touch-target" onClick={() => setSortField('id')}>{sortField === 'id' && (sortOrder === 'asc' ? '▲ ' : '▼ ')}ID</button>
-        <button className="text-left touch-target" onClick={() => setSortField('question')}>Question</button>
-        <button className="text-left touch-target" onClick={() => setSortField('status')}>Status</button>
-        <button className="text-left touch-target" onClick={() => setSortField('priority')}>Priority</button>
+        <button className="text-left touch-target" onClick={() => toggleSort('id')}>
+          {sortField === 'id' && (sortOrder === 'asc' ? '▲ ' : '▼ ')}ID
+        </button>
+        <button className="text-left touch-target" onClick={() => toggleSort('question')}>
+          Question
+        </button>
+        <button className="text-left touch-target" onClick={() => toggleSort('status')}>
+          Status
+        </button>
+        <button className="text-left touch-target" onClick={() => toggleSort('priority')}>
+          Priority
+        </button>
       </div>
       <List height={400} itemCount={sorted.length} itemSize={ROW_HEIGHT} width="100%">
         {Row}
