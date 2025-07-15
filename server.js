@@ -42,6 +42,13 @@ const reactDist = path.join(__dirname, 'frontend', 'dist');
 if (fs.existsSync(reactDist)) {
   app.use(express.static(reactDist));
 }
+// return 404 for missing static assets instead of triggering auth
+app.use((req, res, next) => {
+  if (req.method === 'GET' && path.extname(req.path)) {
+    return res.status(404).end();
+  }
+  next();
+});
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
@@ -299,16 +306,7 @@ app.post("/tickets", async (req, res) => {
 
   const { translated, lang } = await translation.translateToDefault(question);
 
-  let language = "en";
-  let text = question;
-  try {
-    language = await ai.detectLanguage(question);
-    if (language !== "en") {
-      text = await ai.translateText(question, "en");
-    }
-  } catch (err) {
-    console.error("Language processing failed:", err.message);
-  }
+  const text = translated;
 
 
   const ticket = {
@@ -316,29 +314,12 @@ app.post("/tickets", async (req, res) => {
     assigneeId: assignedId,
     submitterId: req.user.id,
     status: "open",
-
     priority: finalPriority,
-
-    priority: priority || "medium",
-
-    question: text,
-    originalQuestion: language === "en" ? undefined : question,
-    language,
-
-
-    question: text,
-    originalQuestion: language === "en" ? undefined : question,
-    language,
-
     question: translated,
     originalQuestion: lang !== "en" ? question : undefined,
     language: lang,
     category: aiService.categorizeTicket(translated),
-
-    question,
     sentiment: sentimentService.analyze(question),
-
-
     dueDate: dueDate || null,
     tags: Array.isArray(tags) ? tags : [],
     comments: [],
@@ -348,11 +329,15 @@ app.post("/tickets", async (req, res) => {
   };
 
   try {
-    const [sentiment, suggested] = await Promise.all([
-      ai.analyzeSentiment(text),
-      ai.suggestTags(text),
+    const [sentimentLabel, suggested] = await Promise.all([
+      ai.analyzeSentiment(translated),
+      ai.suggestTags(translated),
     ]);
-    ticket.sentiment = sentiment;
+    if (ticket.sentiment && typeof ticket.sentiment === "object") {
+      ticket.sentiment.label = sentimentLabel;
+    } else {
+      ticket.sentiment = { label: sentimentLabel };
+    }
     suggested.forEach((t) => {
       if (!ticket.tags.includes(t)) ticket.tags.push(t);
     });
@@ -1392,18 +1377,20 @@ app.get("/ai/agent-workload", (req, res) => {
 });
 
 // Estimate escalation risk
-  app.get("/ai/escalation-risk", (req, res) => {
-    const now = Date.now();
-    const risks = data.tickets
-      .filter((t) => t.status !== "closed")
-      .map((t) => {
-        let score = 0.1;
-        if (t.priority === "high") score += 0.5;
-        if (t.dueDate && new Date(t.dueDate).getTime() < now) score += 0.4;
-        return { ticketId: t.id, risk: Math.min(score, 1) };
-      });
-    res.json(risks);
-  });
+
+app.get("/ai/escalation-risk", (req, res) => {
+  const now = Date.now();
+  const risks = data.tickets
+    .filter((t) => t.status !== "closed")
+    .map((t) => {
+      let score = 0.1;
+      if (t.priority === "high") score += 0.5;
+      if (t.dueDate && new Date(t.dueDate).getTime() < now) score += 0.4;
+      return { ticketId: t.id, risk: Math.min(score, 1) };
+    });
+  res.json(risks);
+});
+
 
 // Basic sentiment analysis for a text string
 app.post("/ai/sentiment", (req, res) => {

@@ -28,7 +28,6 @@ function categorizeTicket(text) {
   }
 }
 
-module.exports = { categorizeTicket, categoryDefaults };
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
@@ -49,7 +48,6 @@ async function callOpenAI(messages) {
   const data = await res.json();
   return data.choices?.[0]?.message?.content?.trim();
 }
-
 
 function analyzeSentiment(text) {
   text = text.toLowerCase();
@@ -83,7 +81,7 @@ function analyzeSentiment(text) {
   return 'neutral';
 }
 
-module.exports = { categorizeTicket, analyzeSentiment };
+
 
 function simpleDetect(text) {
   const lower = text.toLowerCase();
@@ -147,6 +145,8 @@ async function suggestTags(text) {
 }
 
 module.exports = {
+  categorizeTicket,
+  categoryDefaults,
   analyzeSentiment,
   suggestTags,
   detectLanguage,
