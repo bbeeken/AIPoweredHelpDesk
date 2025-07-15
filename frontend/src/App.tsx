@@ -1,19 +1,22 @@
 import { BrowserRouter, Route, Routes, Link } from 'react-router-dom';
-import Dashboard from './pages/Dashboard';
-import Analytics from './pages/Analytics';
-
-import Settings from './pages/Settings';
+import { ConfigProvider } from 'antd';
+import { lazy, Suspense } from 'react';
 import ToastContainer from './components/ToastContainer';
-
-import UserProfile from './pages/UserProfile';
 import ThemeToggle from './ThemeToggle';
 import CommandPalette from './components/CommandPalette';
 import Sidebar from './components/Sidebar';
+import { useTheme } from './hooks/useTheme';
 
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Analytics = lazy(() => import('./pages/Analytics'));
+const Settings = lazy(() => import('./pages/Settings'));
+const UserProfile = lazy(() => import('./pages/UserProfile'));
 
 export default function App() {
+  const { algorithm } = useTheme();
   return (
-    <BrowserRouter>
+    <ConfigProvider theme={{ algorithm }}>
+      <BrowserRouter>
       <a href="#main" className="skip-link">Skip to content</a>
       <header className="flex justify-between items-center py-4">
 
@@ -24,27 +27,27 @@ export default function App() {
 
         <h1 className="text-2xl font-bold">AI Help Desk</h1>
         <nav>
-          <Link to="/" className="mr-4 text-blue-600 hover:underline">Dashboard</Link>
-          <Link to="/analytics" className="mr-4 text-blue-600 hover:underline">Analytics</Link>
+          <Link to="/" className="mr-4 text-primary dark:text-primary-dark hover:underline">Dashboard</Link>
+          <Link to="/analytics" className="mr-4 text-primary dark:text-primary-dark hover:underline">Analytics</Link>
 
-          <Link to="/settings" className="text-blue-600 hover:underline">Settings</Link>
+          <Link to="/settings" className="text-primary dark:text-primary-dark hover:underline">Settings</Link>
 
-          <Link to="/users/1" className="text-blue-600 hover:underline">Profile</Link>
+          <Link to="/users/1" className="text-primary dark:text-primary-dark hover:underline">Profile</Link>
 
         </nav>
         <ThemeToggle />
       </header>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/analytics" element={<Analytics />} />
-
-        <Route path="/settings" element={<Settings />} />
-
-        <Route path="/users/:id" element={<UserProfile />} />
-
-      </Routes>
+      <Suspense fallback={<p>Loading...</p>}>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/users/:id" element={<UserProfile />} />
+        </Routes>
+      </Suspense>
       <CommandPalette />
       <ToastContainer />
-    </BrowserRouter>
+      </BrowserRouter>
+    </ConfigProvider>
   );
 }

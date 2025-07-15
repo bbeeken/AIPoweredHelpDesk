@@ -1,8 +1,15 @@
-import { ChangeEvent, useEffect, useState } from 'react';
+
+import { ChangeEvent, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+
+import { useEffect, useState } from 'react';
+import { Select, Input, Button } from 'antd';
+
 
 export interface TicketFilter {
   status?: string;
   priority?: string;
+  tags?: string;
 }
 
 interface FilterPreset {
@@ -16,26 +23,28 @@ interface Props {
   onChange: (f: TicketFilter) => void;
 }
 
+const { Option } = Select;
+
 export default function TicketFilters({ filters, onChange }: Props) {
   const [presets, setPresets] = useState<FilterPreset[]>([]);
   const [name, setName] = useState('');
 
-  useEffect(() => {
-    async function load() {
+  useQuery({
+    queryKey: ['filterPresets'],
+    queryFn: async () => {
       try {
         const res = await fetch('/filters');
         if (res.ok) {
-          setPresets(await res.json());
-          return;
+          return await res.json();
         }
       } catch {
         // ignore errors and fall back to localStorage
       }
       const stored = localStorage.getItem('ticketFilterPresets');
-      if (stored) setPresets(JSON.parse(stored));
-    }
-    load();
-  }, []);
+      return stored ? JSON.parse(stored) : [];
+    },
+    onSuccess: (data) => setPresets(data),
+  });
 
   async function savePreset() {
     if (!name.trim()) return;
@@ -68,11 +77,15 @@ export default function TicketFilters({ filters, onChange }: Props) {
     if (preset) onChange(preset.filters);
   }
 
+
   function handleStatus(e: ChangeEvent<HTMLSelectElement>) {
     onChange({ ...filters, status: e.target.value || undefined });
   }
   function handlePriority(e: ChangeEvent<HTMLSelectElement>) {
     onChange({ ...filters, priority: e.target.value || undefined });
+  }
+  function handleTags(e: ChangeEvent<HTMLInputElement>) {
+    onChange({ ...filters, tags: e.target.value || undefined });
   }
   return (
     <div className="flex flex-col gap-2 mb-2">
@@ -91,23 +104,61 @@ export default function TicketFilters({ filters, onChange }: Props) {
           <option value="medium">Medium</option>
           <option value="high">High</option>
         </select>
-      </div>
-      <div className="flex gap-2">
-        <label htmlFor="viewSelect" className="sr-only">Saved views</label>
-        <select id="viewSelect" className="border p-2" value="" onChange={e => applyPreset(e.target.value)}>
-          <option value="">Saved views</option>
-          {presets.map(p => (
-            <option key={p.id} value={p.id}>{p.name}</option>
-          ))}
-        </select>
         <input
+          id="tagFilter"
+          className="border p-2 flex-1"
+          placeholder="Tags"
+          value={filters.tags || ''}
+          onChange={handleTags}
+        />
+
+  return (
+    <div className="flex flex-col gap-2 mb-2">
+      <div className="flex gap-2 items-center">
+        <Select
+          aria-label="Status"
+          value={filters.status || ''}
+          onChange={value => onChange({ ...filters, status: value || undefined })}
+          style={{ width: 140 }}
+        >
+          <Option value="">All statuses</Option>
+          <Option value="open">Open</Option>
+          <Option value="waiting">Waiting</Option>
+          <Option value="closed">Closed</Option>
+        </Select>
+        <Select
+          aria-label="Priority"
+          value={filters.priority || ''}
+          onChange={value => onChange({ ...filters, priority: value || undefined })}
+          style={{ width: 140 }}
+        >
+          <Option value="">All priorities</Option>
+          <Option value="low">Low</Option>
+          <Option value="medium">Medium</Option>
+          <Option value="high">High</Option>
+        </Select>
+
+      </div>
+      <div className="flex gap-2 items-center">
+        <Select
+          aria-label="Saved views"
+          value=""
+          onChange={applyPreset}
+          style={{ width: 160 }}
+        >
+          <Option value="">Saved views</Option>
+          {presets.map(p => (
+            <Option key={p.id} value={String(p.id)}>{p.name}</Option>
+          ))}
+        </Select>
+        <Input
           aria-label="View name"
-          className="border p-2"
           value={name}
           onChange={e => setName(e.target.value)}
           placeholder="New view"
+          style={{ width: 160 }}
         />
-        <button className="border px-3" onClick={savePreset}>Save</button>
+        <Button onClick={savePreset} className="touch-target">Save</Button>
       </div>
     </div>
   );
