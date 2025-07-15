@@ -1,18 +1,5 @@
-
-import { useEffect, useState, useRef, lazy, Suspense } from 'react';
-
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-
-
-import useRealtime from '../hooks/useRealtime';
-
-
-
-import {
-  Chart as ChartJS,
-  type ChartConfiguration,
-} from 'chart.js';
-import { Select, Button } from 'antd';
+import { useEffect, useState, lazy, Suspense } from 'react';
+import { Select } from 'antd';
 
 const StatusWidget = lazy(() => import('./widgets/StatusWidget'));
 const ForecastWidget = lazy(() => import('./widgets/ForecastWidget'));
@@ -23,129 +10,6 @@ const AVAILABLE_WIDGETS: { id: WidgetId; label: string }[] = [
   { id: 'status', label: 'Ticket Status' },
   { id: 'forecast', label: 'Ticket Forecast' },
 ];
-
-
-function StatusWidget({ onRemove }: { onRemove: () => void }) {
-  const ref = useRef<HTMLCanvasElement>(null);
-
-  const queryClient = useQueryClient();
-  const { data: stats } = useQuery({
-    queryKey: ['stats', 'dashboard'],
-    queryFn: async () => {
-
-
-  async function loadStats() {
-    try {
-
-      const res = await fetch('/stats/dashboard');
-      return (await res.json()) as DashboardStats;
-    },
-  });
-
-
-  useRealtime('ticketCreated', loadStats);
-  useRealtime('ticketUpdated', loadStats);
-
-  useEffect(() => {
-
-    if (!window.EventSource) return;
-    const es = new EventSource('/events');
-    const invalidate = () =>
-      queryClient.invalidateQueries({ queryKey: ['stats', 'dashboard'] });
-    es.addEventListener('ticketCreated', invalidate);
-    es.addEventListener('ticketUpdated', invalidate);
-    return () => es.close();
-  }, [queryClient]);
-
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch('/stats/dashboard');
-        const data: DashboardStats = await res.json();
-        setStats({ tickets: data.tickets });
-      } catch (err) {
-        console.error('Failed to load stats', err);
-      }
-    }
-    load();
-  }, []);
-
-
-  useEffect(() => {
-    if (!stats || !ref.current) return;
-
-    const cfg: ChartConfiguration<'bar'> = {
-      type: 'bar',
-      data: {
-        labels: ['Open', 'Waiting', 'Closed'],
-        datasets: [
-          {
-            data: [stats.tickets.open, stats.tickets.waiting, stats.tickets.closed],
-            backgroundColor: ['#3b82f6', '#facc15', '#10b981'],
-          },
-        ],
-      },
-      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } },
-    };
-    const chart = new ChartJS(ref.current, cfg);
-    return () => chart.destroy();
-  }, [stats]);
-
-  return (
-    <div className="border rounded p-2 bg-white dark:bg-gray-800">
-      <div className="flex justify-between items-center mb-1">
-        <h3 className="font-semibold">Ticket Status</h3>
-
-        <Button type="text" danger size="small" onClick={onRemove} aria-label="Remove">✕</Button>
-
-        <button aria-label="Remove" onClick={onRemove} className="text-sm text-error dark:text-error-dark">✕</button>
-
-      </div>
-      {stats ? <canvas ref={ref} /> : <p>Loading...</p>}
-    </div>
-  );
-}
-
-function ForecastWidget({ onRemove }: { onRemove: () => void }) {
-  const ref = useRef<HTMLCanvasElement>(null);
-  const days = 14;
-  const { data: forecast } = useQuery({
-    queryKey: ['forecast', days],
-    queryFn: async () => {
-      const res = await fetch(`/stats/forecast?days=${days}`);
-      const data: ForecastData = await res.json();
-      return data.forecast;
-    },
-  });
-
-  useEffect(() => {
-    if (forecast == null || !ref.current) return;
-    const labels = Array.from({ length: days }, (_, i) => `Day ${i + 1}`);
-    const daily = forecast / days;
-    const dataset = Array.from({ length: days }, () => daily);
-    const cfg: ChartConfiguration<'line'> = {
-      type: 'line',
-      data: { labels, datasets: [{ data: dataset, borderColor: '#3b82f6', fill: false }] },
-      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } },
-    };
-    const chart = new ChartJS(ref.current, cfg);
-    return () => chart.destroy();
-  }, [forecast]);
-
-  return (
-    <div className="border rounded p-2 bg-white dark:bg-gray-800">
-      <div className="flex justify-between items-center mb-1">
-        <h3 className="font-semibold">Ticket Forecast</h3>
-
-        <button aria-label="Remove" onClick={onRemove} className="text-sm text-error dark:text-error-dark">✕</button>
-
-      </div>
-      {forecast != null ? <canvas ref={ref} /> : <p>Loading...</p>}
-    </div>
-  );
-}
-
 
 function Widget({ id, onRemove }: { id: WidgetId; onRemove: () => void }) {
   switch (id) {
@@ -184,7 +48,9 @@ export default function StatsPanel() {
       <div className="mb-4">
         {available.length > 0 && (
           <>
-            <label htmlFor="widgetSelect" className="mr-2">Add Widget:</label>
+            <label htmlFor="widgetSelect" className="mr-2">
+              Add Widget:
+            </label>
             <Select
               id="widgetSelect"
               value={next}
@@ -192,13 +58,17 @@ export default function StatsPanel() {
               style={{ width: 160 }}
             >
               {available.map(w => (
-                <Select.Option key={w.id} value={w.id}>{w.label}</Select.Option>
+                <Select.Option key={w.id} value={w.id}>
+                  {w.label}
+                </Select.Option>
               ))}
             </Select>
-            <button onClick={addWidget} className="bg-primary dark:bg-primary-dark text-white px-2 py-0.5 rounded touch-target">
+            <button
+              onClick={addWidget}
+              className="bg-primary dark:bg-primary-dark text-white px-2 py-0.5 rounded touch-target"
+            >
               Add
             </button>
-
           </>
         )}
       </div>

@@ -42,6 +42,13 @@ const reactDist = path.join(__dirname, 'frontend', 'dist');
 if (fs.existsSync(reactDist)) {
   app.use(express.static(reactDist));
 }
+// return 404 for missing static assets instead of triggering auth
+app.use((req, res, next) => {
+  if (req.method === 'GET' && path.extname(req.path)) {
+    return res.status(404).end();
+  }
+  next();
+});
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
@@ -300,6 +307,9 @@ app.post("/tickets", async (req, res) => {
   const { translated, lang } = await translation.translateToDefault(question);
 
 
+  const text = translated;
+
+
   const ticket = {
     id: nextTicketId++,
     assigneeId: assignedId,
@@ -311,8 +321,6 @@ app.post("/tickets", async (req, res) => {
     language: lang,
     category: aiService.categorizeTicket(translated),
     sentiment: sentimentService.analyze(question),
-
-
     dueDate: dueDate || null,
     tags: Array.isArray(tags) ? tags : [],
     comments: [],
@@ -322,11 +330,17 @@ app.post("/tickets", async (req, res) => {
   };
 
   try {
-    const [sentiment, suggested] = await Promise.all([
-      aiService.analyzeSentiment(translated),
-      aiService.suggestTags(translated),
+
+    const [sentimentLabel, suggested] = await Promise.all([
+      ai.analyzeSentiment(translated),
+      ai.suggestTags(translated),
+
     ]);
-    ticket.sentiment = sentiment;
+    if (ticket.sentiment && typeof ticket.sentiment === "object") {
+      ticket.sentiment.label = sentimentLabel;
+    } else {
+      ticket.sentiment = { label: sentimentLabel };
+    }
     suggested.forEach((t) => {
       if (!ticket.tags.includes(t)) ticket.tags.push(t);
     });
@@ -1366,6 +1380,7 @@ app.get("/ai/agent-workload", (req, res) => {
 });
 
 // Estimate escalation risk
+
 app.get("/ai/escalation-risk", (req, res) => {
   const now = Date.now();
   const risks = data.tickets
@@ -1378,6 +1393,7 @@ app.get("/ai/escalation-risk", (req, res) => {
     });
   res.json(risks);
 });
+
 
 // Basic sentiment analysis for a text string
 app.post("/ai/sentiment", (req, res) => {
