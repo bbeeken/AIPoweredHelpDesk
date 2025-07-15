@@ -26,12 +26,17 @@ For a summary of the modernization vision and design standards, read
 - **Offline-capable UI** using a service worker and web app manifest.
 - **Automatic translation** of new tickets into English with original text preserved.
 
+- **Third-party integrations** placeholders for Slack, Microsoft Teams, Jira and Salesforce connectors.
+
 - **Real-time updates** via a Server-Sent Events endpoint.
 - **Toast notifications** for ticket events with auto-refreshing stats.
 - **Notification settings** page to opt into email or push alerts for future AI triage.
 - **Wildcard routing** using `*` to match any path.
 
 - **Stats dashboard** showing ticket counts, mean resolution time and a 7-day ticket forecast.
+- **Knowledge base integration** with AI-suggested articles.
+- **Self-service portal** for users to search articles and track tickets.
+- **Community forums** to share solutions and ideas.
 
 
 ### API Endpoints
@@ -163,12 +168,10 @@ Other useful environment variables include:
 - `N8N_URL` – n8n workflow webhook URL.
 - `QDRANT_URL` – base address of the Qdrant server.
 - `OPENAI_API_KEY` – API key for calling OpenAI services used by `aiService`.
-
-- `OPENAI_API_KEY` – API key for calling OpenAI services used by `aiService`.
-
 - `TRANSLATE_URL` – HTTP endpoint for the translation service.
 - `TRANSLATE_API_KEY` – API key used when contacting the translation provider.
-
+- `CORS_ORIGIN` – allowed origin for the React frontend.
+- `DEFAULT_LANGUAGE` – default language code for translations.
 
 After the first visit, the pages are cached for offline use via a service worker.
 An experimental `realtime.html` page demonstrates live ticket notifications using the `/events` SSE endpoint.
@@ -184,7 +187,8 @@ the session.
 
 The user interface has moved to a React application in the `frontend` directory.
 Before starting the server, run `npm install && npm run build` in that folder to
-produce the `dist` directory. A blank page or MIME type errors in the browser
+produce the `dist` directory. This build now compiles the knowledge base,
+self-service portal and community pages. A blank page or MIME type errors in the browser
 usually mean the `frontend/dist` directory is missing or the server could not
 find it. During development you can run `npm run dev` for hot reloading. The dashboard includes
 ticket tables, real-time updates via Server-Sent Events and a new analytics
