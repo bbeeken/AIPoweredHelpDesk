@@ -3,14 +3,16 @@ module.exports = {
     {
       id: 1,
       name: "Brian",
+      salt: "c611add510604607",
       passwordHash:
-        "b440f3cb3a08669827af2bed8c198cce8ae72e58fb7a3824ed3bdc00da1dc372",
+        "eb0412b9cbffea6e0c04371d0916ed33279aa2841ffcc5fb89fed640493db5ac",
     },
     {
       id: 2,
       name: "Alice",
+      salt: "70a0082def25687f",
       passwordHash:
-        "33f8f83f5d75b3c24d6335a161ed229a4a29db7dfa35730b2675deee83037b6c",
+        "138b21788bfc2745656abf0616264ee6b3773c0001c1ce5ee070c821ae99dcf5",
     },
   ],
   tickets: [
