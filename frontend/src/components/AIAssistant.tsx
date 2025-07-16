@@ -5,8 +5,8 @@ interface Ticket {
   question: string;
 }
 
-function categorize(text: string): string {
-  const t = text.toLowerCase();
+function categorize(text?: string): string {
+  const t = (text || '').toLowerCase();
   if (t.includes('password')) return 'authentication';
   if (t.includes('error')) return 'incident';
   return 'general';
