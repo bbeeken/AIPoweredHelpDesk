@@ -8,6 +8,7 @@ import Sidebar from './components/Sidebar';
 import { useTheme } from './hooks/useTheme';
 
 const Dashboard = lazy(() => import('./pages/Dashboard'));
+const AnimatedDashboard = lazy(() => import('./pages/AnimatedDashboard'));
 const Analytics = lazy(() => import('./pages/Analytics'));
 const Settings = lazy(() => import('./pages/Settings'));
 const UserProfile = lazy(() => import('./pages/UserProfile'));
@@ -38,6 +39,7 @@ export default function App() {
       <Suspense fallback={<p>Loading...</p>}>
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/animated-dashboard" element={<AnimatedDashboard />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/users/:id" element={<UserProfile />} />
