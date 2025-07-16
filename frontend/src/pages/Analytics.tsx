@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+
+import useAnalyticsSocket from '../hooks/useAnalyticsSocket';
+
 import { Tabs } from 'antd';
 import { Chart as ChartJS, registerables, MatrixController, MatrixElement } from 'chart.js';
 import { Line, Doughnut } from 'react-chartjs-2';
@@ -25,6 +28,18 @@ export default function Analytics() {
   const [forecast, setForecast] = useState<number[]>([]);
   const [heat, setHeat] = useState<HeatCell[]>([]);
   const heatRef = useRef<HTMLCanvasElement>(null);
+
+  useAnalyticsSocket(update => {
+    if (update.priorityStats) {
+      setPriorityStats(prev => ({ ...prev, ...update.priorityStats }));
+    }
+    if (update.timeSeriesData) {
+      setTimeSeriesData(update.timeSeriesData);
+    }
+    if (update.teamPerformance) {
+      setTeamPerformance(update.teamPerformance);
+    }
+  });
 
   useEffect(() => {
     document.title = 'Analytics - AI Help Desk';
