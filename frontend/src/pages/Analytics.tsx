@@ -1,5 +1,6 @@
 
 import { useEffect, useRef, useState } from 'react';
+import useAnalyticsSocket from '../hooks/useAnalyticsSocket';
 
 
 interface PriorityStats {
@@ -26,6 +27,18 @@ export default function Analytics() {
   const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesData[]>([]);
   const [teamPerformance, setTeamPerformance] = useState<TeamPerformance[]>([]);
   const mainRef = useRef<HTMLElement | null>(null);
+
+  useAnalyticsSocket(update => {
+    if (update.priorityStats) {
+      setPriorityStats(prev => ({ ...prev, ...update.priorityStats }));
+    }
+    if (update.timeSeriesData) {
+      setTimeSeriesData(update.timeSeriesData);
+    }
+    if (update.teamPerformance) {
+      setTeamPerformance(update.teamPerformance);
+    }
+  });
 
   useEffect(() => {
     document.title = 'Analytics - AI Help Desk';
