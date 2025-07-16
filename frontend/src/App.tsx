@@ -24,8 +24,6 @@ export default function App() {
           <Sidebar />
           <h1 className="text-2xl font-bold">AI Help Desk</h1>
         </div>
-
-        <h1 className="text-2xl font-bold">AI Help Desk</h1>
         <nav>
           <Link to="/" className="mr-4 text-primary dark:text-primary-dark hover:underline">Dashboard</Link>
           <Link to="/analytics" className="mr-4 text-primary dark:text-primary-dark hover:underline">Analytics</Link>
