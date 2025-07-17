@@ -1,7 +1,8 @@
 /* pages/Analytics.tsx ------------------------------------------------------ */
 import { useEffect, useRef, useState } from 'react';
 import { Tabs, Select, message } from 'antd';
-import { Chart as ChartJS, registerables, MatrixController, MatrixElement } from 'chart.js';
+import { Chart as ChartJS, registerables } from 'chart.js';
+import { MatrixController, MatrixElement } from 'chartjs-chart-matrix';
 import { Line, Doughnut } from 'react-chartjs-2';
 import AdvancedFilters, { AnalyticsFilters } from '../components/AdvancedFilters';
 import useAnalyticsSocket from '../hooks/useAnalyticsSocket';
