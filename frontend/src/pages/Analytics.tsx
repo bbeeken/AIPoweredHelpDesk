@@ -43,6 +43,29 @@ export default function Analytics() {
 
   useEffect(() => {
     document.title = 'Analytics - AI Help Desk';
+
+    loadAnalyticsData();
+  }, [timeRange]);
+
+  async function loadAnalyticsData() {
+    setLoading(true);
+    try {
+      const days =
+        timeRange === '1y' ? 365 : Number(timeRange.replace('d', '')) || 30;
+
+      const [overviewRes, tsRes] = await Promise.all([
+        fetch('/api/analytics/overview').then(r => r.json()),
+        fetch(`/api/analytics/timeseries?days=${days}`).then(r => r.json()),
+      ]);
+
+      setPriorityStats(overviewRes.priorities || {});
+      setTeamPerformance(overviewRes.teamPerformance || []);
+      setTimeSeriesData(tsRes || []);
+    } catch (err) {
+      console.error('Failed to load analytics', err);
+    } finally {
+      setLoading(false);
+
     loadData();
   }, [filters]);
 
@@ -67,6 +90,7 @@ export default function Analytics() {
       for (let hour = 0; hour < 24; hour++) {
         cells.push({ x: dow, y: hour, v: Math.floor(Math.random() * 10) });
       }
+
     }
     setSeries(tmpSeries);
     setForecast(tmpForecast);
