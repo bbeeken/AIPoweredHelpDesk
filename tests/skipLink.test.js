@@ -10,6 +10,10 @@ const server = app.listen(0, () => {
     res.on('end', () => {
       assert.strictEqual(res.statusCode, 200);
       assert.ok(body.includes('class="skip-link"'), 'skip link should exist');
+      assert.ok(
+        body.includes('AI Powered Help Desk'),
+        'header text should be updated'
+      );
       server.close(() => console.log('Skip link test passed'));
     });
   });
