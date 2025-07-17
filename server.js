@@ -20,21 +20,11 @@ const sentimentService = require("./utils/sentimentService");
 const assistant = require("./utils/assistant");
 
 const http = require('http');
-const { Server } = require('socket.io');
-
-
 
 const fs = require('fs');
 const { Server: IOServer } = require('socket.io');
 const app = express();
 
-function attachSocket(server) {
-  const io = new Server(server);
-  eventBus.on('ticketCreated', (t) => io.emit('ticketCreated', t));
-  eventBus.on('ticketUpdated', (t) => io.emit('ticketUpdated', t));
-  server.on('close', () => io.close());
-  return io;
-}
 app.use(bodyParser.json());
 
 app.use(express.static(path.join(__dirname, 'public')));
