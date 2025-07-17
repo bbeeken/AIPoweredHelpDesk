@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  TrendingUpIcon,
+  ArrowTrendingUpIcon as TrendingUpIcon,
   ClockIcon,
   TicketIcon,
   UserGroupIcon,
   ChartBarIcon,
   FireIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 
 interface Ticket {
