@@ -13,6 +13,7 @@ const aiService = require("./utils/aiService");
 const wsServer = require("./utils/websocketServer");
 
 const analytics = require("./utils/analyticsEngine");
+const reportExporter = require("./utils/reportExporter");
 
 const translation = require("./utils/translationService");
 const sentimentService = require("./utils/sentimentService");
@@ -852,6 +853,19 @@ app.get("/stats/forecast", (req, res) => {
   const days = Number(req.query.days) || 7;
   const forecast = analytics.predictTicketVolume(data.tickets, days);
   res.json({ forecast });
+});
+
+// Export analytics report in various formats
+app.post("/api/analytics/export", (req, res) => {
+  const { format = "csv" } = req.body || {};
+  const reportData = analytics.generateInsights(data.tickets, data.assets || []);
+  const buffer = reportExporter.generate([reportData], format);
+  res.setHeader("Content-Type", reportExporter.contentType(format));
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="report.${reportExporter.extension(format)}"`,
+  );
+  res.end(buffer);
 });
 
 // Ticket counts per user by status

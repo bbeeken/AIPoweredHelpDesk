@@ -70,6 +70,23 @@ export default function Analytics() {
     }
   }
 
+  async function handleExport(format: string = 'csv') {
+    const res = await fetch('/api/analytics/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ format })
+    });
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `analytics.${format === 'excel' ? 'xlsx' : format}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  }
+
   const totalTickets = Object.values(priorityStats).reduce((sum, count) => sum + count, 0);
   const maxValue = Math.max(...timeSeriesData.map(d => Math.max(d.tickets, d.resolved)));
 
@@ -126,6 +143,12 @@ export default function Analytics() {
             <option value="90d">Last 90 days</option>
             <option value="1y">Last year</option>
           </select>
+          <button
+            onClick={() => handleExport('csv')}
+            className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Export CSV
+          </button>
         </div>
       </div>
 
