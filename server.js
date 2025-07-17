@@ -25,6 +25,7 @@ const http = require('http');
 const fs = require('fs');
 const { Server: IOServer } = require('socket.io');
 const app = express();
+
 app.use(bodyParser.json());
 
 app.use(express.static(path.join(__dirname, 'public')));
