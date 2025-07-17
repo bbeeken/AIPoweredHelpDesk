@@ -21,6 +21,7 @@ const assistant = require("./utils/assistant");
 
 const http = require('http');
 
+
 const fs = require('fs');
 const { Server: IOServer } = require('socket.io');
 const app = express();
@@ -986,6 +987,67 @@ app.get("/stats/comments", (req, res) => {
   res.json(counts);
 });
 
+// New analytics API endpoints
+app.get("/api/analytics/overview", (req, res) => {
+  const overview = analytics.generateInsights(data.tickets, data.assets || []);
+  const priorities = {};
+  data.tickets.forEach((t) => {
+    const p = t.priority || "unspecified";
+    priorities[p] = (priorities[p] || 0) + 1;
+  });
+  overview.priorities = priorities;
+  overview.teamPerformance = data.users.map((u) => {
+    const resolved = data.tickets.filter(
+      (t) => t.assigneeId === u.id && t.status === "closed",
+    );
+    const durations = resolved
+      .map((t) => {
+        const created = (t.history || []).find((h) => h.action === "created");
+        const closed = (t.history || []).find(
+          (h) => h.action === "status" && h.to === "closed",
+        );
+        if (!created || !closed) return null;
+        return (
+          new Date(closed.date).getTime() - new Date(created.date).getTime()
+        );
+      })
+      .filter((d) => d !== null);
+    const avg = durations.length
+      ? (durations.reduce((s, d) => s + d, 0) / durations.length) / 3600000
+      : 0;
+    return {
+      name: u.name,
+      resolved: resolved.length,
+      avgTime: `${avg.toFixed(1)}h`,
+      satisfaction: 4.5,
+    };
+  });
+  res.json(overview);
+});
+
+app.get("/api/analytics/timeseries", (req, res) => {
+  const days = Number(req.query.days) || 7;
+  const now = new Date();
+  const series = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * 86400000)
+      .toISOString()
+      .slice(0, 10);
+    const ticketsCreated = data.tickets.filter((t) => {
+      const created = (t.history || []).find((h) => h.action === "created");
+      return created && created.date.slice(0, 10) === d;
+    }).length;
+    const ticketsResolved = data.tickets.filter((t) => {
+      const closed = (t.history || []).find(
+        (h) => h.action === "status" && h.to === "closed",
+      );
+      return closed && closed.date.slice(0, 10) === d;
+    }).length;
+    series.push({ date: d, tickets: ticketsCreated, resolved: ticketsResolved });
+  }
+  res.json(series);
+});
+
 // Asset management endpoints
 // List all depreciated assets
 app.get("/assets/depreciated", (req, res) => {
@@ -1413,6 +1475,7 @@ if (require.main === module) {
   server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
   wsServer.setupWebSocket(server);
+  wsServer.setupAnalyticsSocket(server);
 
 }
 
