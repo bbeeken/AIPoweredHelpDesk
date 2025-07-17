@@ -38,6 +38,12 @@ export default function AppSidebar({ open, onClose }: Props) {
           </Link>
         </li>
         <li>
+          <a href="/chat.html" className="block hover:underline">AI Chat</a>
+        </li>
+        <li>
+          <a href="/realtime.html" className="block hover:underline">Real-Time</a>
+        </li>
+        <li>
           <Link to="/analytics" className="block hover:underline">
             Analytics
           </Link>

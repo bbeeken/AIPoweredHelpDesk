@@ -20,9 +20,15 @@ export default function AppHeader({ onMenuToggle, menuOpen }: Props) {
         >
           ☰
         </button>
-        <h1 className="text-2xl font-bold">AI Help Desk</h1>
+        <h1 className="text-2xl font-bold">AI Powered Help Desk</h1>
       </div>
       <nav className="hidden md:block">
+        <a href="/chat.html" className="text-blue-600 hover:underline mr-4">
+          AI Chat
+        </a>
+        <a href="/realtime.html" className="text-blue-600 hover:underline mr-4">
+          Real-Time
+        </a>
         <Link to="/analytics" className="text-blue-600 hover:underline mr-4">
           Analytics
         </Link>
