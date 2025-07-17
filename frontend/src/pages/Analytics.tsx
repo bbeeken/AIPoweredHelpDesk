@@ -35,34 +35,17 @@ export default function Analytics() {
   async function loadAnalyticsData() {
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock data
-      setPriorityStats({
-        low: 45,
-        medium: 78,
-        high: 23,
-        urgent: 12
-      });
-      
-      setTimeSeriesData([
-        { date: '2024-12-14', tickets: 45, resolved: 42 },
-        { date: '2024-12-15', tickets: 52, resolved: 48 },
-        { date: '2024-12-16', tickets: 38, resolved: 35 },
-        { date: '2024-12-17', tickets: 61, resolved: 58 },
-        { date: '2024-12-18', tickets: 44, resolved: 41 },
-        { date: '2024-12-19', tickets: 55, resolved: 52 },
-        { date: '2024-12-20', tickets: 48, resolved: 45 },
+      const days =
+        timeRange === '1y' ? 365 : Number(timeRange.replace('d', '')) || 30;
+
+      const [overviewRes, tsRes] = await Promise.all([
+        fetch('/api/analytics/overview').then(r => r.json()),
+        fetch(`/api/analytics/timeseries?days=${days}`).then(r => r.json()),
       ]);
-      
-      setTeamPerformance([
-        { name: 'Sarah Chen', resolved: 89, avgTime: '2.1h', satisfaction: 4.9 },
-        { name: 'Mike Johnson', resolved: 76, avgTime: '1.8h', satisfaction: 4.7 },
-        { name: 'Lisa Wang', resolved: 82, avgTime: '2.3h', satisfaction: 4.8 },
-        { name: 'David Lee', resolved: 71, avgTime: '2.0h', satisfaction: 4.6 },
-        { name: 'Alex Rodriguez', resolved: 68, avgTime: '2.4h', satisfaction: 4.5 },
-      ]);
+
+      setPriorityStats(overviewRes.priorities || {});
+      setTeamPerformance(overviewRes.teamPerformance || []);
+      setTimeSeriesData(tsRes || []);
     } catch (err) {
       console.error('Failed to load analytics', err);
     } finally {
