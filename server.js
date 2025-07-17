@@ -17,6 +17,7 @@ const reportExporter = require("./utils/reportExporter");
 
 const translation = require("./utils/translationService");
 const sentimentService = require("./utils/sentimentService");
+const url = require('url');
 
 const assistant = require("./utils/assistant");
 
@@ -1492,7 +1493,13 @@ if (require.main === module) {
   server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
   wsServer.setupWebSocket(server);
-  wsServer.setupAnalyticsSocket(server);
+  const analyticsWSS = wsServer.createAnalyticsWSS();
+  server.on('upgrade', (req, socket, head) => {
+    const pathname = url.parse(req.url).pathname;
+    if (pathname === '/ws/analytics') {
+      wsServer.analyticsUpgradeHandler(analyticsWSS, req, socket, head);
+    }
+  });
 
 }
 

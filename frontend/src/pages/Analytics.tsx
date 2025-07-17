@@ -20,7 +20,14 @@ interface HeatCell {
 
 export default function Analytics() {
   const [filters, setFilters] = useState<AnalyticsFilters>({});
+
+  const [series, setSeries] = useState<SeriesPoint[]>([]);
+  const [priorityStats, setPriorityStats] = useState<Record<string, number>>({});
+  const [timeSeriesData, setTimeSeriesData] = useState<SeriesPoint[]>([]);
+  const [teamPerformance, setTeamPerformance] = useState<any[]>([]);
+
   const [series, setSeries] = useState<TimeSeriesPoint[]>([]);
+
   const [priority, setPriority] = useState<Record<string, number>>({});
   const [forecast, setForecast] = useState<number[]>([]);
   const [heat, setHeat] = useState<HeatCell[]>([]);
