@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 
 interface DashboardStats {
   tickets: { open: number; waiting: number; closed: number };
@@ -17,25 +17,31 @@ function KPICard({ label, value }: { label: string; value: number | string }) {
 }
 
 export default function KPICards() {
-  const { data } = useQuery<DashboardStats>(['kpi'], async () => {
-    const res = await fetch('/stats/dashboard');
-    return res.json();
+  const { data } = useQuery<DashboardStats>({
+    queryKey: ["kpi"],
+    queryFn: async () => {
+      const res = await fetch("/stats/dashboard");
+      return res.json();
+    },
   });
 
   if (!data) return <p>Loading...</p>;
 
   const cards = [
-    { label: 'Open', value: data.tickets.open },
-    { label: 'Waiting', value: data.tickets.waiting },
-    { label: 'Closed', value: data.tickets.closed },
-    { label: 'Forecast', value: data.forecast.toFixed(1) },
-    { label: 'MTTR', value: `${data.mttr.toFixed(1)}h` },
-    { label: 'Assets', value: data.assets.total },
+    { label: "Open", value: data.tickets.open },
+    { label: "Waiting", value: data.tickets.waiting },
+    { label: "Closed", value: data.tickets.closed },
+    { label: "Forecast", value: data.forecast.toFixed(1) },
+    { label: "MTTR", value: `${data.mttr.toFixed(1)}h` },
+    { label: "Assets", value: data.assets.total },
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite">
-      {cards.map(c => (
+    <div
+      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+      aria-live="polite"
+    >
+      {cards.map((c) => (
         <KPICard key={c.label} label={c.label} value={c.value} />
       ))}
     </div>
