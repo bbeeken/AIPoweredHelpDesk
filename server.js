@@ -314,8 +314,8 @@ app.post("/tickets", async (req, res) => {
   try {
 
     const [sentimentLabel, suggested] = await Promise.all([
-      ai.analyzeSentiment(translated),
-      ai.suggestTags(translated),
+      aiService.analyzeSentiment(translated),
+      aiService.suggestTags(translated),
 
     ]);
     if (ticket.sentiment && typeof ticket.sentiment === "object") {
