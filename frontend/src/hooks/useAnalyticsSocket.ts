@@ -1,8 +1,13 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
-export default function useAnalyticsSocket(handler: (data: any) => void) {
-  const cb = useRef(handler);
-  cb.current = handler;
+export interface AnalyticsUpdate {
+  priorityStats?: Record<string, number>;
+  timeSeriesData?: any[];
+  teamPerformance?: any[];
+}
+
+export default function useAnalyticsSocket() {
+  const [update, setUpdate] = useState<AnalyticsUpdate>({});
 
   useEffect(() => {
     const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
@@ -10,11 +15,13 @@ export default function useAnalyticsSocket(handler: (data: any) => void) {
     ws.onmessage = (ev) => {
       try {
         const msg = JSON.parse(ev.data);
-        cb.current(msg.data ?? msg);
+        setUpdate((u) => ({ ...u, ...(msg.data ?? msg) }));
       } catch (err) {
         console.error('analytics socket error', err);
       }
     };
     return () => ws.close();
   }, []);
+
+  return update;
 }

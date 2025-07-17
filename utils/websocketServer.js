@@ -121,28 +121,42 @@ function getPresence() {
   return Array.from(online).map((id) => data.users.find((u) => u.id === id));
 }
 
-function setupAnalyticsSocket(server) {
+function broadcastAnalytics(wss) {
+  if (!wss) return;
+  const payload = buildAnalytics();
+  broadcast({ event: 'analytics', data: payload }, wss);
+}
+
+function createAnalyticsWSS() {
   const wss = new WebSocket.Server({ noServer: true });
-
-  server.on('upgrade', (req, socket, head) => {
-    const pathname = url.parse(req.url).pathname;
-    if (pathname === '/ws/analytics') {
-      wss.handleUpgrade(req, socket, head, (ws) => {
-        const payload = buildAnalytics();
-        ws.send(JSON.stringify({ event: 'analytics', data: payload }));
-      });
-    }
-  });
-
-  const push = () => {
-    const payload = buildAnalytics();
-    broadcast({ event: 'analytics', data: payload }, wss);
-  };
-
+  const push = () => broadcastAnalytics(wss);
   eventBus.on('ticketCreated', push);
   eventBus.on('ticketUpdated', push);
-
   return wss;
 }
 
-module.exports = { setupWebSocket, getPresence, setupAnalyticsSocket };
+function analyticsUpgradeHandler(wss, req, socket, head) {
+  wss.handleUpgrade(req, socket, head, (ws) => {
+    ws.send(JSON.stringify({ event: 'analytics', data: buildAnalytics() }));
+  });
+}
+
+function setupAnalyticsSocket(server) {
+  const wss = createAnalyticsWSS();
+  server.on('upgrade', (req, socket, head) => {
+    const pathname = url.parse(req.url).pathname;
+    if (pathname === '/ws/analytics') {
+      analyticsUpgradeHandler(wss, req, socket, head);
+    }
+  });
+  return wss;
+}
+
+module.exports = {
+  setupWebSocket,
+  getPresence,
+  setupAnalyticsSocket,
+  createAnalyticsWSS,
+  analyticsUpgradeHandler,
+  broadcastAnalytics,
+};
