@@ -1,75 +1,132 @@
+/* pages/Analytics.tsx ------------------------------------------------------ */
 import { useEffect, useRef, useState } from 'react';
-import { Tabs } from 'antd';
+import { Tabs, Select, message } from 'antd';
 import { Chart as ChartJS, registerables, MatrixController, MatrixElement } from 'chart.js';
 import { Line, Doughnut } from 'react-chartjs-2';
 import AdvancedFilters, { AnalyticsFilters } from '../components/AdvancedFilters';
+import useAnalyticsSocket from '../hooks/useAnalyticsSocket';
 
 ChartJS.register(...registerables, MatrixController, MatrixElement);
 
+/* ------------------------------------------------------------------------- */
+/* Type Definitions                                                          */
+/* ------------------------------------------------------------------------- */
 interface TimeSeriesPoint {
-  date: string;
-  created: number;
+  date: string;   // ISO‑8601 (yyyy‑MM‑dd)
+  tickets: number;
   resolved: number;
 }
 
 interface HeatCell {
+  /* dow = 0 Sun … 6 Sat, hour = 0 … 23 */
   x: number;
   y: number;
-  v: number;
+  v: number;      // intensity 0‑10
 }
 
+/* ------------------------------------------------------------------------- */
+/* Analytics Page                                                            */
+/* ------------------------------------------------------------------------- */
 export default function Analytics() {
+  /* ---------------------------- State ------------------------------------ */
   const [filters, setFilters] = useState<AnalyticsFilters>({});
+  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
 
-  const [series, setSeries] = useState<SeriesPoint[]>([]);
-  const [priorityStats, setPriorityStats] = useState<Record<string, number>>({});
-  const [timeSeriesData, setTimeSeriesData] = useState<SeriesPoint[]>([]);
-  const [teamPerformance, setTeamPerformance] = useState<any[]>([]);
+  const [timeSeriesData, setTimeSeriesData]    = useState<TimeSeriesPoint[]>([]);
+  const [priorityStats,  setPriorityStats]     = useState<Record<string, number>>({});
+  const [forecast,       setForecast]          = useState<number[]>([]);
+  const [teamPerformance,setTeamPerformance]   = useState<any[]>([]);
+  const [heat,           setHeat]              = useState<HeatCell[]>([]);
+  const [selectedMetrics,setSelectedMetrics]   = useState<string[]>([]);
 
-  const [series, setSeries] = useState<TimeSeriesPoint[]>([]);
-
-  const [priority, setPriority] = useState<Record<string, number>>({});
-  const [forecast, setForecast] = useState<number[]>([]);
-  const [heat, setHeat] = useState<HeatCell[]>([]);
-  const [selectedMetrics, setSelectedMetrics] = useState<string[]>([]);
   const heatRef = useRef<HTMLCanvasElement>(null);
 
+  /* ----------------------- Live Socket Updates --------------------------- */
+  useAnalyticsSocket(update => {
+    if (update.priorityStats)  setPriorityStats(prev => ({ ...prev, ...update.priorityStats }));
+    if (update.timeSeriesData) setTimeSeriesData(update.timeSeriesData);
+    if (update.teamPerformance)setTeamPerformance(update.teamPerformance);
+    if (update.forecast)       setForecast(update.forecast);
+  });
+
+  /* ------------------------ Initial / Filter Load ------------------------ */
   useEffect(() => {
-    document.title = 'Analytics - AI Help Desk';
-    loadData();
-  }, [filters]);
+    document.title = 'Analytics ‑ AI Help Desk';
+    void loadAnalyticsData();
+    // eslint‑disable‑next‑line react‑hooks/exhaustive‑deps
+  }, [timeRange, filters]);
 
-  function loadData() {
-    const days = 7;
-    const tmpSeries: TimeSeriesPoint[] = [];
-    const tmpForecast: number[] = [];
-    const prio: Record<string, number> = { low: 12, medium: 38, high: 22, urgent: 8 };
-    const today = new Date();
+  async function loadAnalyticsData() {
+    try {
+      const days =
+        timeRange === '1y' ? 365 :
+        timeRange === '90d' ? 90  :
+        timeRange === '30d' ? 30  : 7;
 
-    for (let i = days - 1; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(today.getDate() - i);
-      tmpSeries.push({
-        date: d.toISOString().slice(0, 10),
-        created: Math.floor(Math.random() * 40) + 10,
-        resolved: Math.floor(Math.random() * 40) + 5,
-      });
-      tmpForecast.push(Math.floor(Math.random() * 40) + 20);
+      const [overviewRes, tsRes] = await Promise.all([
+        fetch('/api/analytics/overview', {
+          method: 'POST',
+          headers: { 'Content‑Type': 'application/json' },
+          body: JSON.stringify({ filters }),
+        }).then(r => r.json()),
+        fetch(`/api/analytics/timeseries?days=${days}`, {
+          method: 'POST',
+          headers: { 'Content‑Type': 'application/json' },
+          body: JSON.stringify({ filters }),
+        }).then(r => r.json()),
+      ]);
+
+      setPriorityStats(overviewRes.priorities ?? {});
+      setTeamPerformance(overviewRes.teamPerformance ?? []);
+      setForecast(overviewRes.forecast ?? []);
+      setTimeSeriesData(tsRes ?? []);
+      generateHeat();
+    } catch (err) {
+      console.error('Failed to load analytics', err);
+      message.error('Unable to load analytics data.');
     }
+  }
 
+  /* ------------------------- Heat‑Map Helper ----------------------------- */
+  function generateHeat() {
     const cells: HeatCell[] = [];
     for (let dow = 0; dow < 7; dow++) {
       for (let hour = 0; hour < 24; hour++) {
-        cells.push({ x: dow, y: hour, v: Math.floor(Math.random() * 10) });
+        cells.push({
+          x: dow,
+          y: hour,
+          v: Math.floor(Math.random() * 10),       // demo only; replace with real data
+        });
       }
     }
-
-    setSeries(tmpSeries);
-    setForecast(tmpForecast);
-    setPriority(prio);
     setHeat(cells);
   }
 
+  /* -------------------------- Data Export -------------------------------- */
+  async function handleExport(format: 'csv' | 'excel' = 'csv') {
+    try {
+      const res = await fetch('/api/analytics/export', {
+        method: 'POST',
+        headers: { 'Content‑Type': 'application/json' },
+        body: JSON.stringify({ format, filters }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = `analytics.${format === 'excel' ? 'xlsx' : 'csv'}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error(e);
+      message.error('Export failed');
+    }
+  }
+
+  /* -------------------------- Heat‑Map Chart ----------------------------- */
   useEffect(() => {
     if (!heatRef.current) return;
     const chart = new ChartJS(heatRef.current, {
@@ -83,7 +140,7 @@ export default function Analytics() {
               const val = (ctx.raw as HeatCell).v;
               return `hsl(219, 60%, ${95 - val * 8}%)`;
             },
-            width: () => 14,
+            width:  () => 14,
             height: () => 14,
           },
         ],
@@ -108,19 +165,20 @@ export default function Analytics() {
     return () => chart.destroy();
   }, [heat]);
 
+  /* ---------------------- Chart.js Datasets ------------------------------ */
   const lineData = {
-    labels: series.map(s => s.date),
+    labels: timeSeriesData.map(s => s.date),
     datasets: [
       {
         label: 'Created',
-        data: series.map(s => s.created),
+        data:  timeSeriesData.map(s => s.tickets),
         borderColor: '#1F73B7',
         backgroundColor: 'rgba(31,115,183,0.1)',
         fill: true,
       },
       {
         label: 'Resolved',
-        data: series.map(s => s.resolved),
+        data:  timeSeriesData.map(s => s.resolved),
         borderColor: '#16A34A',
         backgroundColor: 'rgba(22,163,74,0.1)',
         fill: true,
@@ -129,17 +187,17 @@ export default function Analytics() {
   };
 
   const donutData = {
-    labels: Object.keys(priority),
+    labels: Object.keys(priorityStats),
     datasets: [
       {
-        data: Object.values(priority),
+        data: Object.values(priorityStats),
         backgroundColor: ['#1F73B7', '#D97706', '#DC2626', '#6366f1'],
       },
     ],
   };
 
   const forecastData = {
-    labels: series.map((_, i) => `Day ${i + 1}`),
+    labels: Array.from({ length: forecast.length }, (_, i) => `Day ${i + 1}`),
     datasets: [
       {
         label: 'Forecast',
@@ -150,62 +208,106 @@ export default function Analytics() {
     ],
   };
 
+  /* ------------------ Custom Report Builder ------------------------------ */
   const metrics = ['Resolution rate', 'Avg response time', 'Satisfaction', 'Forecast'];
+  const toggleMetric = (m: string) =>
+    setSelectedMetrics(prev => (prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]));
 
-  function toggleMetric(m: string) {
-    setSelectedMetrics(s => (s.includes(m) ? s.filter(x => x !== m) : [...s, m]));
-  }
+  const generateReport = () =>
+    message.success(`Report generated with: ${selectedMetrics.join(', ') || 'no metrics selected'}`);
 
-  function generateReport() {
-    alert(`Report generated with: ${selectedMetrics.join(', ')}`);
-  }
-
+  /* ------------------------------- JSX ----------------------------------- */
   return (
-    <main id="main" className="p-6 space-y-6 font-sans">
+    <main id="main" className="p‑6 space‑y‑6 font‑sans">
+      <div className="flex items‑center gap‑4">
+        <Select
+          value={timeRange}
+          onChange={v => setTimeRange(v)}
+          options={[
+            { label: '7 Days',  value: '7d'  },
+            { label: '30 Days', value: '30d' },
+            { label: '90 Days', value: '90d' },
+            { label: '1 Year',  value: '1y'  },
+          ]}
+          style={{ width: 120 }}
+        />
+        <button
+          onClick={() => handleExport('csv')}
+          className="bg‑primary text‑white px‑3 py‑1 rounded"
+        >
+          Export CSV
+        </button>
+        <button
+          onClick={() => handleExport('excel')}
+          className="bg‑primary text‑white px‑3 py‑1 rounded"
+        >
+          Export Excel
+        </button>
+      </div>
+
       <Tabs
         defaultActiveKey="overview"
         items={[
           {
-            label: 'Overview',
             key: 'overview',
+            label: 'Overview',
             children: (
-              <div className="space-y-6">
+              <div className="space‑y‑6">
                 <AdvancedFilters filters={filters} onChange={setFilters} />
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div className="bg-white dark:bg-neutral-800 p-4 rounded-xl shadow">
-                    <h3 className="text-lg font-semibold mb-2 text-neutral-900 dark:text-white">Tickets Over Time</h3>
+
+                <div className="grid gap‑6 md:grid‑cols‑2">
+                  <div className="bg‑white dark:bg‑neutral‑800 p‑4 rounded‑xl shadow">
+                    <h3 className="text‑lg font‑semibold mb‑2 text‑neutral‑900 dark:text‑white">
+                      Tickets Over Time
+                    </h3>
                     <Line data={lineData} options={{ responsive: true, maintainAspectRatio: false }} height={180} />
                   </div>
-                  <div className="bg-white dark:bg-neutral-800 p-4 rounded-xl shadow">
-                    <h3 className="text-lg font-semibold mb-2 text-neutral-900 dark:text-white">Priority Distribution</h3>
+
+                  <div className="bg‑white dark:bg‑neutral‑800 p‑4 rounded‑xl shadow">
+                    <h3 className="text‑lg font‑semibold mb‑2 text‑neutral‑900 dark:text‑white">
+                      Priority Distribution
+                    </h3>
                     <Doughnut data={donutData} />
                   </div>
                 </div>
-                <div className="bg-white dark:bg-neutral-800 p-4 rounded-xl shadow">
-                  <h3 className="text-lg font-semibold mb-2 text-neutral-900 dark:text-white">Activity Heatmap</h3>
-                  <canvas ref={heatRef} className="w-full h-64" />
+
+                <div className="bg‑white dark:bg‑neutral‑800 p‑4 rounded‑xl shadow">
+                  <h3 className="text‑lg font‑semibold mb‑2 text‑neutral‑900 dark:text‑white">
+                    Activity Heat‑Map
+                  </h3>
+                  <canvas ref={heatRef} className="w‑full h‑64" />
                 </div>
-                <div className="bg-white dark:bg-neutral-800 p-4 rounded-xl shadow">
-                  <h3 className="text-lg font-semibold mb-2 text-neutral-900 dark:text-white">Predictive Forecast</h3>
+
+                <div className="bg‑white dark:bg‑neutral‑800 p‑4 rounded‑xl shadow">
+                  <h3 className="text‑lg font‑semibold mb‑2 text‑neutral‑900 dark:text‑white">
+                    Predictive Forecast
+                  </h3>
                   <Line data={forecastData} options={{ responsive: true, maintainAspectRatio: false }} height={180} />
                 </div>
               </div>
             ),
           },
           {
-            label: 'Custom Reports',
             key: 'reports',
+            label: 'Custom Reports',
             children: (
-              <div className="space-y-4">
-                <p className="text-neutral-700 dark:text-neutral-300">Select metrics to include:</p>
+              <div className="space‑y‑4">
+                <p className="text‑neutral‑700 dark:text‑neutral‑300">Select metrics to include:</p>
                 {metrics.map(m => (
-                  <label key={m} className="flex items-center gap-2">
-                    <input type="checkbox" checked={selectedMetrics.includes(m)} onChange={() => toggleMetric(m)} />
+                  <label key={m} className="flex items‑center gap‑2">
+                    <input
+                      type="checkbox"
+                      checked={selectedMetrics.includes(m)}
+                      onChange={() => toggleMetric(m)}
+                    />
                     <span>{m}</span>
                   </label>
                 ))}
-                <button onClick={generateReport} className="bg-primary dark:bg-primary-dark text-white px-4 py-2 rounded">
-                  Generate Report
+                <button
+                  onClick={generateReport}
+                  className="bg‑primary dark:bg‑primary‑dark text‑white px‑4 py‑2 rounded"
+                >
+                  Generate Report
                 </button>
               </div>
             ),
@@ -215,3 +317,4 @@ export default function Analytics() {
     </main>
   );
 }
+/* ------------------------------------------------------------------------- */
