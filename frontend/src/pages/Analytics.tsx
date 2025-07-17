@@ -24,6 +24,13 @@ interface HeatCell {
   v: number;      // intensity 0‑10
 }
 
+interface TeamPerformance {
+  name: string;
+  resolved: number;
+  avgTime: string;
+  satisfaction: number;
+}
+
 /* ------------------------------------------------------------------------- */
 /* Analytics Page                                                            */
 /* ------------------------------------------------------------------------- */
@@ -32,10 +39,10 @@ export default function Analytics() {
   const [filters, setFilters] = useState<AnalyticsFilters>({});
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
 
-  const [timeSeriesData, setTimeSeriesData]    = useState<TimeSeriesPoint[]>([]);
-  const [priorityStats,  setPriorityStats]     = useState<Record<string, number>>({});
+  const [timeSeriesData, setSeries]            = useState<TimeSeriesPoint[]>([]);
+  const [priorityStats,  setPriority]          = useState<Record<string, number>>({});
   const [forecast,       setForecast]          = useState<number[]>([]);
-  const [teamPerformance,setTeamPerformance]   = useState<any[]>([]);
+  const [teamPerformance,setTeamPerformance]   = useState<TeamPerformance[]>([]);
   const [heat,           setHeat]              = useState<HeatCell[]>([]);
   const [selectedMetrics,setSelectedMetrics]   = useState<string[]>([]);
 
@@ -43,8 +50,8 @@ export default function Analytics() {
 
   /* ----------------------- Live Socket Updates --------------------------- */
   useAnalyticsSocket(update => {
-    if (update.priorityStats)  setPriorityStats(prev => ({ ...prev, ...update.priorityStats }));
-    if (update.timeSeriesData) setTimeSeriesData(update.timeSeriesData);
+    if (update.priorityStats)  setPriority(prev => ({ ...prev, ...update.priorityStats }));
+    if (update.timeSeriesData) setSeries(update.timeSeriesData);
     if (update.teamPerformance)setTeamPerformance(update.teamPerformance);
     if (update.forecast)       setForecast(update.forecast);
   });
@@ -76,10 +83,10 @@ export default function Analytics() {
         }).then(r => r.json()),
       ]);
 
-      setPriorityStats(overviewRes.priorities ?? {});
+      setPriority(overviewRes.priorities ?? {});
       setTeamPerformance(overviewRes.teamPerformance ?? []);
       setForecast(overviewRes.forecast ?? []);
-      setTimeSeriesData(tsRes ?? []);
+      setSeries(tsRes ?? []);
       generateHeat();
     } catch (err) {
       console.error('Failed to load analytics', err);
