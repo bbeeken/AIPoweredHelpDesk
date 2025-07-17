@@ -24,22 +24,27 @@ interface HeatCell {
 export default function Analytics() {
   const [filters, setFilters] = useState<AnalyticsFilters>({});
   const [series, setSeries] = useState<SeriesPoint[]>([]);
+  const [priorityStats, setPriorityStats] = useState<Record<string, number>>({});
+  const [timeSeriesData, setTimeSeriesData] = useState<SeriesPoint[]>([]);
+  const [teamPerformance, setTeamPerformance] = useState<any[]>([]);
   const [priority, setPriority] = useState<Record<string, number>>({});
   const [forecast, setForecast] = useState<number[]>([]);
   const [heat, setHeat] = useState<HeatCell[]>([]);
   const heatRef = useRef<HTMLCanvasElement>(null);
 
-  useAnalyticsSocket(update => {
-    if (update.priorityStats) {
-      setPriorityStats(prev => ({ ...prev, ...update.priorityStats }));
+  const updates = useAnalyticsSocket();
+
+  useEffect(() => {
+    if (updates.priorityStats) {
+      setPriorityStats(prev => ({ ...prev, ...updates.priorityStats! }));
     }
-    if (update.timeSeriesData) {
-      setTimeSeriesData(update.timeSeriesData);
+    if (updates.timeSeriesData) {
+      setTimeSeriesData(updates.timeSeriesData);
     }
-    if (update.teamPerformance) {
-      setTeamPerformance(update.teamPerformance);
+    if (updates.teamPerformance) {
+      setTeamPerformance(updates.teamPerformance);
     }
-  });
+  }, [updates]);
 
   useEffect(() => {
     document.title = 'Analytics - AI Help Desk';
