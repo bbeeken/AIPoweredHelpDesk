@@ -170,7 +170,7 @@ Other useful environment variables include:
 - `OPENAI_API_KEY` – API key for calling OpenAI services used by `aiService`.
 - `TRANSLATE_URL` – HTTP endpoint for the translation service.
 - `TRANSLATE_API_KEY` – API key used when contacting the translation provider.
-- `CORS_ORIGIN` – allowed origin for the React frontend.
+- `CORS_ORIGIN` – origin used for the `Access-Control-Allow-Origin` response header (e.g. `http://localhost:5173`).
 - `DEFAULT_LANGUAGE` – default language code for translations.
 
 After the first visit, the pages are cached for offline use via a service worker.
