@@ -39,21 +39,25 @@ function verifyJwt(token) {
 
 function encrypt(text, key) {
   const iv = crypto.randomBytes(16);
+  const salt = crypto.randomBytes(8);
   const cipher = crypto.createCipheriv(
     'aes-256-cbc',
-    crypto.scryptSync(key, 'salt', 32),
+    crypto.scryptSync(key, salt, 32),
     iv,
   );
   const encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
-  return iv.toString('hex') + ':' + encrypted.toString('hex');
+  return (
+    salt.toString('hex') + ':' + iv.toString('hex') + ':' + encrypted.toString('hex')
+  );
 }
 
 function decrypt(payload, key) {
-  const [ivHex, dataHex] = payload.split(':');
+  const [saltHex, ivHex, dataHex] = payload.split(':');
   const iv = Buffer.from(ivHex, 'hex');
+  const salt = Buffer.from(saltHex, 'hex');
   const decipher = crypto.createDecipheriv(
     'aes-256-cbc',
-    crypto.scryptSync(key, 'salt', 32),
+    crypto.scryptSync(key, salt, 32),
     iv,
   );
   const decrypted = Buffer.concat([
